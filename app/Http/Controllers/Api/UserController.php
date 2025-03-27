@@ -15,9 +15,21 @@ class UserController extends Controller
         return response()->json(User::all(), HttpResponse::HTTP_OK);
     }
 
+    // GET /api/users/{unique_id}
+    public function show($unique_id)
+    {
+        $user = User::findOrFail($unique_id);
+        return response()->json($user, HttpResponse::HTTP_OK);
+    }    
+
     // POST /api/users
     public function store(Request $request)
     {
+        // Only admin can add users
+        if (!$request->user()->hasRole('admin')) {
+            return response()->json(['error' => 'Unauthorized'], HttpResponse::HTTP_FORBIDDEN);
+        }
+        
         $data = $request->validate([
             'unique_id'   => 'required|string',
             'username'    => 'required|string|max:50',
@@ -28,13 +40,6 @@ class UserController extends Controller
 
         $user = User::create($data);
         return response()->json($user, HttpResponse::HTTP_CREATED);
-    }
-
-    // GET /api/users/{unique_id}
-    public function show($unique_id)
-    {
-        $user = User::findOrFail($unique_id);
-        return response()->json($user, HttpResponse::HTTP_OK);
     }
 
     // PUT/PATCH /api/users/{unique_id}
@@ -53,8 +58,13 @@ class UserController extends Controller
     }
 
     // DELETE /api/users/{unique_id}
-    public function destroy($unique_id)
+    public function destroy(Request $request, $unique_id)
     {
+        // Only admin can delete users
+        if (!$request->user()->hasRole('admin')) {
+            return response()->json(['error' => 'Unauthorized'], HttpResponse::HTTP_FORBIDDEN);
+        }
+
         $user = User::findOrFail($unique_id);
         $user->delete();
         return response()->json(null, HttpResponse::HTTP_NO_CONTENT);
