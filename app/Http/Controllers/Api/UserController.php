@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -38,6 +39,11 @@ class UserController extends Controller
             'branch_name' => 'required|string|max:50',
         ]);
 
+        if (isset($data['password'])) 
+        { 
+            $data['password'] = Hash::make($data['password']); 
+        }
+
         $user = User::create($data);
         return response()->json($user, HttpResponse::HTTP_CREATED);
     }
@@ -48,10 +54,12 @@ class UserController extends Controller
         $user = User::findOrFail($unique_id);
         $data = $request->validate([
             'username'    => 'sometimes|string|max:50',
-            'passsword'   => 'sometimes|string',
+            'password'   => 'sometimes|string',
             'role_id'     => 'sometimes|integer',
             'branch_name' => 'sometimes|string|max:50',
         ]);
+
+        $data['password'] = Hash::make($data['password']);
 
         $user->update($data);
         return response()->json($user, HttpResponse::HTTP_OK);

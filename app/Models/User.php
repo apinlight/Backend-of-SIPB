@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Support\Facades\Hash;
 
 class User extends Authenticatable
 {
@@ -15,6 +16,7 @@ class User extends Authenticatable
     protected $primaryKey = 'unique_id';
     public $incrementing = false;
     protected $keyType = 'string';
+    protected $hidden = ['password'];
     public $timestamps = false;
 
 
@@ -33,5 +35,9 @@ class User extends Authenticatable
         return $this->belongsToMany(Barang::class, 'tb_gudang', 'unique_id', 'id_barang')
                     ->using(Gudang::class)
                     ->withPivot('jumlah_barang');
+    }
+    public function setPasswordAttribute($value)
+    {
+        $this->attributes['password'] = Hash::make($value);
     }
 }
