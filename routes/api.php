@@ -18,14 +18,13 @@ use App\Http\Controllers\Api\BatasBarangController;
 use App\Http\Controllers\Api\BatasPengajuanController;
 use App\Http\Controllers\Api\DetailPengajuanController;
 
-
-// Auth Routes
+// Route u/ Auth
 Route::post('/register', [RegisteredUserController::class, 'store'])
     ->middleware('guest')
     ->name('register');
 
 Route::post('/login', [AuthenticatedSessionController::class, 'store'])
-    ->middleware('guest')
+    ->middleware('guest', 'web')
     ->name('login');
 
 Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])
@@ -48,33 +47,35 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
     ->middleware('auth')
     ->name('logout');
 
+// Route yang Diproteksi Sanctum
+Route::middleware('auth:sanctum')->group(function () {
+    // Route Users
+    Route::apiResource('users', UserController::class);
 
-// Users Routes
-Route::apiResource('users', UserController::class);
+    // Route Barang
+    Route::apiResource('barang', BarangController::class);
 
-// Barang Routes
-Route::apiResource('barang', BarangController::class);
+    // Route Pengajuan
+    Route::apiResource('pengajuan', PengajuanController::class);
 
-// Pengajuan Routes
-Route::apiResource('pengajuan', PengajuanController::class);
-
-// DetailPengajuan Routes
-Route::get('detail-pengajuan', [DetailPengajuanController::class, 'index']);
-Route::post('detail-pengajuan', [DetailPengajuanController::class, 'store']);
-Route::get('detail-pengajuan/{id_pengajuan}/{id_barang}', [DetailPengajuanController::class, 'show']);
-Route::put('detail-pengajuan/{id_pengajuan}/{id_barang}', [DetailPengajuanController::class, 'update']);
-Route::delete('detail-pengajuan/{id_pengajuan}/{id_barang}', [DetailPengajuanController::class, 'destroy']);
+    // Route DetailPengajuan
+    Route::get('detail-pengajuan', [DetailPengajuanController::class, 'index']);
+    Route::post('detail-pengajuan', [DetailPengajuanController::class, 'store']);
+    Route::get('detail-pengajuan/{id_pengajuan}/{id_barang}', [DetailPengajuanController::class, 'show']);
+    Route::put('detail-pengajuan/{id_pengajuan}/{id_barang}', [DetailPengajuanController::class, 'update']);
+    Route::delete('detail-pengajuan/{id_pengajuan}/{id_barang}', [DetailPengajuanController::class, 'destroy']);
 
 
-// Gudang Routes
-Route::get('gudang', [GudangController::class, 'index']);
-Route::post('gudang', [GudangController::class, 'store']);
-Route::get('gudang/{unique_id}/{id_barang}', [GudangController::class, 'show']);
-Route::put('gudang/{unique_id}/{id_barang}', [GudangController::class, 'update']);
-Route::delete('gudang/{unique_id}/{id_barang}', [GudangController::class, 'destroy']);
+    // Route Gudang
+    Route::get('gudang', [GudangController::class, 'index']);
+    Route::post('gudang', [GudangController::class, 'store']);
+    Route::get('gudang/{unique_id}/{id_barang}', [GudangController::class, 'show']);
+    Route::put('gudang/{unique_id}/{id_barang}', [GudangController::class, 'update']);
+    Route::delete('gudang/{unique_id}/{id_barang}', [GudangController::class, 'destroy']);
 
-// Batas Barang Routes
-Route::apiResource('batas-barang', BatasBarangController::class);
+    // Route Batas Barang
+    Route::apiResource('batas-barang', BatasBarangController::class);
 
-// Batas Pengajuan Routes
-Route::apiResource('batas-pengajuan', BatasPengajuanController::class);
+    // Route Batas Pengajuan
+    Route::apiResource('batas-pengajuan', BatasPengajuanController::class);
+});
