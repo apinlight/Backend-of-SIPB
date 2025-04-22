@@ -18,6 +18,11 @@ use App\Http\Controllers\Api\BatasBarangController;
 use App\Http\Controllers\Api\BatasPengajuanController;
 use App\Http\Controllers\Api\DetailPengajuanController;
 
+//Route u/ Cek Online
+Route::get('/', function () {
+    return response()->json(['message' => 'API is online']);
+});
+
 // Route u/ Auth
 Route::post('/register', [RegisteredUserController::class, 'store'])
     ->middleware('guest')
