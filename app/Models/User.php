@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasRoles;
+    use HasApiTokens, HasRoles, HasFactory;
     // Specify the table name
     protected $table = 'tb_users';
 
@@ -21,7 +23,7 @@ class User extends Authenticatable
 
 
     // Allow mass assignment for these fields (adjust as needed)
-    protected $fillable = ['unique_id', 'username', 'password', 'role_id', 'branch_name'];
+    protected $fillable = ['unique_id', 'username', 'password', 'branch_name'];
 
     // A user has many Pengajuan records
     public function pengajuan()

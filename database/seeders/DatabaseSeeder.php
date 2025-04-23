@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use App\Models\User;
 
 class DatabaseSeeder extends Seeder
 {
@@ -16,6 +17,13 @@ class DatabaseSeeder extends Seeder
         // Call the RoleSeeder to seed the roles table
         $this->call([
             RoleSeeder::class,
+        ]);
+
+        User::factory()->admin()->create([
+            'unique_id' => 'ADMIN001',
+            'username' => 'superadmin',
+            'password' => 'password',
+            'branch_name' => 'Head Office',
         ]);
     }
 }

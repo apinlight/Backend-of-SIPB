@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
-use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -35,16 +34,19 @@ class UserController extends Controller
             'unique_id'   => 'required|string',
             'username'    => 'required|string|max:50',
             'password'   => 'required|string',
-            'role_id'     => 'required|integer',
             'branch_name' => 'required|string|max:50',
+            'role'        => 'required|string|in:admin,manager,user',
         ]);
 
-        if (isset($data['password'])) 
-        { 
-            $data['password'] = Hash::make($data['password']); 
-        }
+        $user = User::create([
+            'unique_id'   => $data['unique_id'],
+            'username'    => $data['username'],
+            'password'    => $data['password'],
+            'branch_name' => $data['branch_name'],
+        ]);
 
-        $user = User::create($data);
+        $user->assignRole($data['role']);
+        
         return response()->json($user, HttpResponse::HTTP_CREATED);
     }
 
@@ -52,16 +54,20 @@ class UserController extends Controller
     public function update(Request $request, $unique_id)
     {
         $user = User::findOrFail($unique_id);
+
         $data = $request->validate([
             'username'    => 'sometimes|string|max:50',
             'password'   => 'sometimes|string',
-            'role_id'     => 'sometimes|integer',
             'branch_name' => 'sometimes|string|max:50',
+            'role'        => 'sometimes|string|exists:roles,name',
         ]);
 
-        $data['password'] = Hash::make($data['password']);
-
         $user->update($data);
+
+        if (isset($data['role'])) {
+            $user->syncRoles([$data['role']]);
+        }
+
         return response()->json($user, HttpResponse::HTTP_OK);
     }
 
