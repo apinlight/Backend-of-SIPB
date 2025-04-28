@@ -65,17 +65,23 @@ class ApiRoutesTest extends TestCase
      */
     public function test_barang_crud_operations(): void
     {
+        // Create Jenis Barang
+        $jenisBarang = \App\Models\JenisBarang::factory()->create();
+
         // Create a user
         $user = User::factory()->create();
         
         // Create a token for the user
         $token = $user->createToken('test-token')->plainTextToken;
+
+        
         
         // Create
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
                          ->postJson('/api/v1/barang', [
                              'id_barang' => 'BRG001',
                              'nama_barang' => 'Test Barang',
+                             'id_jenis_barang' => $jenisBarang->id_jenis_barang,
                          ]);
         $response->assertStatus(201);
 
@@ -104,7 +110,7 @@ class ApiRoutesTest extends TestCase
      */
     public function test_only_admin_can_create_users(): void
     {
-        // Regular user
+        // Regular User
         $user = User::factory()->user()->create();
         $userToken = $user->createToken('test-token')->plainTextToken;
 
@@ -119,7 +125,7 @@ class ApiRoutesTest extends TestCase
 
         $response->assertStatus(403);
 
-        // Admin
+        // Admin User
         $admin = User::factory()->admin()->create();
         $adminToken = $admin->createToken('test-token')->plainTextToken;
 

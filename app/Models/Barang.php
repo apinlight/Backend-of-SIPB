@@ -11,7 +11,18 @@ class Barang extends Model
     public $incrementing = false;
     protected $keyType = 'string';
 
-    protected $fillable = ['id_barang', 'nama_barang'];
+    protected $fillable = ['id_barang', 'nama_barang', 'id_jenis_barang', 'harga_barang'];
+
+    // One-to-many: a barang has one jenis barang
+    public function jenisBarang()
+    {
+        return $this->belongsTo(JenisBarang::class, 'id_jenis_barang');
+    }
+    // One-to-many: a barang has one batas barang
+    public function batasBarang()
+    {
+        return $this->hasOne(BatasBarang::class, 'id_barang');
+    }
 
     // Many-to-many: a barang is stored in many users' gudang records
     public function gudang()

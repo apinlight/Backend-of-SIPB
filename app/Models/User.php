@@ -32,7 +32,7 @@ class User extends Authenticatable
     }
 
     // Many-to-many: a user has many Barang via tb_gudang pivot (with extra attribute jumlah_barang)
-    public function gudangItem()
+    public function gudangBarang()
     {
         return $this->belongsToMany(Barang::class, 'tb_gudang', 'unique_id', 'id_barang')
                     ->using(Gudang::class)

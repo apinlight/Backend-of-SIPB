@@ -22,11 +22,19 @@ return new class extends Migration
             $table->string('branch_name');
             $table->timestamps();
         });
+
+        // tb_jenis_barang Table (for JenisBarang Model)
+        Schema::create('tb_jenis_barang', function (Blueprint $table) {
+            $table->string('id_jenis_barang')->primary();
+            $table->string('nama_jenis_barang');
+            $table->timestamps();
+        });
         
         // tb_barang Table (for Barang Model)
         Schema::create('tb_barang', function (Blueprint $table) {
             $table->string('id_barang')->primary();
             $table->string('nama_barang');
+            $table->string('id_jenis_barang');
             $table->timestamps();
         });
 
@@ -34,6 +42,7 @@ return new class extends Migration
         Schema::create('tb_batas_barang', function (Blueprint $table) {
             $table->string('id_barang')->primary();
             $table->integer('batas_barang');
+            $table->integer('harga_barang')->nullable();
             $table->timestamps();
 
             $table->foreign('id_barang')->references('id_barang')->on('tb_barang')->onDelete('cascade');
@@ -97,6 +106,7 @@ return new class extends Migration
     Schema::dropIfExists('tb_batas_pengajuan');
     Schema::dropIfExists('tb_batas_barang');
     Schema::dropIfExists('tb_users');
+    Schema::dropIfExists('tb_jenis_barang');
     Schema::dropIfExists('tb_barang');
 }
 };

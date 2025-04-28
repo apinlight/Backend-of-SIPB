@@ -21,6 +21,8 @@ class BarangController extends Controller
         $data = $request->validate([
             'id_barang'   => 'required|string',
             'nama_barang' => 'required|string',
+            'id_jenis_barang' => 'required|string|exists:tb_jenis_barang,id_jenis_barang',
+            'harga_barang' => 'nullable|integer',
         ]);
 
         $barang = Barang::create($data);
@@ -40,6 +42,8 @@ class BarangController extends Controller
         $barang = Barang::findOrFail($id_barang);
         $data = $request->validate([
             'nama_barang' => 'sometimes|string',
+            'id_jenis_barang'  => 'sometimes|string|exists:tb_jenis_barang,id_jenis_barang',
+            'harga_barang' => 'nullable|integer',
         ]);
 
         $barang->update($data);
