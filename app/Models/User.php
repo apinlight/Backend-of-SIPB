@@ -2,15 +2,17 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Spatie\Permission\Traits\HasRoles;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasRoles, HasFactory;
+    use HasApiTokens, HasRoles, HasFactory, HasUlids;
     // Specify the table name
     protected $table = 'tb_users';
 
@@ -41,5 +43,16 @@ class User extends Authenticatable
     public function setPasswordAttribute($value)
     {
         $this->attributes['password'] = Hash::make($value);
+    }
+
+    // Automatically generate a ULID for 'unique_id' when creating a new user
+    protected static function booted()
+    {
+        static::creating(function ($user) {
+            // Generate a ULID if 'unique_id' is not set
+            if (empty($user->unique_id)) {
+                $user->unique_id = (string) Str::ulid();
+            }
+        });
     }
 }

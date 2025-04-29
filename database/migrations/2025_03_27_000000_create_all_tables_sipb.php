@@ -17,6 +17,7 @@ return new class extends Migration
         Schema::create('tb_users', function (Blueprint $table) {
             $table->string('unique_id')->primary();
             $table->string('username');
+            $table->string('email')->unique();
             $table->string('password');
             $table->integer('role_id');
             $table->string('branch_name');

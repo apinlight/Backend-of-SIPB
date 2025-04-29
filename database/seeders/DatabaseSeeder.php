@@ -22,8 +22,9 @@ class DatabaseSeeder extends Seeder
         User::factory()->admin()->create([
             'unique_id' => 'ADMIN001',
             'username' => 'superadmin',
+            'email' => 'admin@example.com', 
             'password' => 'password',
             'branch_name' => 'Head Office',
-        ]);
+        ])->assignRole('admin');
     }
 }

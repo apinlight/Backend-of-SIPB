@@ -8,16 +8,19 @@ class HashExistingPasswords extends Migration
 {
     public function up()
     {
-        // Fetch all users (adjust the query as needed)
+        // Fetch all users
         $users = DB::table('tb_users')->get();
 
         foreach ($users as $user) {
-            // Only hash if it's not already hashed (you may need a check here)
-            DB::table('tb_users')
-                ->where('unique_id', $user->unique_id)
-                ->update([
-                    'password' => Hash::make($user->password)
-                ]);
+            // Check if the password is not already hashed
+            if (!Hash::check($user->password, $user->password)) {
+                // Hash the password and update the user record
+                DB::table('tb_users')
+                    ->where('unique_id', $user->unique_id)
+                    ->update([
+                        'password' => Hash::make($user->password),
+                    ]);
+            }
         }
     }
 

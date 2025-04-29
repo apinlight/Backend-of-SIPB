@@ -13,7 +13,7 @@ class UserFactory extends Factory
     public function definition()
     {
         return [
-            'unique_id' => $this->faker->unique()->uuid,
+            'unique_id' => (string) Str::ulid(),
             'username' => $this->faker->userName,
             'password' => 'password', // Will be hashed by the model's mutator
             'branch_name' => $this->faker->company,
