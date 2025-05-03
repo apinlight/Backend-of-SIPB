@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
@@ -12,14 +13,14 @@ class UserController extends Controller
     // GET /api/users
     public function index()
     {
-        return response()->json(User::all(), HttpResponse::HTTP_OK);
+        return UserResource::collection(User::all());
     }
 
     // GET /api/users/{unique_id}
     public function show($unique_id)
     {
         $user = User::findOrFail($unique_id);
-        return response()->json($user, HttpResponse::HTTP_OK);
+        return new UserResource($user);
     }    
 
     // POST /api/users
@@ -47,7 +48,7 @@ class UserController extends Controller
 
         $user->assignRole($data['role']);
         
-        return response()->json($user, HttpResponse::HTTP_CREATED);
+        return (new UserResource($user))->response()->setStatusCode(HttpResponse::HTTP_CREATED);
     }
 
     // PUT/PATCH /api/users/{unique_id}
@@ -68,7 +69,7 @@ class UserController extends Controller
             $user->syncRoles([$data['role']]);
         }
 
-        return response()->json($user, HttpResponse::HTTP_OK);
+        return new UserResource($user);
     }
 
     // DELETE /api/users/{unique_id}

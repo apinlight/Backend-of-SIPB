@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\BatasBarangResource;
 use App\Models\BatasBarang;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
@@ -13,7 +14,9 @@ class BatasBarangController extends Controller
     public function index()
     {
         $batas = BatasBarang::all();
-        return response()->json($batas, HttpResponse::HTTP_OK);
+        return BatasBarangResource::collection($batas)
+            ->response()
+            ->setStatusCode(HttpResponse::HTTP_OK);
     }
 
     // POST /api/batas-barang
@@ -25,14 +28,18 @@ class BatasBarangController extends Controller
         ]);
 
         $batas = BatasBarang::create($data);
-        return response()->json($batas, HttpResponse::HTTP_CREATED);
+        return (new BatasBarangResource($batas))
+            ->response()
+            ->setStatusCode(HttpResponse::HTTP_CREATED);
     }
 
     // GET /api/batas-barang/{id_barang}
     public function show($id_barang)
     {
         $batas = BatasBarang::findOrFail($id_barang);
-        return response()->json($batas, HttpResponse::HTTP_OK);
+        return (new BatasBarangResource($batas))
+            ->response()
+            ->setStatusCode(HttpResponse::HTTP_OK);
     }
 
     // PUT/PATCH /api/batas-barang/{id_barang}
@@ -43,7 +50,9 @@ class BatasBarangController extends Controller
             'batas_barang'=> 'sometimes|required|integer|min:0',
         ]);
         $batas->update($data);
-        return response()->json($batas, HttpResponse::HTTP_OK);
+        return (new BatasBarangResource($batas))
+            ->response()
+            ->setStatusCode(HttpResponse::HTTP_OK);
     }
 
     // DELETE /api/batas-barang/{id_barang}
