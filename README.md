@@ -51,9 +51,56 @@ SIPB adalah aplikasi berbasis web untuk mencatat, mengelola, dan mengawasi perge
 
 ---
 
+## ✍️ Cara Setup Proyek (Installation & Environment)
+
+1. **Clone repository:**
+   ```bash
+   git clone https://github.com/apinlight/Backend-of-SIPB.git
+   cd Backend-of-SIPB
+   ```
+2. **Install dependencies:**
+   ```bash
+   composer install
+   ```
+3. **Copy dan atur file enviroment:**
+   ```bash
+   cp .env.example .env
+   ```
+4. **Generate key:**
+   ```bash
+   php artisan key:generate
+   ```
+5. **Konfigurasi `.env`:**
+   * Atur koneksi database:
+     ```bash
+     DB_CONNECTION=mysql
+     DB_HOST=127.0.0.1
+     DB_PORT=3306
+     DB_DATABASE=sipb
+     DB_USERNAME=root
+     DB_PASSWORD=
+     ```
+   * Atur URL frontend untuk CORS:
+     ```bash
+     FRONTEND_URL=http://localhost:5173
+     ```
+6. **Jalankan migrasi dan seeder (opsional):**
+   ```bash
+   php artisan migrate
+   php artisan db:seed
+   ```
+7. **Jalankan server:**
+  ```bash
+  php artisan serve
+  ```
+
+---
+
 ## ✅ Status
 Fitur login/logout, role-based access, dan semua endpoint API utama sudah berjalan dengan baik.
 
 ---
 
+## ℹ️ Catatan
+Untuk saat ini belum tersedia link demo production. Semua pengujian dilakukan di environment development.
 Jika butuh akses demo atau dokumentasi API, bisa hubungi developer.
