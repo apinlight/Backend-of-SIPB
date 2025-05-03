@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\PengajuanResource;
 use App\Models\Pengajuan;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
@@ -13,7 +14,7 @@ class PengajuanController extends Controller
     public function index()
     {
         $pengajuan = Pengajuan::with('user', 'details')->get();
-        return response()->json($pengajuan, HttpResponse::HTTP_OK);
+        return PengajuanResource::collection($pengajuan);
     }
 
     // POST /api/pengajuan
@@ -26,7 +27,9 @@ class PengajuanController extends Controller
         ]);
 
         $pengajuan = Pengajuan::create($data);
-        return response()->json($pengajuan, HttpResponse::HTTP_CREATED);
+        return new PengajuanResource($pengajuan)
+        ->response()
+        ->setStatusCode(HttpResponse::HTTP_CREATED);
     }
 
     // GET /api/pengajuan/{id_pengajuan}
@@ -35,7 +38,9 @@ class PengajuanController extends Controller
         $pengajuan = Pengajuan::with('user', 'details')
             ->where('id_pengajuan', $id_pengajuan)
             ->firstOrFail();
-        return response()->json($pengajuan, HttpResponse::HTTP_OK);
+        return new PengajuanResource($pengajuan)
+            ->response()
+            ->setStatusCode(HttpResponse::HTTP_OK);
     }
 
     // PUT/PATCH /api/pengajuan/{id_pengajuan}
@@ -47,7 +52,9 @@ class PengajuanController extends Controller
         ]);
 
         $pengajuan->update($data);
-        return response()->json($pengajuan, HttpResponse::HTTP_OK);
+        return new PengajuanResource($pengajuan)
+            ->response()
+            ->setStatusCode(HttpResponse::HTTP_OK);
     }
 
     // DELETE /api/pengajuan/{id_pengajuan}

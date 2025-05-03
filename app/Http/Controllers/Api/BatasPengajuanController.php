@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\BatasPengajuanResource;
 use App\Models\BatasPengajuan;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
@@ -13,7 +14,9 @@ class BatasPengajuanController extends Controller
     public function index()
     {
         $batas = BatasPengajuan::all();
-        return response()->json($batas, HttpResponse::HTTP_OK);
+        return BatasPengajuanResource::collection($batas)
+            ->response()
+            ->setStatusCode(HttpResponse::HTTP_OK);
     }
 
     // POST /api/batas-pengajuan
@@ -25,14 +28,18 @@ class BatasPengajuanController extends Controller
         ]);
 
         $batas = BatasPengajuan::create($data);
-        return response()->json($batas, HttpResponse::HTTP_CREATED);
+        return (new BatasPengajuanResource($batas))
+            ->response()
+            ->setStatusCode(HttpResponse::HTTP_CREATED);
     }
 
     // GET /api/batas-pengajuan/{id_barang}
     public function show($id_barang)
     {
         $batas = BatasPengajuan::findOrFail($id_barang);
-        return response()->json($batas, HttpResponse::HTTP_OK);
+        return (new BatasPengajuanResource($batas))
+            ->response()
+            ->setStatusCode(HttpResponse::HTTP_OK);
     }
 
     // PUT/PATCH /api/batas-pengajuan/{id_barang}
@@ -43,7 +50,9 @@ class BatasPengajuanController extends Controller
             'batas_pengajuan'  => 'sometimes|required|integer|min:0',
         ]);
         $batas->update($data);
-        return response()->json($batas, HttpResponse::HTTP_OK);
+        return (new BatasPengajuanResource($batas))
+            ->response()
+            ->setStatusCode(HttpResponse::HTTP_OK);
     }
 
     // DELETE /api/batas-pengajuan/{id_barang}

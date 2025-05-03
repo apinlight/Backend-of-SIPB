@@ -35,7 +35,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/reset-password', [NewPasswordController::class, 'store']);
         Route::get('/verify-email/{id}/{hash}', VerifyEmailController::class);
         Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store']);
-        Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);
+        Route::post('/logout', [LogoutController::class, 'destroy']);
     });
 
     // Route yang Diproteksi Sanctum
@@ -45,6 +45,10 @@ Route::prefix('v1')->group(function () {
 
         // Route Barang
         Route::apiResource('barang', BarangController::class);
+
+        // Route Jenis Barang
+        Route::apiResource('jenis-barang', App\Http\Controllers\Api\JenisBarangController::class);
+
 
         // Route Pengajuan
         Route::apiResource('pengajuan', PengajuanController::class);
@@ -71,3 +75,8 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('batas-pengajuan', BatasPengajuanController::class);
     });
 });
+
+// Tangani semua OPTIONS request (preflight)
+Route::options('{any}', function () {
+    return response()->json([], 204);
+})->where('any', '.*');

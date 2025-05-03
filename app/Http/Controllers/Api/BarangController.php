@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\BarangResource;
 use App\Models\Barang;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
@@ -12,7 +13,7 @@ class BarangController extends Controller
     // GET /api/barang
     public function index()
     {
-        return response()->json(Barang::all(), HttpResponse::HTTP_OK);
+        return BarangResource::collection(Barang::with('jenisBarang')->get());
     }
 
     // POST /api/barang
@@ -26,14 +27,15 @@ class BarangController extends Controller
         ]);
 
         $barang = Barang::create($data);
-        return response()->json($barang, HttpResponse::HTTP_CREATED);
+        $barang->load('jenisBarang');
+        return new BarangResource($barang);
     }
 
     // GET /api/barang/{id_barang}
     public function show($id_barang)
     {
         $barang = Barang::findOrFail($id_barang);
-        return response()->json($barang, HttpResponse::HTTP_OK);
+        return new BarangResource($barang);
     }
 
     // PUT/PATCH /api/barang/{id_barang}
@@ -47,7 +49,8 @@ class BarangController extends Controller
         ]);
 
         $barang->update($data);
-        return response()->json($barang, HttpResponse::HTTP_OK);
+        $barang->load('jenisBarang');
+        return new BarangResource($barang);
     }
 
     // DELETE /api/barang/{id_barang}
