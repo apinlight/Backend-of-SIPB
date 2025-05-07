@@ -19,7 +19,7 @@ class MigrateLegacyRolesToSpatie extends Migration
         foreach ($roleMapping as $legacyId => $roleName) {
             Role::firstOrCreate([
                 'name'       => $roleName,
-                'guard_name' => 'web', // Adjust if using a different guard
+                'guard_name' => 'api', // Adjust if using a different guard
             ]);
         }
 

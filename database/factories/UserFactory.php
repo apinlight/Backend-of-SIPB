@@ -15,6 +15,7 @@ class UserFactory extends Factory
         return [
             'unique_id' => (string) Str::ulid(),
             'username' => $this->faker->userName,
+            'email' => $this->faker->unique()->safeEmail(),
             'password' => 'password', // Will be hashed by the model's mutator
             'branch_name' => $this->faker->company,
         ];

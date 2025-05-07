@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Barang extends Model
 {
+    use HasFactory;
     protected $table = 'tb_barang';
     protected $primaryKey = 'id_barang';
     public $incrementing = false;
@@ -30,5 +32,14 @@ class Barang extends Model
         return $this->belongsToMany(User::class, 'tb_gudang', 'id_barang', 'unique_id')
                     ->using(Gudang::class)
                     ->withPivot('jumlah_barang');
+    }
+
+    protected static function booted()
+    {
+        static::creating(function ($model) {
+            if (empty($model->id_barang)) {
+                $model->id_barang = (string) \Illuminate\Support\Str::ulid();
+            }
+        });
     }
 }

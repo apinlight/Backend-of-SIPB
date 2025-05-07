@@ -42,7 +42,7 @@ return new class extends Migration
                     $table->index($columnNames['team_foreign_key'], 'roles_team_foreign_key_index');
                 }
                 $table->string('name');
-                $table->string('guard_name')->default('web');
+                $table->string('guard_name')->default('api'); //<---- ini dari web ke api
                 $table->timestamps();
                 if ($teams || config('permission.testing')) {
                     $table->unique([$columnNames['team_foreign_key'], 'name', 'guard_name']);

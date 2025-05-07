@@ -35,7 +35,8 @@ Route::prefix('v1')->group(function () {
         Route::post('/reset-password', [NewPasswordController::class, 'store']);
         Route::get('/verify-email/{id}/{hash}', VerifyEmailController::class);
         Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store']);
-        Route::post('/logout', [LogoutController::class, 'destroy']);
+        //Route::post('/logout', [LogoutController::class, 'destroy']);
+        Route::middleware('api')->post('/logout', [LogoutController::class, 'destroy']);
     });
 
     // Route yang Diproteksi Sanctum

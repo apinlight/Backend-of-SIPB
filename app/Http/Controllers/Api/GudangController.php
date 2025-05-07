@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\GudangResource;
 use App\Models\Gudang;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
@@ -13,20 +14,23 @@ class GudangController extends Controller
     public function index()
     {
         $gudang = Gudang::with(['user', 'barang'])->get();
-        return response()->json($gudang, HttpResponse::HTTP_OK);
+        return GudangResource::collection($gudang)
+            ->response()
+            ->setStatusCode(HttpResponse::HTTP_OK);
     }
-
     // POST /api/gudang
     public function store(Request $request)
     {
         $data = $request->validate([
-            'unique_id'    => 'required|string',
-            'id_barang'    => 'required|string',
-            'jumlah_barang'=> 'required|integer|min:0',
+            'unique_id'     => 'required|string',
+            'id_barang'     => 'required|string',
+            'jumlah_barang' => 'required|integer|min:0',
         ]);
-
+    
         $gudang = Gudang::create($data);
-        return response()->json($gudang, HttpResponse::HTTP_CREATED);
+        return (new GudangResource($gudang))
+            ->response()
+            ->setStatusCode(HttpResponse::HTTP_CREATED);
     }
 
     // GET /api/gudang/{unique_id}/{id_barang}
@@ -36,7 +40,10 @@ class GudangController extends Controller
                         ->where('id_barang', $id_barang)
                         ->with(['user', 'barang'])
                         ->firstOrFail();
-        return response()->json($gudang, HttpResponse::HTTP_OK);
+    
+        return (new GudangResource($gudang))
+            ->response()
+            ->setStatusCode(HttpResponse::HTTP_OK);
     }
 
     // PUT/PATCH /api/gudang/{unique_id}/{id_barang}
@@ -45,12 +52,16 @@ class GudangController extends Controller
         $gudang = Gudang::where('unique_id', $unique_id)
                         ->where('id_barang', $id_barang)
                         ->firstOrFail();
+    
         $data = $request->validate([
-            'jumlah_barang'=> 'sometimes|required|integer|min:0',
+            'jumlah_barang' => 'sometimes|required|integer|min:0',
         ]);
-
+    
         $gudang->update($data);
-        return response()->json($gudang, HttpResponse::HTTP_OK);
+    
+        return (new GudangResource($gudang))
+            ->response()
+            ->setStatusCode(HttpResponse::HTTP_OK);
     }
 
     // DELETE /api/gudang/{unique_id}/{id_barang}
@@ -59,6 +70,7 @@ class GudangController extends Controller
         $gudang = Gudang::where('unique_id', $unique_id)
                         ->where('id_barang', $id_barang)
                         ->firstOrFail();
+    
         $gudang->delete();
         return response()->json(null, HttpResponse::HTTP_NO_CONTENT);
     }

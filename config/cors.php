@@ -25,10 +25,10 @@ return [
 
     'allowed_headers' => ['Content-Type', 'X-Requested-With', 'Authorization'],
 
-    'exposed_headers' => [],
+    'exposed_headers' => ['Authorization'],
 
     'max_age' => 0,
 
-    'supports_credentials' => true,
+    'supports_credentials' => false,
 
 ];

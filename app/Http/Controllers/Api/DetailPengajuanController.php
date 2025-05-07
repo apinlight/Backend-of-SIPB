@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\DetailPengajuanResource;
 use App\Models\DetailPengajuan;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
@@ -17,7 +18,9 @@ class DetailPengajuanController extends Controller
     public function index()
     {
         $details = DetailPengajuan::with(['pengajuan', 'barang'])->get();
-        return response()->json($details, HttpResponse::HTTP_OK);
+        return DetailPengajuanResource::collection($details)
+            ->response()
+            ->setStatusCode(HttpResponse::HTTP_OK);
     }
 
     /**
@@ -35,7 +38,9 @@ class DetailPengajuanController extends Controller
         // Create a new record. 
         // (If needed, you can check for duplicates or use updateOrCreate.)
         $detail = DetailPengajuan::create($data);
-        return response()->json($detail, HttpResponse::HTTP_CREATED);
+        return (new DetailPengajuanResource($detail))
+            ->response()
+            ->setStatusCode(HttpResponse::HTTP_CREATED);
     }
 
     /**
@@ -49,7 +54,10 @@ class DetailPengajuanController extends Controller
             ->where('id_barang', $id_barang)
             ->with(['pengajuan', 'barang'])
             ->firstOrFail();
-        return response()->json($detail, HttpResponse::HTTP_OK);
+    
+        return (new DetailPengajuanResource($detail))
+            ->response()
+            ->setStatusCode(HttpResponse::HTTP_OK);
     }
 
     /**

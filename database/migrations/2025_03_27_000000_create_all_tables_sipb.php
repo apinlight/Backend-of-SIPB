@@ -24,18 +24,19 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // tb_jenis_barang Table (for JenisBarang Model)
-        Schema::create('tb_jenis_barang', function (Blueprint $table) {
-            $table->string('id_jenis_barang')->primary();
-            $table->string('nama_jenis_barang');
-            $table->timestamps();
-        });
+        // // tb_jenis_barang Table (for JenisBarang Model)
+        // Schema::create('tb_jenis_barang', function (Blueprint $table) {
+        //     $table->string('id_jenis_barang')->primary();
+        //     $table->string('nama_jenis_barang');
+        //     $table->timestamps();
+        // });
         
         // tb_barang Table (for Barang Model)
         Schema::create('tb_barang', function (Blueprint $table) {
             $table->string('id_barang')->primary();
             $table->string('nama_barang');
             $table->string('id_jenis_barang');
+            $table->integer('harga_barang');
             $table->timestamps();
         });
 
