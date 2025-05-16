@@ -20,7 +20,7 @@ class RoleSeeder extends Seeder
         foreach ($roles as $role) {
             Role::firstOrCreate([
                 'name'       => $role,
-                'guard_name' => 'api',
+                'guard_name' => config('auth.defaults.guard'),
             ]);
         }
     }

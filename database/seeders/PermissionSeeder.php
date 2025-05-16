@@ -42,14 +42,14 @@ class PermissionSeeder extends Seeder
             Permission::firstOrCreate(
                 [
                     'name' => $permission,
-                    'guard_name' => 'api',                    
+                    'guard_name' => config('auth.defaults.guard'),                    
                 ]);
         }
 
         // Roles
-        $admin = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'api']);
-        $manager = Role::firstOrCreate(['name' => 'manager', 'guard_name' => 'api']);
-        $user = Role::firstOrCreate(['name' => 'user', 'guard_name' => 'api']);
+        $admin = Role::firstOrCreate(['name' => 'admin']);
+        $manager = Role::firstOrCreate(['name' => 'manager']);
+        $user = Role::firstOrCreate(['name' => 'user']);
 
         // Assign permissions to roles
         $admin->syncPermissions([

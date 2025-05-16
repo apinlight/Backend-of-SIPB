@@ -1,16 +1,8 @@
 <?php
+// routes/api.php
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
-use App\Http\Controllers\Api\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\Api\Auth\EmailVerificationNotificationController;
-use App\Http\Controllers\Api\Auth\LoginController;
-use App\Http\Controllers\Api\Auth\LogoutController;
-use App\Http\Controllers\Api\Auth\NewPasswordController;
-use App\Http\Controllers\Api\Auth\PasswordResetLinkController;
-use App\Http\Controllers\Api\Auth\RegisteredUserController;
-use App\Http\Controllers\Api\Auth\VerifyEmailController;
-
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\BarangController;
 use App\Http\Controllers\Api\PengajuanController;
@@ -18,66 +10,59 @@ use App\Http\Controllers\Api\GudangController;
 use App\Http\Controllers\Api\BatasBarangController;
 use App\Http\Controllers\Api\BatasPengajuanController;
 use App\Http\Controllers\Api\DetailPengajuanController;
+use App\Http\Controllers\Api\Auth\LogoutController;
 
-//API Versi 1
-Route::prefix('v1')->group(function () {
-    
-    //Route u/ Cek Online
-    Route::get('/online', function () {
-        return response()->json(['message' => 'API is online']);
-    });
+// Health check
+Route::get('v1/online', fn() => response()->json(['message' => 'API is online']));
 
-    // Route u/ Auth
-    Route::prefix('auth')->group(function () {
-        Route::post('/register', [RegisteredUserController::class, 'store']);
-        Route::post('/login', [LoginController::class, 'store']);
-        Route::post('/forgot-password', [PasswordResetLinkController::class, 'store']);
-        Route::post('/reset-password', [NewPasswordController::class, 'store']);
-        Route::get('/verify-email/{id}/{hash}', VerifyEmailController::class);
-        Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store']);
-        //Route::post('/logout', [LogoutController::class, 'destroy']);
-        Route::middleware('api')->post('/logout', [LogoutController::class, 'destroy']);
-    });
+//TEST
+// // Simple test logout route
+// Route::post('v1/test-logout', function (Request $request) {
+//     try {
+//         // Just return a success response without any logout logic
+//         return response()->json(['status' => 'test logout route works'], 200);
+//     } catch (\Exception $e) {
+//         return response()->json(['error' => $e->getMessage()], 500);
+//     }
+// })->middleware('auth:sanctum');
 
-    // Route yang Diproteksi Sanctum
-    Route::middleware('auth:sanctum')->group(function () {
-        // Route Users
+// Handle OPTIONS preflight request for logout specifically
+Route::options('v1/logout', function () {
+    return response()->json([], 200);
+});
+
+Route::post('v1/logout', [LogoutController::class, 'destroy'])
+    ->middleware('web')
+    ->name('api.logout');
+
+// API Version 1: only protected routes
+Route::prefix('v1')
+    ->middleware('auth:sanctum')
+    ->group(function () {
+
+        // Resources
         Route::apiResource('users', UserController::class);
-
-        // Route Barang
         Route::apiResource('barang', BarangController::class);
-
-        // Route Jenis Barang
-        Route::apiResource('jenis-barang', App\Http\Controllers\Api\JenisBarangController::class);
-
-
-        // Route Pengajuan
+        Route::apiResource('jenis-barang', \App\Http\Controllers\Api\JenisBarangController::class);
         Route::apiResource('pengajuan', PengajuanController::class);
+        Route::apiResource('batas-barang', BatasBarangController::class);
+        Route::apiResource('batas-pengajuan', BatasPengajuanController::class);
 
-        // Route DetailPengajuan
+        // DetailPengajuan
         Route::get('detail-pengajuan', [DetailPengajuanController::class, 'index']);
         Route::post('detail-pengajuan', [DetailPengajuanController::class, 'store']);
         Route::get('detail-pengajuan/{id_pengajuan}/{id_barang}', [DetailPengajuanController::class, 'show']);
         Route::put('detail-pengajuan/{id_pengajuan}/{id_barang}', [DetailPengajuanController::class, 'update']);
         Route::delete('detail-pengajuan/{id_pengajuan}/{id_barang}', [DetailPengajuanController::class, 'destroy']);
 
-
-        // Route Gudang
+        // Gudang
         Route::get('gudang', [GudangController::class, 'index']);
         Route::post('gudang', [GudangController::class, 'store']);
         Route::get('gudang/{unique_id}/{id_barang}', [GudangController::class, 'show']);
         Route::put('gudang/{unique_id}/{id_barang}', [GudangController::class, 'update']);
         Route::delete('gudang/{unique_id}/{id_barang}', [GudangController::class, 'destroy']);
-
-        // Route Batas Barang
-        Route::apiResource('batas-barang', BatasBarangController::class);
-
-        // Route Batas Pengajuan
-        Route::apiResource('batas-pengajuan', BatasPengajuanController::class);
     });
-});
 
-// Tangani semua OPTIONS request (preflight)
-Route::options('{any}', function () {
-    return response()->json([], 204);
-})->where('any', '.*');
+// Handle preflight
+Route::options('{any}', fn() => response()->json([], 204))
+     ->where('any', '.*');
