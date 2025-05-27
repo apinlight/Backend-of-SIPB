@@ -10,7 +10,7 @@ class Pengajuan extends Model
     public $incrementing = false;
     // Do not define $primaryKey because it's composite
 
-    protected $fillable = ['id_pengajuan', 'unique_id', 'status_pengajuan'];
+    protected $fillable = ['id_pengajuan', 'unique_id', 'status_pengajuan', 'tipe_pengajuan'];
 
     // A pengajuan belongs to a user
     public function user()

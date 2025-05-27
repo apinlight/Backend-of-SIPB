@@ -8,12 +8,14 @@ use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class LoginController extends Controller
 {
     public function store(LoginRequest $request): JsonResponse
     {
-        $request->authenticate(); // gunakan fungsi built-in yang juga support rate limiting
+        // menggunakan fungsi built-in yang juga support rate limiting (LoginRequest)
+        $request->authenticate(); 
         $user = Auth::user();
 
         DB::table('sessions')
@@ -22,6 +24,9 @@ class LoginController extends Controller
             ->delete();
 
         $request->session()->regenerate();
+
+        Log::info('Session ID: ' . session()->getId());
+        Log::info('User after login: ' . json_encode(Auth::guard('web')->user()));
 
         return response()->json([
             'status' => true,

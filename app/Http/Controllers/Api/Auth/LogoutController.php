@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class LogoutController extends Controller
 {
@@ -13,7 +15,6 @@ class LogoutController extends Controller
     {
         try {
             // Skip Auth::check() to avoid potential memory issues
-            
             // Just invalidate the session and regenerate token
             $request->session()->invalidate();
             $request->session()->regenerateToken();
@@ -23,7 +24,7 @@ class LogoutController extends Controller
                 'message' => 'Logout successful',
             ], 200);
         } catch (\Exception $e) {
-            \Log::error('Logout error: ' . $e->getMessage(), [
+            Log::error('Logout error: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
                 'memory_usage' => memory_get_usage(true),
             ]);

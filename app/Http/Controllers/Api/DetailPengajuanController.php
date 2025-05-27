@@ -17,7 +17,7 @@ class DetailPengajuanController extends Controller
      */
     public function index()
     {
-        $details = DetailPengajuan::with(['pengajuan', 'barang'])->get();
+        $details = DetailPengajuan::with(['pengajuan', 'barang'])->paginate(20);
         return DetailPengajuanResource::collection($details)
             ->response()
             ->setStatusCode(HttpResponse::HTTP_OK);

@@ -22,7 +22,7 @@ class PengajuanPolicy
             return $user->branch_name === $pengajuan->user->branch_name;
         }
 
-        return $user->unique_id === $pengajuan->user_id;
+        return $user->unique_id === $pengajuan->unique_id;
     }
 
     public function create(User $user)
@@ -37,7 +37,7 @@ class PengajuanPolicy
         }
 
         if ($user->hasRole('user')) {
-            return $user->unique_id === $pengajuan->user_id && $pengajuan->status === 'pending';
+            return $user->unique_id === $pengajuan->unique_id && $pengajuan->status === 'pending';
         }
 
         return false;

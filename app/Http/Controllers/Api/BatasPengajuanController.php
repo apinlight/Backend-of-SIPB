@@ -18,7 +18,7 @@ class BatasPengajuanController extends Controller
     {
         $this->authorize('viewAny', BatasPengajuan::class);
 
-        $batas = BatasPengajuan::all();
+        $batas = BatasPengajuan::paginate(20);
         return BatasPengajuanResource::collection($batas)
             ->response()
             ->setStatusCode(HttpResponse::HTTP_OK);

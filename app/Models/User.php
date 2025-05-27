@@ -45,6 +45,12 @@ class User extends Authenticatable
         $this->attributes['password'] = Hash::make($value);
     }
 
+    // Custom method to get the unique identifier for the user
+    public function getAuthIdentifierName()
+{
+    return 'unique_id';
+}
+
     // Automatically generate a ULID for 'unique_id' when creating a new user
     protected static function booted()
     {

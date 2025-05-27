@@ -34,8 +34,8 @@ return [
     'allowed_origins' =>  [
         'https://fe-sipb.crulxproject.com',
         'https://sipb.crulxproject.com',
-        'http://localhost:5173',
-        'http://localhost',
+        'http://127.0.0.2:5173',
+        'http://127.0.0.1',
     ],
 
     'allowed_origins_patterns' => ['/^https:\/\/.*\.crulxproject\.com$/'],

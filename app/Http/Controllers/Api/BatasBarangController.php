@@ -18,7 +18,7 @@ class BatasBarangController extends Controller
     {
         $this->authorize('viewAny', BatasBarang::class);
 
-        $batas = BatasBarang::all();
+        $batas = BatasBarang::paginate(20);
         return BatasBarangResource::collection($batas)
             ->response()
             ->setStatusCode(HttpResponse::HTTP_OK);

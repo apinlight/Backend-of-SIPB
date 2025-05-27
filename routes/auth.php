@@ -10,12 +10,21 @@ use App\Http\Controllers\Api\Auth\VerifyEmailController;
 use App\Http\Controllers\Api\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Api\Auth\LogoutController;
 
+Route::middleware('web')->group(function () {
 // 1) Bootstrap CSRF cookie for SPA
 Route::get('/sanctum/csrf-cookie', [\Laravel\Sanctum\Http\Controllers\CsrfCookieController::class, 'show'])
      ->name('sanctum.csrf-cookie');
 
+Route::post('api/logout', [LogoutController::class, 'destroy'])
+     ->name('api.logout');
+
+// Handle OPTIONS preflight request for logout specifically
+Route::options('api/logout', function () {
+    return response()->json([], 200);
+});    
+
 // 2) Guest-only routes
-Route::prefix('api')->middleware('guest')->group(function () {
+Route::prefix('api')->middleware(['web', 'guest'])->group(function () {
     Route::post('/register', [RegisteredUserController::class, 'store'])->name('register');
     Route::post('/login', [LoginController::class, 'store'])->name('login');
     Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])
@@ -33,6 +42,8 @@ Route::prefix('api')->middleware('guest')->group(function () {
 
 // Options for CORS
 Route::options('/api/login', fn() => response()->json([], 204));
+
+});
 
 // // 3) Authenticated route for logout
 // Route::middleware('auth:sanctum')->group(function () {

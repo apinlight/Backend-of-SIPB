@@ -24,6 +24,9 @@ SIPB adalah aplikasi berbasis web untuk mencatat, mengelola, dan mengawasi perge
 - `Batas Pengajuan` (CRUD)
 
 ### 2. ✍️ Pengajuan
+- Mendukung dua tipe pengajuan:
+  - **Biasa**: Pengajuan yang saat disetujui admin akan mengurangi stok pusat dan menambah stok user.
+  - **Manual**: Pengajuan khusus/eksternal yang hanya dicatat sebagai riwayat, tanpa mempengaruhi stok pusat.
 - **Admin**: approval dan monitoring pengajuan
 - **User**: tambah, edit, dan hapus pengajuan miliknya
 - **Manager**: hanya dapat melihat pengajuan user satu cabang
@@ -82,7 +85,7 @@ SIPB adalah aplikasi berbasis web untuk mencatat, mengelola, dan mengawasi perge
      ```
    * Atur URL frontend untuk CORS:
      ```bash
-     FRONTEND_URL=http://localhost:5173
+     FRONTEND_URL=http://127.0.0.2:5173
      ```
 6. **Jalankan migrasi dan seeder (opsional):**
    ```bash
@@ -103,4 +106,6 @@ Fitur login/logout, role-based access, dan semua endpoint API utama sudah berjal
 
 ## ℹ️ Catatan
 Untuk saat ini belum tersedia link demo production. Semua pengujian dilakukan di environment development.
-Jika butuh akses demo atau dokumentasi API, bisa hubungi developer.
+
+Dokumentasi API tersedia di *dokumentasi-api* atau dapat diakses melalui halaman dokumentasi pada aplikasi.
+

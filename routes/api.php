@@ -15,26 +15,6 @@ use App\Http\Controllers\Api\Auth\LogoutController;
 // Health check
 Route::get('v1/online', fn() => response()->json(['message' => 'API is online']));
 
-//TEST
-// // Simple test logout route
-// Route::post('v1/test-logout', function (Request $request) {
-//     try {
-//         // Just return a success response without any logout logic
-//         return response()->json(['status' => 'test logout route works'], 200);
-//     } catch (\Exception $e) {
-//         return response()->json(['error' => $e->getMessage()], 500);
-//     }
-// })->middleware('auth:sanctum');
-
-// Handle OPTIONS preflight request for logout specifically
-Route::options('v1/logout', function () {
-    return response()->json([], 200);
-});
-
-Route::post('v1/logout', [LogoutController::class, 'destroy'])
-    ->middleware('web')
-    ->name('api.logout');
-
 // API Version 1: only protected routes
 Route::prefix('v1')
     ->middleware('auth:sanctum')

@@ -17,7 +17,7 @@ class JenisBarangController extends Controller
 
     public function index()
     {
-        return JenisBarangResource::collection(JenisBarang::all());
+        return JenisBarangResource::collection(JenisBarang::paginate(20));
     }
 
     public function store(Request $request)

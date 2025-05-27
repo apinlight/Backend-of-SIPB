@@ -13,6 +13,7 @@ class PengajuanResource extends JsonResource
             'id_pengajuan'     => $this->id_pengajuan,
             'unique_id'        => $this->unique_id,
             'status_pengajuan' => $this->status_pengajuan,
+            'tipe_pengajuan'   => $this->tipe_pengajuan,
             'user'             => new UserResource($this->whenLoaded('user')),
             'details'          => DetailPengajuanResource::collection($this->whenLoaded('details')),
             'created_at'       => $this->created_at,

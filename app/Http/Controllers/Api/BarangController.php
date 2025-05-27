@@ -17,8 +17,14 @@ class BarangController extends Controller
     public function index()
     {
         $this->authorize('viewAny', Barang::class);
-        $barang = Barang::with('jenisBarang')->get();
+        $barang = Barang::with('jenisBarang')->paginate(20);
         return BarangResource::collection($barang);
+
+        //debug
+        //$barang = Barang::paginate(20);
+        // $barang = Barang::with('jenisBarang')->first();
+        // return response()->json(['test' => 'ok']);
+        // return response()->json($barang);
     }
 
     // POST /api/barang
@@ -27,7 +33,7 @@ class BarangController extends Controller
         $this->authorize('create', Barang::class);
 
         $data = $request->validate([
-            'id_barang'        => 'required|string',
+            //'id_barang'        => 'required|string',
             'nama_barang'      => 'required|string',
             'id_jenis_barang'  => 'required|string|exists:tb_jenis_barang,id_jenis_barang',
             'harga_barang'     => 'nullable|integer',

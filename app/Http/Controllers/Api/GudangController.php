@@ -13,7 +13,7 @@ class GudangController extends Controller
     // GET /api/gudang
     public function index()
     {
-        $gudang = Gudang::with(['user', 'barang'])->get();
+        $gudang = Gudang::with(['user', 'barang'])->paginate(20);
         return GudangResource::collection($gudang)
             ->response()
             ->setStatusCode(HttpResponse::HTTP_OK);
