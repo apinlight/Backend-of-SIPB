@@ -15,44 +15,58 @@ return [
     |
     */
 
+
     'paths' => [
         'api/*',
         'sanctum/csrf-cookie',
         'login',
-        'logout',
+        'logout', 
         'register',
         'forgot-password',
         'reset-password',
         'email/verification-notification',
         'verify-email/*',
         'api/v1/logout',
+        'profile',
     ],
 
     'allowed_methods' => ['*'],
 
-    //'allowed_origins' => array_map('trim', explode(',', env('FRONTEND_URL'))),
-    'allowed_origins' =>  [
+    'allowed_origins' => [
         'https://fe-sipb.crulxproject.com',
         'https://sipb.crulxproject.com',
         'http://127.0.0.2:5173',
-        'http://127.0.0.1',
+        'http://127.0.0.1:80',
     ],
 
     'allowed_origins_patterns' => ['/^https:\/\/.*\.crulxproject\.com$/'],
 
     'allowed_headers' => [
-        'X-XSRF-TOKEN',
-        'X-CSRF-TOKEN',
-        'Content-Type',
         'Accept',
-        'Authorization',
-        'Origin',
+        'Authorization', 
+        'Content-Type',
         'X-Requested-With',
+        'X-CSRF-TOKEN',
+        'X-XSRF-TOKEN',
+        'Origin',
+        'Cache-Control',
+        'Pragma',
+        'Access-Control-Request-Method',
+        'Access-Control-Request-Headers',
+        'Cookie',
     ],
 
-    'exposed_headers' => [],
+    'exposed_headers' => [
+        'Cache-Control',
+        'Content-Language', 
+        'Content-Type',
+        'Expires',
+        'Last-Modified',
+        'Pragma',
+        'Set-Cookie',
+    ],
 
-    'max_age' => 0,
+    'max_age' => 86400, // 24 hours
 
     'supports_credentials' => true,
 

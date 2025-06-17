@@ -15,7 +15,8 @@ return [
     |
     */
 
-    'stateful' =>explode(',', env('SANCTUM_STATEFUL_DOMAINS', 'localhost')),
+    //'stateful' =>explode(',', env('SANCTUM_STATEFUL_DOMAINS', 'localhost,localhost:5173,127.0.0.1,127.0.0.1:5173,127.0.0.2,127.0.0.2:5173,fe-sipb.crulxproject.com,sipb.crulxproject.com')),
+    'stateful' => [],
 
     /*
     |--------------------------------------------------------------------------
@@ -42,7 +43,8 @@ return [
     |
     */
 
-    'expiration' => 60,
+    //'expiration' => env('SANCTUM_EXPIRATION', null),
+    'expiration' => null,
 
     /*
     |--------------------------------------------------------------------------
