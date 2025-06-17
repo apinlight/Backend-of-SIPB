@@ -8,6 +8,25 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+/**
+ * 
+ *
+ * @property string $id_jenis_barang
+ * @property string $nama_jenis_barang
+ * @property string|null $created_at
+ * @property string|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Barang> $barang
+ * @property-read int|null $barang_count
+ * @method static \Database\Factories\JenisBarangFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|JenisBarang newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|JenisBarang newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|JenisBarang query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|JenisBarang whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|JenisBarang whereIdJenisBarang($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|JenisBarang whereNamaJenisBarang($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|JenisBarang whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class JenisBarang extends Model
 {
     use HasUlids, HasFactory;

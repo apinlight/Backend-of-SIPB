@@ -4,15 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Spatie\Permission\Traits\HasRoles;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable
+
+class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasApiTokens, HasRoles, HasFactory, HasUlids;
+    use HasApiTokens, HasRoles, HasFactory, Notifiable, HasUlids;
     // Specify the table name
     protected $table = 'tb_users';
 
@@ -21,11 +24,11 @@ class User extends Authenticatable
     public $incrementing = false;
     protected $keyType = 'string';
     protected $hidden = ['password'];
-    public $timestamps = false;
+    public $timestamps = true;
 
 
     // Allow mass assignment for these fields (adjust as needed)
-    protected $fillable = ['unique_id', 'username', 'password', 'branch_name'];
+    protected $fillable = ['unique_id', 'username','email', 'password', 'branch_name'];
 
     // A user has many Pengajuan records
     public function pengajuan()

@@ -4,6 +4,23 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * 
+ *
+ * @property string $id_barang
+ * @property int $batas_pengajuan
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Barang $barang
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|BatasPengajuan newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|BatasPengajuan newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|BatasPengajuan query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|BatasPengajuan whereBatasPengajuan($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|BatasPengajuan whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|BatasPengajuan whereIdBarang($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|BatasPengajuan whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class BatasPengajuan extends Model
 {
     // Specify the table name

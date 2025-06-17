@@ -1,67 +1,97 @@
 <?php
 
-// app/Http/Controllers/Api/JenisBarangController.php
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\JenisBarangResource;
 use App\Models\JenisBarang;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response as HttpResponse;
+use Illuminate\Support\Facades\Auth;
 
 class JenisBarangController extends Controller
 {
-    use AuthorizesRequests;
-
-    public function index()
+    public function index(Request $request)
     {
-        return JenisBarangResource::collection(JenisBarang::paginate(20));
+        $query = JenisBarang::query();
+
+        if ($request->filled('search')) {
+            $query->where('nama_jenis_barang', 'like', "%{$request->search}%");
+        }
+
+        $jenisBarang = $query->paginate(15);
+
+        return response()->json([
+            'status' => true,
+            'data' => $jenisBarang->items(),
+            'meta' => [
+                'current_page' => $jenisBarang->currentPage(),
+                'last_page' => $jenisBarang->lastPage(),
+                'total' => $jenisBarang->total(),
+            ]
+        ]);
     }
 
     public function store(Request $request)
     {
-        $this->authorize('create', JenisBarang::class);
+        if (!Auth::user()->hasRole('admin')) {
+            return response()->json(['status' => false, 'message' => 'Only admin can create categories'], 403);
+        }
 
-        $data = $request->validate([
-            'nama_jenis_barang' => 'required|string'
+        $request->validate([
+            'nama_jenis_barang' => 'required|string|max:255|unique:jenis_barang',
+            'deskripsi' => 'nullable|string'
         ]);
 
-        $jenis = JenisBarang::create($data);
-        return new JenisBarangResource($jenis);
+        $jenisBarang = JenisBarang::create($request->all());
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Jenis barang created successfully',
+            'data' => $jenisBarang
+        ]);
     }
 
-    public function show($id)
+    public function update(Request $request, int $id)
     {
-        $jenis = JenisBarang::findOrFail($id);
+        if (!Auth::user()->hasRole('admin')) {
+            return response()->json(['status' => false, 'message' => 'Only admin can update categories'], 403);
+        }
 
-        $this->authorize('view', $jenis);
-
-        return new JenisBarangResource($jenis);
-    }
-
-    public function update(Request $request, $id)
-    {
-        $jenis = JenisBarang::findOrFail($id);
-
-        $this->authorize('update', $jenis);
-
-        $data = $request->validate([
-            'nama_jenis_barang' => 'required|string'
+        $request->validate([
+            'nama_jenis_barang' => 'required|string|max:255|unique:jenis_barang,nama_jenis_barang,' . $id,
+            'deskripsi' => 'nullable|string'
         ]);
 
-        $jenis->update($data);
-        return new JenisBarangResource($jenis);
+        $jenisBarang = JenisBarang::findOrFail($id);
+        $jenisBarang->update($request->all());
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Jenis barang updated successfully',
+            'data' => $jenisBarang
+        ]);
     }
 
-    public function destroy($id)
+    public function destroy(int $id)
     {
-        $jenis = JenisBarang::findOrFail($id);
+        if (!Auth::user()->hasRole('admin')) {
+            return response()->json(['status' => false, 'message' => 'Only admin can delete categories'], 403);
+        }
 
-        $this->authorize('delete', $jenis);
+        $jenisBarang = JenisBarang::findOrFail($id);
         
-        $jenis->delete();
-        return response()->json(null, HttpResponse::HTTP_NO_CONTENT);
+        // Check if jenis barang is being used
+        if ($jenisBarang->barang()->exists()) {
+            return response()->json([
+                'status' => false, 
+                'message' => 'Cannot delete category that has items'
+            ], 400);
+        }
+
+        $jenisBarang->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Jenis barang deleted successfully'
+        ]);
     }
 }
