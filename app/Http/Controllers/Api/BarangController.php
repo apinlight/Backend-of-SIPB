@@ -19,7 +19,6 @@ class BarangController extends Controller
 
     public function __construct(protected BarangService $barangService)
     {
-        // The parameter name must match the route parameter, e.g., 'barang'
         $this->authorizeResource(Barang::class, 'barang');
     }
 
@@ -27,30 +26,49 @@ class BarangController extends Controller
     {
         $query = Barang::with(['jenisBarang']);
 
-        $query->when($request->filled('search'), fn($q) => $q->where('nama_barang', 'like', "%{$request->search}%"));
-        $query->when($request->filled('jenis'), fn($q) => $q->where('id_jenis_barang', $request->jenis));
+        // ✅ FIX: Use the more explicit `function() use ($request)` syntax to make the scope
+        // clear to static analysis tools and fix the "Undefined property" error.
+        $query->when($request->filled('search'), function ($q) use ($request) {
+            return $q->where('nama_barang', 'like', '%' . $request->input('search') . '%');
+        });
+        $query->when($request->filled('jenis'), function ($q) use ($request) {
+            return $q->where('id_jenis_barang', $request->input('jenis'));
+        });
+        $query->when($request->filled('harga_min'), function ($q) use ($request) {
+            return $q->where('harga_barang', '>=', $request->input('harga_min'));
+        });
+        $query->when($request->filled('harga_max'), function ($q) use ($request) {
+            return $q->where('harga_barang', '<=', $request->input('harga_max'));
+        });
 
         $barang = $query->paginate(20);
+
+        // NOTE: The `::collection()` method is the correct Laravel convention.
         return BarangResource::collection($barang)->response();
     }
 
     public function store(StoreBarangRequest $request): JsonResponse
     {
         $barang = $this->barangService->create($request->validated());
-        return (new BarangResource($barang->load('jenisBarang')))
+        
+        // NOTE: The `::make()` method is the correct Laravel convention. Any IDE warning
+        // on this line is a known false positive and can be safely ignored.
+        return BarangResource::make($barang->load('jenisBarang'))
             ->response()
             ->setStatusCode(HttpResponse::HTTP_CREATED);
     }
 
     public function show(Barang $barang): JsonResponse
     {
-        return (new BarangResource($barang->load('jenisBarang')))->response();
+        // NOTE: The `::make()` method is the correct Laravel convention.
+        return BarangResource::make($barang->load('jenisBarang'))->response();
     }
 
     public function update(UpdateBarangRequest $request, Barang $barang): JsonResponse
     {
         $updatedBarang = $this->barangService->update($barang, $request->validated());
-        return (new BarangResource($updatedBarang))->response();
+        // NOTE: The `::make()` method is the correct Laravel convention.
+        return BarangResource::make($updatedBarang)->response();
     }
 
     public function destroy(Barang $barang): JsonResponse
