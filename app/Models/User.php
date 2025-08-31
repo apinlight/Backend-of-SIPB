@@ -12,7 +12,9 @@ use Illuminate\Support\Str;
 use Spatie\Permission\Traits\HasRoles;
 use Laravel\Sanctum\HasApiTokens;
 
-
+/**
+ * @property-read \Laravel\Sanctum\PersonalAccessToken|null $currentAccessToken
+ */
 class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasRoles, HasFactory, Notifiable, HasUlids;

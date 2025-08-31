@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
-use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthService
 {
@@ -20,23 +19,15 @@ class AuthService
         $user = User::with('roles')->where($loginType, $credentials['login'])->first();
 
         if (!$user || !Hash::check($credentials['password'], $user->password)) {
-            throw ValidationException::withMessages([
-                'login' => ['The provided credentials are incorrect.'],
-            ]);
+            throw ValidationException::withMessages(['login' => ['The provided credentials are incorrect.']]);
         }
-
         if (isset($user->is_active) && !$user->is_active) {
-            throw ValidationException::withMessages([
-                'login' => ['Account is deactivated. Please contact an administrator.'],
-            ]);
+            throw ValidationException::withMessages(['login' => ['Account is deactivated. Please contact an administrator.']]);
         }
-
         if (config('auth.single_session', false)) {
             $user->tokens()->delete();
         }
-
         $user->update(['last_login_at' => now(), 'last_login_ip' => $ip]);
-
         return $this->createTokenResponse($user);
     }
 
@@ -46,44 +37,39 @@ class AuthService
             'unique_id'   => $data['unique_id'],
             'username'    => $data['username'],
             'email'       => $data['email'],
-            'password'    => Hash::make($data['password']),
+            // ✅ FIX: No need to manually Hash::make(). The model's mutator handles it.
+            'password'    => $data['password'], 
             'branch_name' => $data['branch_name'],
             'is_active'   => true,
         ]);
 
         $user->assignRole('user');
         $user->load('roles');
-
         return $this->createTokenResponse($user);
     }
 
     public function refreshToken(User $user): array
     {
         if (isset($user->is_active) && !$user->is_active) {
-            // ✅ FIX: Check if the token exists before trying to delete it.
-            if ($token = $user->currentAccessToken()) {
+            if ($token = $user->currentAccessToken) {
                 $token->delete();
             }
             throw new \Exception('Account is deactivated.');
         }
 
-        // ✅ FIX: Be more defensive. Get the token, check it, then delete it.
-        if ($token = $user->currentAccessToken()) {
+        if ($token = $user->currentAccessToken) {
             $token->delete();
         }
-        
         return $this->createTokenResponse($user->fresh('roles'));
     }
 
     public function changePassword(User $user, array $passwords): void
     {
         if (!Hash::check($passwords['current_password'], $user->password)) {
-            throw ValidationException::withMessages([
-                'current_password' => ['The provided password does not match your current password.'],
-            ]);
+            throw ValidationException::withMessages(['current_password' => ['The provided password does not match your current password.']]);
         }
-
-        $user->update(['password' => Hash::make($passwords['new_password'])]);
+        // ✅ FIX: No need to manually Hash::make(). The model's mutator handles it.
+        $user->update(['password' => $passwords['new_password']]);
         $user->tokens()->delete();
     }
 
@@ -92,7 +78,6 @@ class AuthService
         $expiryMinutes = $this->getTokenExpiryMinutes();
         $expiry = now()->addMinutes($expiryMinutes);
         $token = $user->createToken('auth-token', ['*'], $expiry)->plainTextToken;
-
         return [
             'user'       => $user,
             'token'      => $token,
