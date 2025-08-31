@@ -1,15 +1,15 @@
 <?php
+// app/Models/DetailPengajuan.php
 
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 
- *
  * @property string $id_pengajuan
  * @property string $id_barang
  * @property int $jumlah
+ * @property string|null $keterangan
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Barang $barang
@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DetailPengajuan whereIdBarang($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DetailPengajuan whereIdPengajuan($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DetailPengajuan whereJumlah($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DetailPengajuan whereKeterangan($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DetailPengajuan whereUpdatedAt($value)
  * @mixin \Eloquent
  */
@@ -30,8 +31,8 @@ class DetailPengajuan extends Model
     protected $primaryKey = null;
     public $incrementing = false;
     
-    // Composite key: id_pengajuan and id_barang
-    protected $fillable = ['id_pengajuan', 'id_barang', 'jumlah'];
+    // ✅ ADD keterangan to fillable
+    protected $fillable = ['id_pengajuan', 'id_barang', 'jumlah', 'keterangan'];
 
     // Belongs to a Pengajuan
     public function pengajuan()

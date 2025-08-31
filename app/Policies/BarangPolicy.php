@@ -1,5 +1,5 @@
 <?php
-
+// app/Policies/BarangPolicy.php
 namespace App\Policies;
 
 use App\Models\User;
@@ -9,12 +9,14 @@ class BarangPolicy
 {
     public function viewAny(User $user)
     {
-        return $user->hasRole(['admin', 'manager']);
+        // ✅ FIX: All users can view barang (for pengajuan creation)
+        return $user->hasAnyRole(['admin', 'manager', 'user']);
     }
 
     public function view(User $user, Barang $barang)
     {
-        return $user->hasRole(['admin', 'manager']);
+        // ✅ FIX: All users can view individual barang
+        return $user->hasAnyRole(['admin', 'manager', 'user']);
     }
 
     public function create(User $user)
@@ -28,6 +30,12 @@ class BarangPolicy
     }
 
     public function delete(User $user, Barang $barang)
+    {
+        return $user->hasRole('admin');
+    }
+
+    // ✅ ADD: Manage policy for admin operations
+    public function manage(User $user)
     {
         return $user->hasRole('admin');
     }

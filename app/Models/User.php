@@ -50,10 +50,14 @@ class User extends Authenticatable implements MustVerifyEmail
 
     // Custom method to get the unique identifier for the user
     public function getAuthIdentifierName()
-{
-    return 'unique_id';
-}
+    {
+        return 'unique_id';
+    }
 
+    public function penggunaanBarang()
+    {
+        return $this->hasMany(PenggunaanBarang::class, 'unique_id', 'unique_id');
+    }
     // Automatically generate a ULID for 'unique_id' when creating a new user
     protected static function booted()
     {

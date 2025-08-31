@@ -1,9 +1,8 @@
 <?php
-
+// app/Policies/GudangPolicy.php
 namespace App\Policies;
 
 use App\Models\User;
-use App\Models\Barang;
 use App\Models\Gudang;
 
 class GudangPolicy
@@ -13,17 +12,36 @@ class GudangPolicy
         return $user->hasAnyRole(['admin', 'manager', 'user']);
     }
 
-    public function view(User $user, User $targetUser)
+    // ✅ FIX: Correct parameter type and logic
+    public function view(User $user, Gudang $gudang)
     {
         if ($user->hasRole('admin')) {
-            return true;
+            return true; // Admin can view all gudang
         }
-
+        
         if ($user->hasRole('manager')) {
-            return $user->branch_name === $targetUser->branch_name;
+            // Manager can view gudang from same branch
+            return $user->branch_name === $gudang->user->branch_name;
         }
+        
+        // User can only view their own gudang
+        return $user->unique_id === $gudang->unique_id;
+    }
 
-        return $user->unique_id === $targetUser->unique_id;
+    // ✅ ADD: Scope-based viewing policies
+    public function viewOwn(User $user)
+    {
+        return $user->hasAnyRole(['admin', 'manager', 'user']);
+    }
+
+    public function viewBranch(User $user)
+    {
+        return $user->hasAnyRole(['admin', 'manager']);
+    }
+
+    public function viewAll(User $user)
+    {
+        return $user->hasRole('admin');
     }
 
     public function create(User $user)
@@ -37,6 +55,12 @@ class GudangPolicy
     }
 
     public function delete(User $user, Gudang $gudang)
+    {
+        return $user->hasRole('admin');
+    }
+
+    // ✅ ADD: Manual entry policy
+    public function createManual(User $user)
     {
         return $user->hasRole('admin');
     }

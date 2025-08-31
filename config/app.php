@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Laravel'),
+    'name' => env('APP_NAME', 'SIPB'),
 
     /*
     |--------------------------------------------------------------------------
@@ -52,7 +52,7 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost'),
+    'url' => env('APP_URL', 'https://sipb.crulxproject.com'),
 
     /*
     |--------------------------------------------------------------------------
@@ -65,7 +65,7 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => env('APP_TIMEZONE', 'Asia/Jakarta'),
 
     /*
     |--------------------------------------------------------------------------
@@ -78,11 +78,11 @@ return [
     |
     */
 
-    'locale' => env('APP_LOCALE', 'en'),
+    'locale' => env('APP_LOCALE', 'id'),
 
     'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
 
-    'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
+    'faker_locale' => env('APP_FAKER_LOCALE', 'id_ID'),
 
     /*
     |--------------------------------------------------------------------------
@@ -123,4 +123,14 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+
+    // CUSTOM AUTH SETTINGS
+    'allow_registration' => env('ALLOW_REGISTRATION', false),
+    'single_session' => env('SINGLE_SESSION_PER_USER', false),
+    'max_login_attempts' => env('MAX_LOGIN_ATTEMPTS', 5),
+    'lockout_duration' => env('LOCKOUT_DURATION_MINUTES', 15),
+    
+    // TOKEN SETTINGS
+    'token_expiry_hours' => env('TOKEN_EXPIRY_HOURS', 24),
+    'refresh_token_before_minutes' => env('REFRESH_TOKEN_BEFORE_MINUTES', 60),
 ];

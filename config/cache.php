@@ -1,5 +1,6 @@
 <?php
 
+// config/cache.php - REDIS FOR CACHING ONLY
 use Illuminate\Support\Str;
 
 return [
@@ -15,7 +16,7 @@ return [
     |
     */
 
-    'default' => env('CACHE_STORE', 'database'),
+    'default' => env('CACHE_STORE', 'file'),
 
     /*
     |--------------------------------------------------------------------------
@@ -38,12 +39,14 @@ return [
             'serialize' => false,
         ],
 
+        // ✅ Database cache store (fallback)
         'database' => [
             'driver' => 'database',
             'connection' => env('DB_CACHE_CONNECTION'),
             'table' => env('DB_CACHE_TABLE', 'cache'),
             'lock_connection' => env('DB_CACHE_LOCK_CONNECTION'),
             'lock_table' => env('DB_CACHE_LOCK_TABLE'),
+            'serialize' => true,
         ],
 
         'file' => [
@@ -71,6 +74,7 @@ return [
             ],
         ],
 
+        // ✅ Redis cache store (primary)
         'redis' => [
             'driver' => 'redis',
             'connection' => env('REDIS_CACHE_CONNECTION', 'cache'),
@@ -90,6 +94,26 @@ return [
             'driver' => 'octane',
         ],
 
+        // ✅ API-specific cache store
+        'api' => [
+            'driver' => 'redis',
+            'connection' => env('REDIS_CACHE_CONNECTION', 'cache'),
+            'prefix' => 'api_cache',
+        ],
+
+        // // ✅ User session cache
+        // 'user_sessions' => [
+        //     'driver' => 'redis',
+        //     'connection' => 'session',
+        //     'prefix' => 'user_sessions',
+        // ],
+
+        // ✅ Token cache for rate limiting
+        'tokens' => [
+            'driver' => 'redis',
+            'connection' => 'cache',
+            'prefix' => 'token_cache',
+        ],
     ],
 
     /*
@@ -103,6 +127,6 @@ return [
     |
     */
 
-    'prefix' => env('CACHE_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_cache_'),
+    'prefix' => env('CACHE_PREFIX', Str::slug(env('APP_NAME', 'sipb'), '_').'_cache_'),
 
 ];

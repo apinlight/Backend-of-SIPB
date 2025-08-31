@@ -1,4 +1,5 @@
 <?php
+// database/seeders/DatabaseSeeder.php
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
@@ -10,13 +11,18 @@ class DatabaseSeeder extends Seeder
 {
     public function run()
     {
-        // Seed roles
+        // ✅ 1. Seed roles and permissions first
         $this->call([
             RoleSeeder::class,
             PermissionSeeder::class,
         ]);
 
-        // Admin
+        // ✅ 2. Seed global settings
+        $this->call([
+            GlobalSettingSeeder::class,
+        ]);
+
+        // ✅ 3. Create admin user
         if (!User::where('unique_id', 'ADMIN001')->exists()) {
             User::factory()->create([
                 'unique_id' => 'ADMIN001',
@@ -27,18 +33,7 @@ class DatabaseSeeder extends Seeder
             ])->assignRole('admin');
         }
 
-        // User 1
-        if (!User::where('unique_id', 'USER001')->exists()) {
-            User::factory()->create([
-                'unique_id' => 'USER001',
-                'username' => 'superuser',
-                'email' => 'user@example.com',
-                'password' => 'password',
-                'branch_name' => 'South Branch',
-            ])->assignRole('user');
-        }
-
-        // Manager 1
+        // ✅ 4. Create manager user
         if (!User::where('unique_id', 'MANAGER001')->exists()) {
             User::factory()->create([
                 'unique_id' => 'MANAGER001',
@@ -49,21 +44,49 @@ class DatabaseSeeder extends Seeder
             ])->assignRole('manager');
         }
 
-        // 5 user biasa
-        User::factory(5)->create()->each(function($user)
-        {
+        // ✅ 5. Create regular user
+        if (!User::where('unique_id', 'USER001')->exists()) {
+            User::factory()->create([
+                'unique_id' => 'USER001',
+                'username' => 'superuser',
+                'email' => 'user@example.com',
+                'password' => 'password',
+                'branch_name' => 'South Branch',
+            ])->assignRole('user');
+        }
+
+        // ✅ 6. Create additional test users
+        User::factory(5)->create()->each(function($user) {
             $user->assignRole('user');
         });
 
-        // 3 jenis barang
-        JenisBarang::factory(3)->create();
+        // ✅ 7. Create jenis barang
+        JenisBarang::factory(5)->create(); // Increased to 5 for more variety
 
-        // Barang untuk setiap jenis barang
+        // ✅ 8. Create barang for each jenis
         JenisBarang::all()->each(function ($jenis) {
-            Barang::factory(5)->create([
+            Barang::factory(4)->create([ // Reduced to 4 per jenis for cleaner data
                 'id_jenis_barang' => $jenis->id_jenis_barang,
                 'harga_barang' => rand(10000, 500000),
             ]);
         });
+
+        // ✅ 9. Seed batas barang
+        $this->call([
+            BatasBarangSeeder::class,
+        ]);
+
+        // ✅ 10. Seed sample transactional data (optional - for testing)
+        if (app()->environment(['local', 'testing'])) {
+            $this->call([
+                SampleDataSeeder::class,
+            ]);
+        }
+
+        $this->command->info('🎯 Database seeding completed successfully!');
+        $this->command->info('📋 Default credentials:');
+        $this->command->info('   Admin: admin@example.com / password');
+        $this->command->info('   Manager: manager@example.com / password');  
+        $this->command->info('   User: user@example.com / password');
     }
 }

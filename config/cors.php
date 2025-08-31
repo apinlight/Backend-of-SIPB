@@ -35,15 +35,28 @@ return [
     'allowed_origins' => [
         'https://fe-sipb.crulxproject.com',
         'https://sipb.crulxproject.com',
-        'http://127.0.0.2:5173',
-        'http://127.0.0.1:80',
+        'https://www.sipb.crulxproject.com',
+        // ✅ CONDITIONAL: Only allow local development in non-production
+        ...env('APP_ENV', 'production') !== 'production' ? [
+            'http://127.0.0.2:5173',
+            'http://127.0.0.1:5173',
+            'http://localhost:5173',
+            'http://127.0.0.1:80',
+            'http://localhost:80',
+        ] : [],
     ],
 
-    'allowed_origins_patterns' => ['/^https:\/\/.*\.crulxproject\.com$/'],
+    'allowed_origins_patterns' => [
+        '/^https:\/\/.*\.crulxproject\.com$/',
+        ...env('APP_ENV', 'production') !== 'production' ? [
+            '/^http:\/\/127\.0\.0\.[0-9]+:[0-9]+$/',
+            '/^http:\/\/localhost:[0-9]+$/',
+        ] : [],
+    ],
 
     'allowed_headers' => [
         'Accept',
-        'Authorization', 
+        'Authorization',
         'Content-Type',
         'X-Requested-With',
         'X-CSRF-TOKEN',
@@ -54,17 +67,33 @@ return [
         'Access-Control-Request-Method',
         'Access-Control-Request-Headers',
         'Cookie',
+        // ✅ API versioning headers
+        'X-API-Version',
+        'X-Client-Version',
+        'User-Agent',
+        'Accept-Language',
+        'Accept-Encoding',
+        'Connection',
+        'Host',
+        'Referer',
     ],
 
     'exposed_headers' => [
         'Cache-Control',
-        'Content-Language', 
+        'Content-Language',
         'Content-Type',
         'Expires',
         'Last-Modified',
         'Pragma',
         'Set-Cookie',
+        // ✅ API response headers
+        'X-RateLimit-Limit',
+        'X-RateLimit-Remaining',
+        'X-RateLimit-Reset',
+        'X-API-Version',
+        'X-Request-ID',
     ],
+
 
     'max_age' => 86400, // 24 hours
 

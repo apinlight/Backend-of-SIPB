@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../frontend/SIPB-FrontSide-main"
+		}
+	],
+	"settings": {}
+}

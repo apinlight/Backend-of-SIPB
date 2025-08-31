@@ -1,37 +1,68 @@
 <?php
-// routes/auth.php
 
 use App\Http\Controllers\Api\Auth\TokenAuthController;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Api\Auth\NewPasswordController;
-use App\Http\Controllers\Api\Auth\VerifyEmailController;
-use App\Http\Controllers\Api\Auth\EmailVerificationNotificationController;
+use Illuminate\Support\Facades\Route;
 
-// // 1) Bootstrap CSRF cookie for SPA
-// Route::get('/sanctum/csrf-cookie', [\Laravel\Sanctum\Http\Controllers\CsrfCookieController::class, 'show'])
-//      ->name('sanctum.csrf-cookie');
+// ✅ PUBLIC AUTH ROUTES - No authentication required (STATELESS)
+Route::prefix('api')
+    ->middleware(['api.public', 'api.rate_limit:5,1']) // ✅ 5 attempts per minute for auth
+    ->group(function () {
+        
+        // ✅ Guest routes (no auth required)
+        Route::post('/register', [TokenAuthController::class, 'register'])
+            ->name('register');
+        
+        Route::post('/login', [TokenAuthController::class, 'login'])
+            ->name('login');
+        
+        Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])
+            ->name('password.email');
+        
+        Route::post('/reset-password', [NewPasswordController::class, 'store'])
+            ->name('password.update');
+    });
 
-// 2) Guest-only routes
-Route::prefix('api')->group(function () {
-    Route::post('/register', [TokenAuthController::class, 'register'])->name('register');
-    Route::post('/login', [TokenAuthController::class, 'login'])->name('login');
-    Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])
-         ->name('password.email');
-    Route::post('/reset-password', [NewPasswordController::class, 'store'])
-         ->name('password.update');
+// ✅ PROTECTED AUTH ROUTES - Authentication required (STATELESS)
+Route::prefix('api')
+    ->middleware(['api.protected', 'api.rate_limit:30,1']) // ✅ 30 requests per minute for authenticated
+    ->group(function () {
+        
+        // ✅ Token management
+        Route::post('/refresh-token', [TokenAuthController::class, 'refresh'])
+            ->name('token.refresh');
+        
+        Route::post('/logout', [TokenAuthController::class, 'logout'])
+            ->name('logout');
+        
+        Route::post('/logout-all', [TokenAuthController::class, 'logoutAll'])
+            ->name('logout.all');
+        
+        // ✅ User info and profile
+        Route::get('/me', [TokenAuthController::class, 'me'])
+            ->name('auth.me');
+        
+        Route::post('/validate-token', [TokenAuthController::class, 'validateToken'])
+            ->name('token.validate');
+        
+        // ✅ Password management (more restrictive)
+        Route::post('/change-password', [TokenAuthController::class, 'changePassword'])
+            ->middleware('api.rate_limit:3,5') // ✅ Only 3 password changes per 5 minutes
+            ->name('password.change');
+        
+        // ✅ Session management (stateless tokens)
+        Route::get('/sessions', [TokenAuthController::class, 'activeSessions'])
+            ->name('auth.sessions');
+        
+        Route::delete('/sessions/{tokenId}', [TokenAuthController::class, 'revokeSession'])
+            ->name('auth.revoke-session');
+        
+        Route::delete('/sessions/expired', [TokenAuthController::class, 'cleanExpiredTokens'])
+            ->name('auth.clean-expired');
+    });
 
-    Route::get('/verify-email/{id}/{hash}', VerifyEmailController::class)
-         ->middleware(['signed', 'throttle:6,1'])
-         ->name('verification.verify');
-    Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
-         ->middleware('throttle:6,1')
-         ->name('verification.send');
-});
-
-// // Options for CORS
-// Route::options('/api/login', fn() => response()->json([], 204));
-// Route::options('/api/register', fn() => response()->json([], 204));
-// Route::options('/api/forgot-password', fn() => response()->json([], 204));
-// Route::options('/api/reset-password', fn() => response()->json([], 204));
+// ✅ CORS preflight for SPA (STATELESS)
+Route::options('/api/{any}', fn() => response('', 204))
+    ->where('any', '.*')
+    ->middleware('cors.custom');

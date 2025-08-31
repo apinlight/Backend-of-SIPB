@@ -1,45 +1,64 @@
 <?php
-
+// app/Providers/AuthServiceProvider.php
 namespace App\Providers;
 
-use App\Models\User;
-use App\Models\Pengajuan;
-use App\Models\Gudang;
-use App\Models\Barang;
-use App\Models\JenisBarang;
-use App\Models\BatasBarang;
-use App\Models\BatasPengajuan;
-
-use App\Policies\UserPolicy;
-use App\Policies\PengajuanPolicy;
-use App\Policies\GudangPolicy;
-use App\Policies\BarangPolicy;
-use App\Policies\JenisBarangPolicy;
-use App\Policies\BatasBarangPolicy;
-use App\Policies\BatasPengajuanPolicy;
-
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Gate;
 
 class AuthServiceProvider extends ServiceProvider
 {
-    /**
-     * The policy mappings for the application.
-     */
     protected $policies = [
-        User::class => UserPolicy::class,
-        Pengajuan::class => PengajuanPolicy::class,
-        Gudang::class => GudangPolicy::class,
-        Barang::class => BarangPolicy::class,
-        JenisBarang::class => JenisBarangPolicy::class,
-        BatasBarang::class => BatasBarangPolicy::class,
-        BatasPengajuan::class => BatasPengajuanPolicy::class,
+        // ✅ UPDATE: Register all policies
+        \App\Models\User::class => \App\Policies\UserPolicy::class,
+        \App\Models\Barang::class => \App\Policies\BarangPolicy::class,
+        \App\Models\JenisBarang::class => \App\Policies\JenisBarangPolicy::class,
+        \App\Models\BatasBarang::class => \App\Policies\BatasBarangPolicy::class,
+        \App\Models\Pengajuan::class => \App\Policies\PengajuanPolicy::class,
+        \App\Models\Gudang::class => \App\Policies\GudangPolicy::class,
+        \App\Models\GlobalSetting::class => \App\Policies\GlobalSettingPolicy::class, // ✅ NEW
+        // ❌ REMOVE: \App\Models\BatasPengajuan::class => \App\Policies\BatasPengajuanPolicy::class,
     ];
 
-    /**
-     * Register any authentication / authorization services.
-     */
     public function boot(): void
     {
         $this->registerPolicies();
+        
+        // ✅ ADD: Additional gate definitions for complex permissions
+        Gate::define('manage-system', function ($user) {
+            return $user->hasRole('admin');
+        });
+
+        Gate::define('view-reports', function ($user) {
+            return $user->hasAnyRole(['admin', 'manager']);
+        });
+
+        Gate::define('export-data', function ($user) {
+            return $user->hasAnyRole(['admin', 'manager']);
+        });
+
+        Gate::define('approve-pengajuan', function ($user) {
+            return $user->hasRole('admin');
+        });
+
+        // ✅ ADD: Branch-specific gates
+        Gate::define('view-branch-data', function ($user, $branchName = null) {
+            if ($user->hasRole('admin')) {
+                return true;
+            }
+            
+            if ($user->hasRole('manager')) {
+                return $branchName ? $user->branch_name === $branchName : true;
+            }
+            
+            return false;
+        });
+
+        Gate::define('view-own-data', function ($user, $uniqueId = null) {
+            if ($user->hasRole('admin')) {
+                return true;
+            }
+            
+            return $uniqueId ? $user->unique_id === $uniqueId : true;
+        });
     }
 }

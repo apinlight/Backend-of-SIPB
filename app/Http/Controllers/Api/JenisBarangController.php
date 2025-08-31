@@ -3,95 +3,115 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\JenisBarangResource;
 use App\Models\JenisBarang;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class JenisBarangController extends Controller
 {
+    use AuthorizesRequests;
+
     public function index(Request $request)
     {
+        // ✅ All authenticated users can view jenis barang
+        $this->authorize('viewAny', JenisBarang::class);
+        
         $query = JenisBarang::query();
 
+        // ✅ Apply filters
         if ($request->filled('search')) {
             $query->where('nama_jenis_barang', 'like', "%{$request->search}%");
         }
 
-        $jenisBarang = $query->paginate(15);
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->status === 'active');
+        }
 
-        return response()->json([
-            'status' => true,
-            'data' => $jenisBarang->items(),
-            'meta' => [
-                'current_page' => $jenisBarang->currentPage(),
-                'last_page' => $jenisBarang->lastPage(),
-                'total' => $jenisBarang->total(),
-            ]
-        ]);
+        $jenisBarang = $query->paginate(20);
+        return JenisBarangResource::collection($jenisBarang);
     }
 
     public function store(Request $request)
     {
-        if (!Auth::user()->hasRole('admin')) {
-            return response()->json(['status' => false, 'message' => 'Only admin can create categories'], 403);
-        }
-
-        $request->validate([
-            'nama_jenis_barang' => 'required|string|max:255|unique:jenis_barang',
-            'deskripsi' => 'nullable|string'
-        ]);
-
-        $jenisBarang = JenisBarang::create($request->all());
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Jenis barang created successfully',
-            'data' => $jenisBarang
-        ]);
-    }
-
-    public function update(Request $request, int $id)
-    {
-        if (!Auth::user()->hasRole('admin')) {
-            return response()->json(['status' => false, 'message' => 'Only admin can update categories'], 403);
-        }
-
-        $request->validate([
-            'nama_jenis_barang' => 'required|string|max:255|unique:jenis_barang,nama_jenis_barang,' . $id,
-            'deskripsi' => 'nullable|string'
-        ]);
-
-        $jenisBarang = JenisBarang::findOrFail($id);
-        $jenisBarang->update($request->all());
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Jenis barang updated successfully',
-            'data' => $jenisBarang
-        ]);
-    }
-
-    public function destroy(int $id)
-    {
-        if (!Auth::user()->hasRole('admin')) {
-            return response()->json(['status' => false, 'message' => 'Only admin can delete categories'], 403);
-        }
-
-        $jenisBarang = JenisBarang::findOrFail($id);
+        // ✅ Only admin can create jenis barang
+        $this->authorize('create', JenisBarang::class);
         
-        // Check if jenis barang is being used
-        if ($jenisBarang->barang()->exists()) {
+        $data = $request->validate([
+            'id_jenis_barang'   => 'required|string|unique:tb_jenis_barang,id_jenis_barang',
+            'nama_jenis_barang' => 'required|string|max:255|unique:tb_jenis_barang,nama_jenis_barang',
+            'deskripsi'         => 'nullable|string|max:1000',
+            'is_active'         => 'sometimes|boolean',
+        ]);
+
+        $data['is_active'] = $data['is_active'] ?? true;
+
+        $jenisBarang = JenisBarang::create($data);
+        return (new JenisBarangResource($jenisBarang))
+            ->response()
+            ->setStatusCode(HttpResponse::HTTP_CREATED);
+    }
+
+    public function show($id_jenis_barang)
+    {
+        $jenisBarang = JenisBarang::where('id_jenis_barang', $id_jenis_barang)->firstOrFail();
+        $this->authorize('view', $jenisBarang);
+        
+        return new JenisBarangResource($jenisBarang);
+    }
+
+    public function update(Request $request, $id_jenis_barang)
+    {
+        $jenisBarang = JenisBarang::where('id_jenis_barang', $id_jenis_barang)->firstOrFail();
+        $this->authorize('update', $jenisBarang);
+
+        $data = $request->validate([
+            'nama_jenis_barang' => 'sometimes|required|string|max:255|unique:tb_jenis_barang,nama_jenis_barang,' . $jenisBarang->id_jenis_barang . ',id_jenis_barang',
+            'deskripsi'         => 'nullable|string|max:1000',
+            'is_active'         => 'sometimes|boolean',
+        ]);
+
+        $jenisBarang->update($data);
+        return new JenisBarangResource($jenisBarang);
+    }
+
+    public function destroy($id_jenis_barang)
+    {
+        $jenisBarang = JenisBarang::where('id_jenis_barang', $id_jenis_barang)->firstOrFail();
+        $this->authorize('delete', $jenisBarang);
+
+        // ✅ Check if jenis barang is used by any barang
+        $barangCount = $jenisBarang->barang()->count();
+        if ($barangCount > 0) {
             return response()->json([
-                'status' => false, 
-                'message' => 'Cannot delete category that has items'
-            ], 400);
+                'status' => false,
+                'message' => 'Cannot delete jenis barang that is used by existing barang'
+            ], 422);
         }
 
         $jenisBarang->delete();
+        return response()->json(null, HttpResponse::HTTP_NO_CONTENT);
+    }
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Jenis barang deleted successfully'
-        ]);
+    public function toggleStatus($id_jenis_barang)
+    {
+        $jenisBarang = JenisBarang::where('id_jenis_barang', $id_jenis_barang)->firstOrFail();
+        $this->authorize('update', $jenisBarang);
+
+        $jenisBarang->is_active = !$jenisBarang->is_active;
+        $jenisBarang->save();
+
+        return new JenisBarangResource($jenisBarang);
+    }
+
+    public function active()
+    {
+        // ✅ All authenticated users can view active jenis barang
+        $this->authorize('viewAny', JenisBarang::class);
+        
+        $jenisBarang = JenisBarang::where('is_active', true)->get();
+        return JenisBarangResource::collection($jenisBarang);
     }
 }

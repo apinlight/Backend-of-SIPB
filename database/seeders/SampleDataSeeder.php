@@ -1,0 +1,75 @@
+<?php
+// database/seeders/SampleDataSeeder.php
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use App\Models\{User, Barang, Pengajuan, DetailPengajuan, Gudang};
+use Illuminate\Support\Str;
+
+class SampleDataSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $this->seedGudangData();
+        $this->seedPengajuanData();
+        $this->command->info('Sample data seeded successfully!');
+    }
+
+    private function seedGudangData(): void
+    {
+        $users = User::whereHas('roles', function($q) {
+            $q->whereIn('name', ['user', 'manager']);
+        })->get();
+        
+        $barangList = Barang::take(10)->get(); // Get first 10 barang
+        
+        foreach ($users as $user) {
+            foreach ($barangList->random(5) as $barang) { // Random 5 items per user
+                Gudang::updateOrCreate(
+                    [
+                        'unique_id' => $user->unique_id,
+                        'id_barang' => $barang->id_barang
+                    ],
+                    [
+                        'jumlah_barang' => rand(1, 50) // Random stock 1-50
+                    ]
+                );
+            }
+        }
+    }
+
+    private function seedPengajuanData(): void
+    {
+        $users = User::whereHas('roles', function($q) {
+            $q->whereIn('name', ['user', 'manager']);
+        })->get();
+        
+        $barangList = Barang::take(15)->get();
+        $statuses = ['Menunggu Persetujuan', 'Disetujui', 'Ditolak', 'Selesai'];
+
+        foreach ($users as $user) {
+            // Create 2-3 pengajuan per user
+            for ($i = 0; $i < rand(2, 3); $i++) {
+                $pengajuanId = 'PGJ' . time() . rand(100, 999);
+                
+                $pengajuan = Pengajuan::create([
+                    'id_pengajuan' => $pengajuanId,
+                    'unique_id' => $user->unique_id,
+                    'status_pengajuan' => $statuses[array_rand($statuses)],
+                    'tipe_pengajuan' => rand(0, 1) ? 'biasa' : 'manual',
+                    'keterangan' => 'Sample pengajuan for testing'
+                ]);
+
+                // Add 2-4 detail items per pengajuan
+                $selectedBarang = $barangList->random(rand(2, 4));
+                foreach ($selectedBarang as $barang) {
+                    DetailPengajuan::create([
+                        'id_pengajuan' => $pengajuanId,
+                        'id_barang' => $barang->id_barang,
+                        'jumlah' => rand(1, 10)
+                    ]);
+                }
+            }
+        }
+    }
+}
