@@ -4,149 +4,75 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\BatasBarangResource;
+use App\Http\Requests\StoreBatasBarangRequest;
+use App\Http\Requests\UpdateBatasBarangRequest;
+use App\Http\Requests\CheckAllocationRequest;
 use App\Models\BatasBarang;
-use App\Models\Gudang;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Services\BatasBarangService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class BatasBarangController extends Controller
 {
     use AuthorizesRequests;
 
-    // GET /api/batas-barang
-    public function index(Request $request)
+    public function __construct(protected BatasBarangService $batasBarangService)
     {
-        $this->authorize('viewAny', BatasBarang::class);
-        
-        $user = Auth::user();
-        $query = BatasBarang::with(['barang.jenis_barang']);
-        
-        // Apply filters...
-        if ($request->filled('search')) {
-            $query->whereHas('barang', fn($q) => 
-                $q->where('nama_barang', 'like', "%{$request->search}%")
-            );
-        }
-        
-        $batasBarang = $query->paginate(20);
-        
-        // ✅ ADD: Enhance with current stock for specific user
-        if ($request->filled('with_stock_for')) {
-            $targetUserId = $request->input('with_stock_for');
-            
-            $batasBarang->getCollection()->transform(function ($item) use ($targetUserId) {
-                $currentStock = Gudang::where('unique_id', $targetUserId)
-                    ->where('id_barang', $item->id_barang)
-                    ->value('jumlah_barang') ?? 0;
-                    
-                $item->current_stock = $currentStock;
-                $item->available_allocation = max(0, $item->batas_barang - $currentStock);
-                $item->allocation_percentage = $item->batas_barang > 0 
-                    ? round(($currentStock / $item->batas_barang) * 100, 1) 
-                    : 0;
-                    
-                return $item;
-            });
-        }
-        
-        return BatasBarangResource::collection($batasBarang);
+        $this->authorizeResource(BatasBarang::class, 'batas_barang');
     }
 
-    // POST /api/batas-barang
-    public function store(Request $request)
+    public function index(Request $request): JsonResponse
     {
-        $this->authorize('create', BatasBarang::class);
+        $query = BatasBarang::with(['barang.jenisBarang']);
 
-        $data = $request->validate([
-            'id_barang'   => 'required|string',
-            'batas_barang'=> 'required|integer|min:0',
-        ]);
+        $query->when($request->filled('search'), function ($q) use ($request) {
+            $q->whereHas('barang', fn($sq) => $sq->where('nama_barang', 'like', "%{$request->input('search')}%"));
+        });
 
-        $batas = BatasBarang::create($data);
-        return (new BatasBarangResource($batas))
+        $batasBarang = $query->paginate(20);
+
+        // This feature is now better handled by the dedicated checkAllocation endpoint.
+        // The index should remain a simple, fast list.
+
+        return BatasBarangResource::collection($batasBarang)->response();
+    }
+
+    public function store(StoreBatasBarangRequest $request): JsonResponse
+    {
+        $batas = $this->batasBarangService->create($request->validated());
+        return BatasBarangResource::make($batas)
             ->response()
             ->setStatusCode(HttpResponse::HTTP_CREATED);
     }
 
-    // GET /api/batas-barang/{id_barang}
-    public function show($id_barang)
+    public function show(BatasBarang $batas_barang): JsonResponse
     {
-        $batas = BatasBarang::findOrFail($id_barang);
-        $this->authorize('view', $batas);
-
-        return (new BatasBarangResource($batas))
-            ->response()
-            ->setStatusCode(HttpResponse::HTTP_OK);
+        return BatasBarangResource::make($batas_barang)->response();
     }
 
-    // PUT/PATCH /api/batas-barang/{id_barang}
-    public function update(Request $request, $id_barang)
+    public function update(UpdateBatasBarangRequest $request, BatasBarang $batas_barang): JsonResponse
     {
-        $batas = BatasBarang::findOrFail($id_barang);
-        $this->authorize('update', $batas);
-
-        $data = $request->validate([
-            'batas_barang'=> 'sometimes|required|integer|min:0',
-        ]);
-        $batas->update($data);
-        return (new BatasBarangResource($batas))
-            ->response()
-            ->setStatusCode(HttpResponse::HTTP_OK);
+        $batas = $this->batasBarangService->update($batas_barang, $request->validated());
+        return BatasBarangResource::make($batas)->response();
     }
 
-    // DELETE /api/batas-barang/{id_barang}
-    public function destroy($id_barang)
+    public function destroy(BatasBarang $batas_barang): JsonResponse
     {
-        $batas = BatasBarang::findOrFail($id_barang);
-        $this->authorize('delete', $batas);
-
-        $batas->delete();
+        $batas_barang->delete();
         return response()->json(null, HttpResponse::HTTP_NO_CONTENT);
     }
 
-    public function checkAllocation(Request $request)
+    // --- Custom Actions ---
+    public function checkAllocation(CheckAllocationRequest $request): JsonResponse
     {
-        $this->authorize('viewAny', BatasBarang::class);
-        
-        $data = $request->validate([
-            'unique_id' => 'required|string|exists:tb_users,unique_id',
-            'items' => 'required|array',
-            'items.*.id_barang' => 'required|string|exists:tb_barang,id_barang',
-            'items.*.jumlah' => 'required|integer|min:1'
-        ]);
-        
-        $results = [];
-        
-        foreach ($data['items'] as $item) {
-            $currentStock = Gudang::where('unique_id', $data['unique_id'])
-                ->where('id_barang', $item['id_barang'])
-                ->value('jumlah_barang') ?? 0;
-                
-            $batasBarang = BatasBarang::where('id_barang', $item['id_barang'])
-                ->value('batas_barang') ?? PHP_INT_MAX;
-                
-            $newTotal = $currentStock + $item['jumlah'];
-            $available = max(0, $batasBarang - $currentStock);
-            
-            $results[] = [
-                'id_barang' => $item['id_barang'],
-                'current_stock' => $currentStock,
-                'batas_barang' => $batasBarang,
-                'requested' => $item['jumlah'],
-                'new_total' => $newTotal,
-                'available' => $available,
-                'is_valid' => $newTotal <= $batasBarang,
-                'message' => $newTotal > $batasBarang 
-                    ? "Melebihi batas ({$newTotal} > {$batasBarang})" 
-                    : 'Valid'
-            ];
-        }
+        $validated = $request->validated();
+        $results = $this->batasBarangService->checkAllocation($validated['unique_id'], $validated['items']);
         
         return response()->json([
             'status' => true,
-            'data' => $results
+            'data'   => $results,
         ]);
     }
 }

@@ -129,8 +129,10 @@ Route::prefix('v1')->group(function () {
 
 
         // --- RESOURCE: Batas Barang (Item Limits) ---
+        Route::apiResource('batas-barang', BatasBarangController::class);
 
-        Route::apiResource('batas-barang', BatasBarangController::class)->middleware('role:admin');
+        Route::post('batas-barang/check-allocation', [BatasBarangController::class, 'checkAllocation']);
+
 
 
 
