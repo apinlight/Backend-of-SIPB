@@ -2,95 +2,77 @@
 
 namespace App\Services;
 
+use App\Models\Barang;
+use App\Models\Gudang;
 use App\Models\Pengajuan;
 use App\Models\PenggunaanBarang;
-use App\Models\Gudang;
-use App\Models\Barang;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+use Illuminate\Support\Collection;
 
 class LaporanService
 {
-    /**
-     * Generates a summary of all pengajuan using an efficient database query.
-     */
-    public function getSummaryReport(User $user, array $filters): array
+    public function getSummaryReport(User $user, array $filters = []): array
     {
-        $query = Pengajuan::query()
-            ->selectRaw("
-                COUNT(*) as total_pengajuan,
-                SUM(CASE WHEN status_pengajuan = 'Disetujui' THEN 1 ELSE 0 END) as total_disetujui,
-                SUM(CASE WHEN status_pengajuan = 'Menunggu Persetujuan' THEN 1 ELSE 0 END) as total_menunggu,
-                SUM(CASE WHEN status_pengajuan = 'Ditolak' THEN 1 ELSE 0 END) as total_ditolak,
-                SUM(CASE WHEN status_pengajuan = 'Selesai' THEN 1 ELSE 0 END) as total_selesai,
-                SUM(total_nilai) as total_nilai
-            ")
-            // We must join to filter by the user's branch
-            ->join('tb_users', 'tb_pengajuan.unique_id', '=', 'tb_users.unique_id');
+        $query = Pengajuan::query();
+        $this->applyBranchAndRoleFilters($query, $user, $filters);
+        $this->applyDateFilters($query, $filters);
 
-        $this->applyBaseFilters($query, $user, $filters, 'tb_pengajuan.created_at');
+        $pengajuanData = $query->with('details.barang')->get();
 
-        $summary = $query->first()->toArray();
+        $totalNilai = $pengajuanData->reduce(function ($carry, $pengajuan) {
+            return $carry + $pengajuan->details->sum(function ($detail) {
+                return ($detail->barang->harga_barang ?? 0) * $detail->jumlah;
+            });
+        }, 0);
 
-        // Ensure all keys exist and are numeric, even if the result is null (no records found)
-        return array_map(fn($value) => $value ?? 0, [
-            'total_pengajuan' => $summary['total_pengajuan'],
-            'total_disetujui' => $summary['total_disetujui'],
-            'total_menunggu' => $summary['total_menunggu'],
-            'total_ditolak' => $summary['total_ditolak'],
-            'total_selesai' => $summary['total_selesai'],
-            'total_nilai' => $summary['total_nilai'],
-        ]);
+        return [
+            'total_pengajuan' => $pengajuanData->count(),
+            'total_disetujui' => $pengajuanData->where('status_pengajuan', Pengajuan::STATUS_APPROVED)->count(),
+            'total_menunggu' => $pengajuanData->where('status_pengajuan', Pengajuan::STATUS_PENDING)->count(),
+            'total_ditolak' => $pengajuanData->where('status_pengajuan', Pengajuan::STATUS_REJECTED)->count(),
+            'total_selesai' => $pengajuanData->where('status_pengajuan', Pengajuan::STATUS_COMPLETED)->count(),
+            'total_nilai' => $totalNilai,
+        ];
     }
 
-    /**
-     * Generates a report on items, their stock, and procurement history.
-     */
-    public function getBarangReport(User $user, array $filters): array
+    public function getBarangReport(User $user, array $filters = []): Collection
     {
-        $query = Barang::with('jenisBarang')
-            ->withSum(['gudang as stok_saat_ini' => function (Builder $query) use ($user, $filters) {
-                $this->applyBranchAndRoleFilters($query, $user, $filters);
+        $query = Barang::with(['jenisBarang'])
+            ->withSum(['gudangEntries as stok_saat_ini' => function ($query) use ($user, $filters) {
+                $this->applyBranchAndRoleFiltersForRelated($query, $user, $filters, 'user');
             }], 'jumlah_barang')
-            ->withSum(['details as total_pengadaan' => function (Builder $query) use ($user, $filters) {
-                $query->whereHas('pengajuan', function (Builder $subQuery) use ($user, $filters) {
-                    $this->applyBaseFilters($subQuery, $user, $filters, 'tb_pengajuan.created_at');
-                });
+            ->withSum(['detailPengajuan as total_pengadaan' => function ($query) use ($user, $filters) {
+                $this->applyBranchAndRoleFiltersForRelated($query, $user, $filters, 'pengajuan.user');
+                $this->applyDateFilters($query, $filters);
             }], 'jumlah');
 
-        $barangData = $query->get();
-
-        return $barangData->map(function ($barang) {
+        return $query->get()->map(function ($barang) {
             $stokSaatIni = $barang->stok_saat_ini ?? 0;
             $totalPengadaan = $barang->total_pengadaan ?? 0;
+            $hargaBarang = $barang->harga_barang ?? 0;
 
             return [
                 'id_barang' => $barang->id_barang,
                 'nama_barang' => $barang->nama_barang,
-                'harga_barang' => $barang->harga_barang,
+                'harga_barang' => $hargaBarang,
                 'jenis_barang' => $barang->jenisBarang,
                 'total_pengadaan' => $totalPengadaan,
-                'nilai_pengadaan' => $totalPengadaan * $barang->harga_barang,
+                'nilai_pengadaan' => $totalPengadaan * $hargaBarang,
                 'stok_saat_ini' => $stokSaatIni,
-                'nilai_stok' => $stokSaatIni * $barang->harga_barang,
+                'nilai_stok' => $stokSaatIni * $hargaBarang,
+                'batas_minimum' => $barang->batas_minimum ?? 5,
             ];
-        })->toArray();
+        });
     }
 
-    /**
-     * Generates a detailed list of all pengajuan.
-     */
-    public function getPengajuanReport(User $user, array $filters): array
+    public function getPengajuanReport(User $user, array $filters = []): Collection
     {
         $query = Pengajuan::with(['user', 'details.barang']);
-        $this->applyBaseFilters($query, $user, $filters, 'tb_pengajuan.created_at');
+        $this->applyBranchAndRoleFilters($query, $user, $filters);
+        $this->applyDateFilters($query, $filters);
 
-        $pengajuanData = $query->get();
-
-        return $pengajuanData->map(function ($pengajuan) {
+        return $query->get()->map(function ($pengajuan) {
             return [
                 'id_pengajuan' => $pengajuan->id_pengajuan,
                 'user' => $pengajuan->user,
@@ -98,53 +80,45 @@ class LaporanService
                 'created_at' => $pengajuan->created_at,
                 'updated_at' => $pengajuan->updated_at,
                 'total_items' => $pengajuan->details->sum('jumlah'),
-                'total_nilai' => $pengajuan->details->sum(function ($detail) {
-                    return ($detail->barang->harga_barang ?? 0) * $detail->jumlah;
-                }),
+                'total_nilai' => $pengajuan->details->sum(fn($detail) => ($detail->barang->harga_barang ?? 0) * $detail->jumlah),
             ];
-        })->toArray();
+        });
     }
-    
-    /**
-     * Generates a report summarizing pengajuan data grouped by branch.
-     */
-    public function getCabangReport(User $user, array $filters): array
+
+    public function getCabangReport(User $user, array $filters = []): Collection
     {
-        $query = Pengajuan::query()
-            ->join('tb_users', 'tb_pengajuan.unique_id', '=', 'tb_users.unique_id')
-            ->select(
-                'tb_users.branch_name',
-                DB::raw("COUNT(tb_pengajuan.id_pengajuan) as total_pengajuan"),
-                DB::raw("SUM(CASE WHEN status_pengajuan = 'Disetujui' THEN 1 ELSE 0 END) as total_disetujui"),
-                DB::raw("SUM(CASE WHEN status_pengajuan = 'Menunggu Persetujuan' THEN 1 ELSE 0 END) as total_menunggu"),
-                DB::raw("SUM(CASE WHEN status_pengajuan = 'Ditolak' THEN 1 ELSE 0 END) as total_ditolak"),
-                DB::raw("SUM(CASE WHEN status_pengajuan = 'Selesai' THEN 1 ELSE 0 END) as total_selesai"),
-                DB::raw("SUM(tb_pengajuan.total_nilai) as total_nilai")
-            )
-            ->groupBy('tb_users.branch_name');
+        $query = Pengajuan::with(['user', 'details.barang']);
+        $this->applyBranchAndRoleFilters($query, $user, $filters);
+        $this->applyDateFilters($query, $filters);
+        
+        return $query->get()->groupBy('user.branch_name')->map(function ($pengajuanPerCabang, $branchName) {
+            $totalNilai = $pengajuanPerCabang->reduce(function($carry, $pengajuan) {
+                return $carry + $pengajuan->details->sum(fn($detail) => ($detail->barang->harga_barang ?? 0) * $detail->jumlah);
+            }, 0);
 
-        $this->applyBaseFilters($query, $user, $filters, 'tb_pengajuan.created_at');
-
-        return $query->get()->toArray();
+            return [
+                'branch_name' => $branchName,
+                'total_pengajuan' => $pengajuanPerCabang->count(),
+                'total_disetujui' => $pengajuanPerCabang->where('status_pengajuan', Pengajuan::STATUS_APPROVED)->count(),
+                'total_menunggu' => $pengajuanPerCabang->where('status_pengajuan', Pengajuan::STATUS_PENDING)->count(),
+                'total_ditolak' => $pengajuanPerCabang->where('status_pengajuan', Pengajuan::STATUS_REJECTED)->count(),
+                'total_selesai' => $pengajuanPerCabang->where('status_pengajuan', Pengajuan::STATUS_COMPLETED)->count(),
+                'total_nilai' => $totalNilai
+            ];
+        })->values();
     }
 
-    /**
-     * Generates a detailed report on item usage.
-     */
-    public function getPenggunaanReport(User $user, array $filters): array
+    public function getPenggunaanReport(User $user, array $filters = []): array
     {
         $query = PenggunaanBarang::with(['user', 'barang.jenisBarang', 'approver']);
-        $this->applyBaseFilters($query, $user, $filters, 'tanggal_penggunaan');
+        $this->applyBranchAndRoleFilters($query, $user, $filters);
+        $this->applyDateFilters($query, $filters, 'tanggal_penggunaan');
 
-        if (!empty($filters['status'])) {
-            $query->where('status', $filters['status']);
-        }
-        if (!empty($filters['keperluan'])) {
-            $query->where('keperluan', 'like', '%' . $filters['keperluan'] . '%');
-        }
-
+        $query->when($filters['status'] ?? null, fn($q, $status) => $q->where('status', $status));
+        $query->when($filters['keperluan'] ?? null, fn($q, $keperluan) => $q->where('keperluan', 'like', "%{$keperluan}%"));
+        
         $penggunaanData = $query->orderBy('tanggal_penggunaan', 'desc')->get();
-
+        
         $summary = [
             'total_penggunaan' => $penggunaanData->count(),
             'total_approved' => $penggunaanData->where('status', 'approved')->count(),
@@ -160,82 +134,86 @@ class LaporanService
         ];
     }
 
-    /**
-     * Generates a detailed stock report.
-     */
-    public function getStokReport(User $user, array $filters): array
+    public function getStokReport(User $user, array $filters = []): array
     {
         $query = Gudang::with(['barang.jenisBarang', 'user']);
         $this->applyBranchAndRoleFilters($query, $user, $filters);
 
-        if (!empty($filters['stock_level'])) {
-            $query->where(function ($q) use ($filters) {
-                match ($filters['stock_level']) {
-                    'empty' => $q->where('jumlah_barang', 0),
-                    'low'   => $q->where('jumlah_barang', '>', 0)->where('jumlah_barang', '<=', 5),
-                    'normal' => $q->where('jumlah_barang', '>', 5),
-                    default => null,
-                };
-            });
-        }
+        $query->when($filters['stock_level'] ?? null, function ($q, $level) {
+            switch ($level) {
+                case 'empty': return $q->where('jumlah_barang', 0);
+                case 'low': return $q->where('jumlah_barang', '>', 0)->where('jumlah_barang', '<=', 5); // Example threshold
+                case 'normal': return $q->where('jumlah_barang', '>', 5);
+            }
+        });
 
-        $stokData = $query->get();
-
+        $stocks = $query->get();
         $summary = [
-             'total_items' => $stokData->unique('id_barang')->count(),
-             'total_stock' => $stokData->sum('jumlah_barang'),
-             'total_value' => $stokData->sum(fn($s) => $s->jumlah_barang * ($s->barang->harga_barang ?? 0)),
-             'empty_stock' => $stokData->where('jumlah_barang', 0)->count(),
-             'low_stock' => $stokData->where('jumlah_barang', '>', 0)->where('jumlah_barang', '<=', 5)->count(),
+            'total_items' => $stocks->count(),
+            'total_stock' => $stocks->sum('jumlah_barang'),
+            'total_value' => $stocks->sum(fn($s) => $s->jumlah_barang * ($s->barang->harga_barang ?? 0)),
         ];
 
         return [
             'summary' => $summary,
-            'details' => $stokData,
+            'details' => $stocks,
         ];
     }
-
-    private function applyBaseFilters(Builder $query, User $user, array $filters, string $dateColumn = 'created_at'): void
+    
+    public function getStockSummaryReport(User $user, array $filters = []): Collection
     {
-        $this->applyBranchAndRoleFilters($query, $user, $filters);
-        $this->applyDateFilters($query, $filters, $dateColumn);
+        $query = Barang::with(['jenisBarang'])
+            ->withSum(['gudangEntries as total_stock' => function ($q) use ($user) {
+                if ($user->hasRole('manager')) {
+                    $q->whereHas('user', fn($userQuery) => $userQuery->where('branch_name', $user->branch_name));
+                }
+            }], 'jumlah_barang');
+
+        return $query->get()->map(function ($item) {
+            $totalStock = $item->total_stock ?? 0;
+            $item->stock_status = $this->getStockStatus($totalStock, $item->batas_minimum ?? 5);
+            return $item;
+        });
+    }
+
+    private function applyDateFilters(Builder $query, array $filters, string $dateColumn = 'created_at'): void
+    {
+        if (!empty($filters['start_date']) && !empty($filters['end_date'])) {
+            $query->whereBetween($dateColumn, [$filters['start_date'], $filters['end_date']]);
+        }
     }
 
     private function applyBranchAndRoleFilters(Builder $query, User $user, array $filters): void
     {
-        if ($user->hasRole('manager')) {
-            $query->whereHas('user', fn($q) => $q->where('branch_name', $user->branch_name));
-        }
-
-        if (!empty($filters['branch']) && $user->hasRole('admin')) {
-            $query->whereHas('user', fn($q) => $q->where('branch_name', $filters['branch']));
-        }
-    }
-    
-    private function applyDateFilters(Builder $query, array $filters, string $dateColumn): void
-    {
-        if (!empty($filters['period']) && $filters['period'] !== 'custom') {
-            $dates = $this->getDateRangeFromPeriod($filters['period']);
-            if ($dates) {
-                $query->whereBetween($dateColumn, $dates);
+        $query->where(function ($q) use ($user, $filters) {
+            if ($user->hasRole('admin')) {
+                if (!empty($filters['branch'])) {
+                    $q->whereHas('user', fn($userQuery) => $userQuery->where('branch_name', $filters['branch']));
+                }
+                // If no branch filter, admin sees all, so no query constraint needed here.
+            } elseif ($user->hasRole('manager')) {
+                $q->whereHas('user', fn($userQuery) => $userQuery->where('branch_name', $user->branch_name));
+            } else { // Regular user
+                $q->where('unique_id', $user->unique_id);
             }
-        } elseif (!empty($filters['start_date']) && !empty($filters['end_date'])) {
-            $query->whereBetween($dateColumn, [
-                Carbon::parse($filters['start_date'])->startOfDay(), 
-                Carbon::parse($filters['end_date'])->endOfDay()
-            ]);
-        }
+        });
+    }
+
+    private function applyBranchAndRoleFiltersForRelated(Builder $query, User $user, array $filters, string $relation): void
+    {
+        $query->whereHas($relation, function($q) use ($user, $filters) {
+            if ($user->hasRole('manager')) {
+                $q->where('branch_name', $user->branch_name);
+            } elseif ($user->hasRole('admin') && !empty($filters['branch'])) {
+                $q->where('branch_name', $filters['branch']);
+            }
+        });
     }
     
-    private function getDateRangeFromPeriod(string $period): ?array
+    private function getStockStatus($currentStock, $minStock): string
     {
-        return match ($period) {
-            'today' => [Carbon::today()->startOfDay(), Carbon::today()->endOfDay()],
-            'week'  => [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()],
-            'month' => [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()],
-            'year'  => [Carbon::now()->startOfYear(), Carbon::now()->endOfYear()],
-            default => null,
-        };
+        if ($currentStock == 0) return 'out_of_stock';
+        if ($currentStock <= $minStock) return 'low_stock';
+        return 'normal';
     }
 }
-

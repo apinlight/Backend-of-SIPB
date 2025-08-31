@@ -1,9 +1,12 @@
 <?php
-// app/Models/Barang.php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Barang extends Model
 {
@@ -13,69 +16,35 @@ class Barang extends Model
     protected $primaryKey = 'id_barang';
     public $incrementing = false;
     protected $keyType = 'string';
-    protected $fillable = ['id_barang', 'nama_barang', 'id_jenis_barang', 'harga_barang'];
+    protected $fillable = [
+        'id_barang',
+        'nama_barang',
+        'id_jenis_barang',
+        'harga_barang',
+        'deskripsi',
+        'satuan',
+        'batas_minimum'
+    ];
 
-    // ✅ FIX: Frontend expects 'jenis_barang' relationship name
-    public function jenis_barang()
+    public function jenisBarang(): BelongsTo
     {
         return $this->belongsTo(JenisBarang::class, 'id_jenis_barang', 'id_jenis_barang');
     }
 
-    // ✅ Keep old method for backward compatibility
-    public function jenisBarang()
-    {
-        return $this->jenis_barang();
-    }
-
-    // ✅ One-to-one: a barang has one batas barang
-    public function batasBarang()
+    public function batasBarang(): HasOne
     {
         return $this->hasOne(BatasBarang::class, 'id_barang', 'id_barang');
     }
-
-    // ✅ Many-to-many: a barang is stored in many users' gudang records
-    public function gudang()
+    
+    // A Barang has many individual stock records in the Gudang
+    public function gudangEntries(): HasMany
     {
-        return $this->belongsToMany(User::class, 'tb_gudang', 'id_barang', 'unique_id')
-                    ->using(Gudang::class)
-                    ->withPivot('jumlah_barang', 'created_at', 'updated_at');
+        return $this->hasMany(Gudang::class, 'id_barang', 'id_barang');
     }
 
-    // ✅ Get current stock across all gudang
-    public function getTotalStockAttribute()
+    public function detailPengajuan(): HasMany
     {
-        return $this->gudang()->sum('jumlah_barang');
-    }
-
-    // ✅ Get current stock for specific user/branch
-    public function getStockForUser(string $uniqueId): int
-    {
-        return Gudang::where('unique_id', $uniqueId)
-                    ->where('id_barang', $this->id_barang)
-                    ->value('jumlah_barang') ?? 0;
-    }
-
-    // ✅ Check if stock is below minimum threshold
-    public function isLowStock(): bool
-    {
-        $batas = $this->batasBarang->batas_barang ?? 5;
-        return $this->total_stock <= $batas;
-    }
-
-    // ✅ One-to-many: a barang can have many penggunaan barang
-    public function penggunaanBarang()
-    {
-        return $this->hasMany(PenggunaanBarang::class, 'id_barang', 'id_barang');
-    }
-
-    // ✅ Get actual current stock (procurement - usage)
-    public function getActualStockForUser(string $uniqueId): int
-    {
-        $procured = Gudang::where('unique_id', $uniqueId)
-            ->where('id_barang', $this->id_barang)
-            ->value('jumlah_barang') ?? 0;
-        
-        return $procured; // Gudang already reflects actual stock after usage
+        return $this->hasMany(DetailPengajuan::class, 'id_barang', 'id_barang');
     }
 
     protected static function booted()

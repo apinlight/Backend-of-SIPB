@@ -15,15 +15,7 @@ use App\Http\Controllers\Api\LaporanController;
 use App\Http\Controllers\Api\PenggunaanBarangController;
 use App\Http\Resources\UserResource;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-| Refactored for clarity by grouping routes by resource, not by role.
-*/
-
 Route::prefix('v1')->group(function () {
-
     // --- PUBLIC & HEALTH CHECK ROUTES ---
     Route::middleware('api.public')->group(function () {
         Route::get('online', fn() => response()->json(['message' => 'API is online']));
@@ -31,66 +23,69 @@ Route::prefix('v1')->group(function () {
     });
 
     // --- AUTHENTICATED USER ROUTES ---
-    // All routes in this group require a valid token.
     Route::middleware('api.protected')->group(function () {
-
+        
         // Profile & Session
-        Route::get('profile', fn(Request $request) => new UserResource($request->user()->load('roles')));
-        Route::post('logout', function (Request $request) {
-            $request->user()->currentAccessToken()->delete();
-            return response()->json(['message' => 'Logged out successfully']);
-        });
+        Route::get('profile', [UserController::class, 'profile']);
+        Route::put('profile', [UserController::class, 'updateProfile']);
 
-        // --- RESOURCE: Barang & Jenis Barang ---
+        // --- STANDARD RESOURCES ---
         Route::apiResource('barang', BarangController::class);
         Route::apiResource('jenis-barang', JenisBarangController::class);
-
-        // --- RESOURCE: Pengajuan (Item Requests) ---
         Route::apiResource('pengajuan', PengajuanController::class);
-        Route::apiResource('detail-pengajuan', DetailPengajuanController::class)->except(['index', 'show']); // Assuming these are custom
-        Route::get('detail-pengajuan', [DetailPengajuanController::class, 'index']);
-        Route::get('detail-pengajuan/{id_pengajuan}/{id_barang}', [DetailPengajuanController::class, 'show']);
-        
-        // --- RESOURCE: Gudang (Warehouse/Inventory) ---
+        Route::apiResource('detail-pengajuan', DetailPengajuanController::class);
         Route::apiResource('gudang', GudangController::class);
-
-        // --- RESOURCE: Penggunaan Barang (Item Usage) ---
         Route::apiResource('penggunaan-barang', PenggunaanBarangController::class);
-        Route::prefix('penggunaan-barang')->name('penggunaan-barang.')->group(function () {
-            Route::get('my-requests', [PenggunaanBarangController::class, 'myRequests'])->name('my-requests');
-            Route::post('{id}/approve', [PenggunaanBarangController::class, 'approve'])->name('approve')->middleware('role:admin|manager');
-            Route::post('{id}/reject', [PenggunaanBarangController::class, 'reject'])->name('reject')->middleware('role:admin|manager');
-            Route::get('pending-approvals', [PenggunaanBarangController::class, 'pendingApprovals'])->name('pending-approvals')->middleware('role:admin|manager');
-            Route::put('{id}/force-update', [PenggunaanBarangController::class, 'forceUpdate'])->name('force-update')->middleware('role:admin');
-            Route::delete('{id}/force-delete', [PenggunaanBarangController::class, 'forceDelete'])->name('force-delete')->middleware('role:admin');
+        Route::apiResource('users', UserController::class);
+        Route::apiResource('batas-barang', BatasBarangController::class);
+        
+        // --- CUSTOM RESOURCE ACTIONS ---
+
+        Route::prefix('pengajuan')->group(function() {
+            Route::get('info/barang', [PengajuanBarangInfoController::class, 'getBarangInfo']);
+            Route::get('info/barang-history/{id_barang}', [PengajuanBarangInfoController::class, 'getBarangPengajuanHistory']);
+        });
+
+        Route::prefix('gudang')->group(function() {
+            Route::post('{unique_id}/{id_barang}/adjust-stock', [GudangController::class, 'adjustStock'])->middleware('role:admin');
+        });
+
+        Route::prefix('penggunaan-barang')->group(function () {
+            // Note: The route parameter should match the variable name in the controller method for route model binding
+            Route::post('{penggunaan_barang}/approve', [PenggunaanBarangController::class, 'approve'])->middleware('role:admin|manager');
+            Route::post('{penggunaan_barang}/reject', [PenggunaanBarangController::class, 'reject'])->middleware('role:admin|manager');
+            Route::get('pending/approvals', [PenggunaanBarangController::class, 'pendingApprovals'])->middleware('role:admin|manager');
         });
         
-        // --- RESOURCE: Users ---
-        Route::apiResource('users', UserController::class)->middleware('role:admin');
+        Route::prefix('stok')->group(function() {
+            Route::get('tersedia', [PenggunaanBarangController::class, 'getAvailableStock']);
+            Route::get('tersedia/{id_barang}', [PenggunaanBarangController::class, 'getStockForItem']);
+        });
 
-        // --- RESOURCE: Batas Barang (Item Limits) ---
-        Route::apiResource('batas-barang', BatasBarangController::class)->middleware('role:admin');
+        Route::prefix('users')->group(function () {
+            Route::post('{user}/toggle-status', [UserController::class, 'toggleStatus'])->middleware('role:admin|manager');
+            Route::post('{user}/reset-password', [UserController::class, 'resetPassword'])->middleware('role:admin|manager');
+        });
 
-        // --- RESOURCE: Global Settings ---
-        Route::prefix('global-settings')->name('global-settings.')->middleware('role:admin')->group(function () {
-            Route::get('/', [GlobalSettingsController::class, 'index'])->name('index');
-            Route::get('monthly-limit', [GlobalSettingsController::class, 'getMonthlyLimit'])->name('getMonthlyLimit');
-            Route::put('monthly-limit', [GlobalSettingsController::class, 'setMonthlyLimit'])->name('setMonthlyLimit');
+        Route::prefix('global-settings')->middleware('role:admin')->group(function () {
+            Route::get('/', [GlobalSettingsController::class, 'index']);
+            Route::get('monthly-limit', [GlobalSettingsController::class, 'getMonthlyLimit']);
+            Route::put('monthly-limit', [GlobalSettingsController::class, 'setMonthlyLimit']);
         });
 
         // --- REPORTS ---
         Route::prefix('laporan')->name('laporan.')->group(function () {
-            // General reports for all authenticated users
             Route::get('summary', [LaporanController::class, 'summary'])->name('summary');
             Route::get('barang', [LaporanController::class, 'barang'])->name('barang');
             Route::get('pengajuan', [LaporanController::class, 'pengajuan'])->name('pengajuan');
             
-            // Manager & Admin reports
-            Route::get('cabang', [LaporanController::class, 'cabang'])->name('cabang')->middleware('role:admin|manager');
-            Route::get('penggunaan', [LaporanController::class, 'penggunaan'])->name('penggunaan')->middleware('role:admin|manager');
-            Route::get('stok', [LaporanController::class, 'stok'])->name('stok')->middleware('role:admin|manager');
+            Route::middleware('role:admin|manager')->group(function () {
+                Route::get('cabang', [LaporanController::class, 'cabang'])->name('cabang');
+                Route::get('penggunaan', [LaporanController::class, 'penggunaan'])->name('penggunaan');
+                Route::get('stok', [LaporanController::class, 'stok'])->name('stok');
+                Route::get('stok-summary', [LaporanController::class, 'stockSummary'])->name('stok-summary');
+            });
             
-            // Exports
             Route::prefix('export')->name('export.')->middleware('role:admin|manager')->group(function () {
                 Route::get('summary', [LaporanController::class, 'exportSummary'])->name('summary');
                 Route::get('barang', [LaporanController::class, 'exportBarang'])->name('barang');
