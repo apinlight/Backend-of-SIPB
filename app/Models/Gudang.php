@@ -1,9 +1,9 @@
 <?php
-// app/Models/Gudang.php
 
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * @property string $unique_id
@@ -56,5 +56,24 @@ class Gudang extends Pivot
         $query->where('unique_id', '=', $this->getAttribute('unique_id'))
               ->where('id_barang', '=', $this->getAttribute('id_barang'));
         return $query;
+    }
+
+    /**
+     * Scope a query to only include Gudang records a user is allowed to see.
+     */
+    public function scopeForUser(Builder $query, User $user): Builder
+    {
+        if ($user->hasRole('admin')) {
+            return $query; // Admin sees all.
+        }
+
+        if ($user->hasRole('manager')) {
+            return $query->whereHas('user', function ($q) use ($user) {
+                $q->where('branch_name', $user->branch_name);
+            });
+        }
+
+        // Default to a regular user who can only see their own stock.
+        return $query->where('unique_id', $user->unique_id);
     }
 }

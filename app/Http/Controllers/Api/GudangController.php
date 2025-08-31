@@ -4,285 +4,108 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\GudangResource;
+use App\Http\Requests\StoreGudangRequest;
+use App\Http\Requests\AdjustStockRequest;
 use App\Models\Gudang;
+use App\Models\User;
+use App\Services\GudangService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class GudangController extends Controller
 {
     use AuthorizesRequests;
 
-    public function index(Request $request)
+    public function __construct(protected GudangService $gudangService)
     {
-        // ✅ Add authorization check
+        // Since Gudang is a pivot, we authorize manually instead of using authorizeResource
+    }
+
+    public function index(Request $request): JsonResponse
+    {
         $this->authorize('viewAny', Gudang::class);
         
-        $user = Auth::user();
-        $query = Gudang::with(['user', 'barang']);
-        
-        // ✅ CRITICAL: Apply role-based scope filtering
-        if ($user->hasRole('admin')) {
-            // ✅ Admin: Can see all gudang data
-            // Optional branch filter
-            if ($request->filled('branch')) {
-                $query->whereHas('user', fn($q) => 
-                    $q->where('branch_name', $request->branch)
-                );
-            }
-            
-            // Optional user filter for admin
-            if ($request->filled('user_id')) {
-                $query->where('unique_id', $request->user_id);
-            }
-            
-        } elseif ($user->hasRole('manager')) {
-            // ✅ Manager: Only their branch's gudang
-            $query->whereHas('user', fn($q) => 
-                $q->where('branch_name', $user->branch_name)
-            );
-            
-        } elseif ($user->hasRole('user')) {
-            // ✅ User: Only their own gudang
-            $query->where('unique_id', $user->unique_id);
-            
-        } else {
-            return response()->json([
-                'status' => false, 
-                'message' => 'Access denied - no valid role'
-            ], 403);
+        $query = Gudang::with(['user', 'barang'])->forUser($request->user());
+
+        // Admin filters
+        if ($request->user()->hasRole('admin')) {
+            $query->when($request->filled('branch'), function ($q) use ($request) {
+                $q->whereHas('user', fn($sq) => $sq->where('branch_name', $request->input('branch')));
+            });
+            $query->when($request->filled('user_id'), function ($q) use ($request) {
+                $q->where('unique_id', $request->input('user_id'));
+            });
         }
 
-        // ✅ Additional filters
-        if ($request->filled('search')) {
-            $query->whereHas('barang', fn($q) => 
-                $q->where('nama_barang', 'like', "%{$request->search}%")
-            );
-        }
+        $query->when($request->filled('search'), function ($q) use ($request) {
+            $q->whereHas('barang', fn($sq) => $sq->where('nama_barang', 'like', "%{$request->input('search')}%"));
+        });
 
-        if ($request->filled('type')) {
-            $query->where('tipe', $request->type);
-        }
-        
         $gudang = $query->paginate(20);
-        return GudangResource::collection($gudang);
+        return GudangResource::collection($gudang)->response();
     }
 
-    public function store(Request $request)
+    public function store(StoreGudangRequest $request): JsonResponse
     {
-        // ✅ Add authorization check
-        $this->authorize('create', Gudang::class);
-        
-        $user = Auth::user();
-        
-        $data = $request->validate([
-            'unique_id'     => 'required|string|exists:tb_users,unique_id',
-            'id_barang'     => 'required|string|exists:tb_barang,id_barang',
-            'jumlah_barang' => 'required|integer|min:1',
-            'keterangan'    => 'nullable|string|max:500',
-            'tipe'          => 'sometimes|in:manual,biasa,mandiri',
-        ]);
-
-        // ✅ SECURITY: Users can only add to their own gudang
-        if ($user->hasRole('user') && $data['unique_id'] !== $user->unique_id) {
-            return response()->json([
-                'status' => false,
-                'message' => 'You can only add items to your own gudang'
-            ], 403);
-        }
-
-        // ✅ SECURITY: Only admin can add to other users' gudang
-        if (!$user->hasRole('admin') && $data['unique_id'] !== $user->unique_id) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Only admin can add items to other users gudang'
-            ], 403);
-        }
-
-        // ✅ SECURITY: Manager can only add to their branch users
-        if ($user->hasRole('manager') && $data['unique_id'] !== $user->unique_id) {
-            $targetUser = \App\Models\User::where('unique_id', $data['unique_id'])->first();
-            if (!$targetUser || $targetUser->branch_name !== $user->branch_name) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Manager can only add items to their branch users'
-                ], 403);
-            }
-        }
-
-        $data['tipe'] = $data['tipe'] ?? 'biasa';
-
-        // ✅ Check if gudang entry already exists
-        $existingGudang = Gudang::where('unique_id', $data['unique_id'])
-                                ->where('id_barang', $data['id_barang'])
-                                ->first();
-
-        if ($existingGudang) {
-            // ✅ Update existing entry
-            $existingGudang->jumlah_barang += $data['jumlah_barang'];
-            $existingGudang->keterangan = $data['keterangan'] ?? $existingGudang->keterangan;
-            $existingGudang->save();
-            
-            return new GudangResource($existingGudang);
-        } else {
-            // ✅ Create new entry
-            $gudang = Gudang::create($data);
-            return (new GudangResource($gudang))
-                ->response()
-                ->setStatusCode(HttpResponse::HTTP_CREATED);
-        }
+        $gudang = $this->gudangService->createOrUpdate($request->validated());
+        return GudangResource::make($gudang)
+            ->response()
+            ->setStatusCode(HttpResponse::HTTP_CREATED);
     }
 
-    public function show($unique_id, $id_barang)
+    public function show($unique_id, $id_barang): JsonResponse
     {
-        $user = Auth::user();
-        $query = Gudang::with(['user', 'barang'])
-                      ->where('unique_id', $unique_id)
-                      ->where('id_barang', $id_barang);
+        $gudang = Gudang::where('unique_id', $unique_id)
+            ->where('id_barang', $id_barang)
+            ->firstOrFail();
 
-        // ✅ CRITICAL: Apply scope filtering before finding
-        if ($user->hasRole('admin')) {
-            // Admin can see any gudang entry
-        } elseif ($user->hasRole('manager')) {
-            // Manager: Only their branch
-            $query->whereHas('user', fn($q) => 
-                $q->where('branch_name', $user->branch_name)
-            );
-        } elseif ($user->hasRole('user')) {
-            // User: Only their own
-            $query->where('unique_id', $user->unique_id);
-        } else {
-            return response()->json([
-                'status' => false, 
-                'message' => 'Access denied'
-            ], 403);
-        }
-
-        $gudang = $query->firstOrFail();
         $this->authorize('view', $gudang);
-        
-        return new GudangResource($gudang);
+        return GudangResource::make($gudang)->response();
     }
 
-    public function update(Request $request, $unique_id, $id_barang)
+    public function update(Request $request, $unique_id, $id_barang): JsonResponse
     {
-        $user = Auth::user();
-        $query = Gudang::where('unique_id', $unique_id)
-                      ->where('id_barang', $id_barang);
-
-        // ✅ CRITICAL: Apply scope filtering before finding
-        if ($user->hasRole('admin')) {
-            // Admin can update any gudang entry
-        } elseif ($user->hasRole('manager')) {
-            // Manager: Only their branch
-            $query->whereHas('user', fn($q) => 
-                $q->where('branch_name', $user->branch_name)
-            );
-        } elseif ($user->hasRole('user')) {
-            // User: Only their own
-            $query->where('unique_id', $user->unique_id);
-        } else {
-            return response()->json([
-                'status' => false, 
-                'message' => 'Access denied'
-            ], 403);
-        }
-
-        $gudang = $query->firstOrFail();
+        $gudang = Gudang::where('unique_id', $unique_id)
+            ->where('id_barang', $id_barang)
+            ->firstOrFail();
+            
         $this->authorize('update', $gudang);
 
-        $data = $request->validate([
+        $validatedData = $request->validate([
             'jumlah_barang' => 'sometimes|required|integer|min:0',
             'keterangan'    => 'nullable|string|max:500',
-            'tipe'          => 'sometimes|in:manual,biasa,mandiri',
         ]);
-
-        $gudang->update($data);
-        return new GudangResource($gudang);
+        
+        $gudang->update($validatedData);
+        return GudangResource::make($gudang)->response();
     }
 
-    public function destroy($unique_id, $id_barang)
+    public function destroy($unique_id, $id_barang): JsonResponse
     {
-        $user = Auth::user();
-        $query = Gudang::where('unique_id', $unique_id)
-                      ->where('id_barang', $id_barang);
+        $gudang = Gudang::where('unique_id', $unique_id)
+            ->where('id_barang', $id_barang)
+            ->firstOrFail();
 
-        // ✅ CRITICAL: Apply scope filtering before finding
-        if ($user->hasRole('admin')) {
-            // Admin can delete any gudang entry
-        } elseif ($user->hasRole('manager')) {
-            // Manager: Only their branch (but typically can't delete)
-            $query->whereHas('user', fn($q) => 
-                $q->where('branch_name', $user->branch_name)
-            );
-        } elseif ($user->hasRole('user')) {
-            // User: Only their own (but typically can't delete)
-            $query->where('unique_id', $user->unique_id);
-        } else {
-            return response()->json([
-                'status' => false, 
-                'message' => 'Access denied'
-            ], 403);
-        }
-
-        $gudang = $query->firstOrFail();
         $this->authorize('delete', $gudang);
         
         $gudang->delete();
         return response()->json(null, HttpResponse::HTTP_NO_CONTENT);
     }
 
-    public function adjustStock(Request $request, $unique_id, $id_barang)
+    public function adjustStock(AdjustStockRequest $request, $unique_id, $id_barang): JsonResponse
     {
-        $user = Auth::user();
-        
-        // ✅ Only admin can adjust stock
-        if (!$user->hasRole('admin')) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Only admin can adjust stock'
-            ], 403);
-        }
-
         $gudang = Gudang::where('unique_id', $unique_id)
-                       ->where('id_barang', $id_barang)
-                       ->firstOrFail();
+            ->where('id_barang', $id_barang)
+            ->firstOrFail();
 
-        $data = $request->validate([
-            'adjustment_type' => 'required|in:add,subtract,set',
-            'adjustment_amount' => 'required|integer|min:0',
-            'reason' => 'required|string|max:500',
-        ]);
+        $updatedGudang = $this->gudangService->adjustStock(
+            $gudang,
+            $request->user(),
+            $request->validated()
+        );
 
-        $oldStock = $gudang->jumlah_barang;
-
-        switch ($data['adjustment_type']) {
-            case 'add':
-                $gudang->jumlah_barang += $data['adjustment_amount'];
-                break;
-            case 'subtract':
-                $gudang->jumlah_barang = max(0, $gudang->jumlah_barang - $data['adjustment_amount']);
-                break;
-            case 'set':
-                $gudang->jumlah_barang = $data['adjustment_amount'];
-                break;
-        }
-
-        $gudang->keterangan = $data['reason'];
-        $gudang->save();
-
-        // ✅ Log the adjustment (you can create a StockAdjustment model for this)
-        \Log::info('Stock adjustment made', [
-            'admin_id' => $user->unique_id,
-            'gudang_id' => $gudang->id,
-            'old_stock' => $oldStock,
-            'new_stock' => $gudang->jumlah_barang,
-            'adjustment_type' => $data['adjustment_type'],
-            'adjustment_amount' => $data['adjustment_amount'],
-            'reason' => $data['reason']
-        ]);
-
-        return new GudangResource($gudang);
+        return GudangResource::make($updatedGudang)->response();
     }
 }
