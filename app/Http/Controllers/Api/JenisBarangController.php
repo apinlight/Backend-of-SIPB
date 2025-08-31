@@ -4,114 +4,81 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\JenisBarangResource;
+use App\Http\Requests\StoreJenisBarangRequest;
+use App\Http\Requests\UpdateJenisBarangRequest;
 use App\Models\JenisBarang;
+use App\Services\JenisBarangService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class JenisBarangController extends Controller
 {
     use AuthorizesRequests;
 
-    public function index(Request $request)
+    public function __construct(protected JenisBarangService $jenisBarangService)
     {
-        // ✅ All authenticated users can view jenis barang
-        $this->authorize('viewAny', JenisBarang::class);
-        
-        $query = JenisBarang::query();
-
-        // ✅ Apply filters
-        if ($request->filled('search')) {
-            $query->where('nama_jenis_barang', 'like', "%{$request->search}%");
-        }
-
-        if ($request->filled('status')) {
-            $query->where('is_active', $request->status === 'active');
-        }
-
-        $jenisBarang = $query->paginate(20);
-        return JenisBarangResource::collection($jenisBarang);
+        $this->authorizeResource(JenisBarang::class, 'jenis_barang');
     }
 
-    public function store(Request $request)
+    public function index(Request $request): JsonResponse
     {
-        // ✅ Only admin can create jenis barang
-        $this->authorize('create', JenisBarang::class);
-        
-        $data = $request->validate([
-            'id_jenis_barang'   => 'required|string|unique:tb_jenis_barang,id_jenis_barang',
-            'nama_jenis_barang' => 'required|string|max:255|unique:tb_jenis_barang,nama_jenis_barang',
-            'deskripsi'         => 'nullable|string|max:1000',
-            'is_active'         => 'sometimes|boolean',
-        ]);
+        $query = JenisBarang::query();
 
-        $data['is_active'] = $data['is_active'] ?? true;
+        $query->when($request->filled('search'), function ($q) use ($request) {
+            return $q->where('nama_jenis_barang', 'like', '%' . $request->input('search') . '%');
+        });
+        $query->when($request->filled('status'), function ($q) use ($request) {
+            return $q->where('is_active', $request->input('status') === 'active');
+        });
 
-        $jenisBarang = JenisBarang::create($data);
-        return (new JenisBarangResource($jenisBarang))
+        $jenisBarang = $query->paginate(20);
+        return JenisBarangResource::collection($jenisBarang)->response();
+    }
+
+    public function store(StoreJenisBarangRequest $request): JsonResponse
+    {
+        $jenisBarang = $this->jenisBarangService->create($request->validated());
+        return JenisBarangResource::make($jenisBarang)
             ->response()
             ->setStatusCode(HttpResponse::HTTP_CREATED);
     }
 
-    public function show($id_jenis_barang)
+    public function show(JenisBarang $jenis_barang): JsonResponse
     {
-        $jenisBarang = JenisBarang::where('id_jenis_barang', $id_jenis_barang)->firstOrFail();
-        $this->authorize('view', $jenisBarang);
-        
-        return new JenisBarangResource($jenisBarang);
+        return JenisBarangResource::make($jenis_barang)->response();
     }
 
-    public function update(Request $request, $id_jenis_barang)
+    public function update(UpdateJenisBarangRequest $request, JenisBarang $jenis_barang): JsonResponse
     {
-        $jenisBarang = JenisBarang::where('id_jenis_barang', $id_jenis_barang)->firstOrFail();
-        $this->authorize('update', $jenisBarang);
-
-        $data = $request->validate([
-            'nama_jenis_barang' => 'sometimes|required|string|max:255|unique:tb_jenis_barang,nama_jenis_barang,' . $jenisBarang->id_jenis_barang . ',id_jenis_barang',
-            'deskripsi'         => 'nullable|string|max:1000',
-            'is_active'         => 'sometimes|boolean',
-        ]);
-
-        $jenisBarang->update($data);
-        return new JenisBarangResource($jenisBarang);
+        $updatedJenisBarang = $this->jenisBarangService->update($jenis_barang, $request->validated());
+        return JenisBarangResource::make($updatedJenisBarang)->response();
     }
 
-    public function destroy($id_jenis_barang)
+    public function destroy(JenisBarang $jenis_barang): JsonResponse
     {
-        $jenisBarang = JenisBarang::where('id_jenis_barang', $id_jenis_barang)->firstOrFail();
-        $this->authorize('delete', $jenisBarang);
-
-        // ✅ Check if jenis barang is used by any barang
-        $barangCount = $jenisBarang->barang()->count();
-        if ($barangCount > 0) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Cannot delete jenis barang that is used by existing barang'
-            ], 422);
+        try {
+            $this->jenisBarangService->delete($jenis_barang);
+            return response()->json(null, HttpResponse::HTTP_NO_CONTENT);
+        } catch (\Exception $e) {
+            return response()->json(['status' => false, 'message' => $e->getMessage()], 422);
         }
+    }
+    
+    // --- Custom Actions ---
 
-        $jenisBarang->delete();
-        return response()->json(null, HttpResponse::HTTP_NO_CONTENT);
+    public function toggleStatus(JenisBarang $jenis_barang): JsonResponse
+    {
+        $this->authorize('update', $jenis_barang);
+        $updatedJenisBarang = $this->jenisBarangService->toggleStatus($jenis_barang);
+        return JenisBarangResource::make($updatedJenisBarang)->response();
     }
 
-    public function toggleStatus($id_jenis_barang)
+    public function active(): JsonResponse
     {
-        $jenisBarang = JenisBarang::where('id_jenis_barang', $id_jenis_barang)->firstOrFail();
-        $this->authorize('update', $jenisBarang);
-
-        $jenisBarang->is_active = !$jenisBarang->is_active;
-        $jenisBarang->save();
-
-        return new JenisBarangResource($jenisBarang);
-    }
-
-    public function active()
-    {
-        // ✅ All authenticated users can view active jenis barang
         $this->authorize('viewAny', JenisBarang::class);
-        
         $jenisBarang = JenisBarang::where('is_active', true)->get();
-        return JenisBarangResource::collection($jenisBarang);
+        return JenisBarangResource::collection($jenisBarang)->response();
     }
 }
