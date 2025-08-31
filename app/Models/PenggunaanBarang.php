@@ -1,5 +1,4 @@
 <?php
-// app/Models/PenggunaanBarang.php
 
 namespace App\Models;
 
@@ -7,23 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Builder;
 
-/**
- * @property int $id_penggunaan
- * @property string $unique_id
- * @property string $id_barang
- * @property int $jumlah_digunakan
- * @property string $keperluan
- * @property \Illuminate\Support\Carbon $tanggal_penggunaan
- * @property string|null $keterangan
- * @property string|null $approved_by
- * @property \Illuminate\Support\Carbon|null $approved_at
- * @property string $status
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\User $user
- * @property-read \App\Models\Barang $barang
- * @property-read \App\Models\User|null $approver
- */
 class PenggunaanBarang extends Model
 {
     protected $table = 'tb_penggunaan_barang';
@@ -61,69 +43,6 @@ class PenggunaanBarang extends Model
     public function approver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by', 'unique_id');
-    }
-
-    // ✅ Business Logic
-    public function approve(string $approverUniqueId): bool
-    {
-        // Check if there's enough stock
-        $currentStock = Gudang::where('unique_id', $this->unique_id)
-            ->where('id_barang', $this->id_barang)
-            ->value('jumlah_barang') ?? 0;
-
-        if ($currentStock < $this->jumlah_digunakan) {
-            return false; // Not enough stock
-        }
-
-        // Update usage status
-        $this->update([
-            'status' => 'approved',
-            'approved_by' => $approverUniqueId,
-            'approved_at' => now()
-        ]);
-
-        // Reduce stock from gudang
-        $this->reduceStockFromGudang();
-
-        return true;
-    }
-
-    public function reject(string $approverUniqueId): void
-    {
-        $this->update([
-            'status' => 'rejected',
-            'approved_by' => $approverUniqueId,
-            'approved_at' => now()
-        ]);
-    }
-
-    private function reduceStockFromGudang(): void
-    {
-        $gudangRecord = Gudang::where('unique_id', $this->unique_id)
-            ->where('id_barang', $this->id_barang)
-            ->first();
-
-        if ($gudangRecord) {
-            $newStock = $gudangRecord->jumlah_barang - $this->jumlah_digunakan;
-            
-            if ($newStock <= 0) {
-                // Remove record if stock becomes 0 or negative
-                $gudangRecord->delete();
-            } else {
-                // Update stock
-                $gudangRecord->update(['jumlah_barang' => $newStock]);
-            }
-        }
-    }
-
-    // ✅ Validation
-    public function validateStock(): bool
-    {
-        $currentStock = Gudang::where('unique_id', $this->unique_id)
-            ->where('id_barang', $this->id_barang)
-            ->value('jumlah_barang') ?? 0;
-
-        return $currentStock >= $this->jumlah_digunakan;
     }
 
     // ✅ Scopes
