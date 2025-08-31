@@ -3,8 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Password;
 
-class LoginRequest extends FormRequest
+class ChangePasswordRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -14,8 +15,8 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'login'    => 'required|string',
-            'password' => 'required|string',
+            'current_password' => 'required|string',
+            'new_password'     => ['required', 'confirmed', Password::min(8)],
         ];
     }
 }
