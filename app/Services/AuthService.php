@@ -14,9 +14,6 @@ class AuthService
         return (int) (config('sanctum.expiration', 1440));
     }
 
-    /**
-     * Authenticate a user and generate a token.
-     */
     public function login(array $credentials, string $ip): array
     {
         $loginType = filter_var($credentials['login'], FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
@@ -29,7 +26,6 @@ class AuthService
         }
 
         if (isset($user->is_active) && !$user->is_active) {
-            // Use a custom exception or a ValidationException
             throw ValidationException::withMessages([
                 'login' => ['Account is deactivated. Please contact an administrator.'],
             ]);
@@ -44,9 +40,6 @@ class AuthService
         return $this->createTokenResponse($user);
     }
 
-    /**
-     * Register a new user and generate a token.
-     */
     public function register(array $data): array
     {
         $user = User::create([
@@ -64,23 +57,24 @@ class AuthService
         return $this->createTokenResponse($user);
     }
 
-    /**
-     * Create a new token for a user.
-     */
     public function refreshToken(User $user): array
     {
         if (isset($user->is_active) && !$user->is_active) {
-            $user->currentAccessToken()->delete();
+            // ✅ FIX: Check if the token exists before trying to delete it.
+            if ($token = $user->currentAccessToken()) {
+                $token->delete();
+            }
             throw new \Exception('Account is deactivated.');
         }
 
-        $user->currentAccessToken()->delete();
+        // ✅ FIX: Be more defensive. Get the token, check it, then delete it.
+        if ($token = $user->currentAccessToken()) {
+            $token->delete();
+        }
+        
         return $this->createTokenResponse($user->fresh('roles'));
     }
 
-    /**
-     * Change a user's password.
-     */
     public function changePassword(User $user, array $passwords): void
     {
         if (!Hash::check($passwords['current_password'], $user->password)) {
@@ -90,12 +84,9 @@ class AuthService
         }
 
         $user->update(['password' => Hash::make($passwords['new_password'])]);
-        $user->tokens()->delete(); // Force re-login on all devices for security
+        $user->tokens()->delete();
     }
 
-    /**
-     * Helper to generate the token and build the response array.
-     */
     private function createTokenResponse(User $user): array
     {
         $expiryMinutes = $this->getTokenExpiryMinutes();
