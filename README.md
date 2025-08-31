@@ -1,111 +1,81 @@
 # 📦 SIPB – Sistem Informasi dan Pencatatan Barang
 
-SIPB adalah aplikasi berbasis web untuk mencatat, mengelola, dan mengawasi pergerakan barang dalam suatu sistem internal organisasi. Dibangun dengan **Laravel** (backend API) dan **Vue.js** (frontend), serta mendukung autentikasi menggunakan **Laravel Sanctum** dan manajemen peran dengan **Spatie Laravel Permission**.
+SIPB adalah sebuah API backend yang tangguh untuk aplikasi pencatatan, pengelolaan, dan pengawasan pergerakan barang dalam suatu organisasi. Dibangun dengan **Laravel 12** dan dirancang dengan **Service-Oriented Architecture**, sistem ini menyediakan endpoint yang aman, efisien, dan mudah dipelihara untuk diintegrasikan dengan berbagai frontend, seperti Vue.js.
 
 ---
 
-## 🔐 Fitur Autentikasi & Role-Based Access
+## ✨ Fitur Utama
 
-- **Login & Logout** (Bearer Token, stateless, CORS handled)
-- **Role Pengguna:**
-  - **Admin**: akses penuh ke seluruh data
-  - **User**: mengelola data dan pengajuannya sendiri
-  - **Manager**: melihat data dari semua user dalam `branch_name` yang sama
-
----
-
-## 🧩 Modul Utama
-
-### 1. 📁 Database (Hanya Admin)
-- `User` (CRUD)
-- `Barang` (CRUD)
-- `Jenis Barang` (CRUD)
-- `Batas Barang` (CRUD)
-- `Batas Pengajuan` (CRUD)
-
-### 2. ✍️ Pengajuan
-- Mendukung dua tipe pengajuan:
-  - **Biasa**: Pengajuan yang saat disetujui admin akan mengurangi stok pusat dan menambah stok user.
-  - **Manual**: Pengajuan khusus/eksternal yang hanya dicatat sebagai riwayat, tanpa mempengaruhi stok pusat.
-- **Admin**: approval dan monitoring pengajuan
-- **User**: tambah, edit, dan hapus pengajuan miliknya
-- **Manager**: hanya dapat melihat pengajuan user satu cabang
-
-### 3. 📄 Riwayat
-- **Admin**: melihat semua riwayat atau filter per user
-- **User**: hanya melihat riwayat sendiri
-- **Manager**: melihat riwayat semua user dalam satu `branch_name`
+- **Manajemen Inventaris Lengkap**: CRUD untuk Master Data (`Barang`, `Jenis Barang`, `Batas Barang`).
+- **Siklus Hidup Barang**:
+    - **Pengajuan (Procurement)**: Alur kerja untuk meminta barang baru, lengkap dengan validasi batas stok dan limit bulanan.
+    - **Gudang (Stock Management)**: Pencatatan stok per pengguna dengan operasi yang aman secara transaksional.
+    - **Penggunaan Barang (Consumption)**: Alur kerja untuk mencatat pemakaian barang, lengkap dengan alur persetujuan (approval).
+- **Manajemen Pengguna & Peran**: Sistem autentikasi berbasis token (Laravel Sanctum) dengan tiga peran utama:
+    - **Admin**: Akses penuh ke seluruh sistem, termasuk pengaturan global.
+    - **Manager**: Mengawasi dan menyetujui permintaan dari semua pengguna dalam `branch_name` yang sama.
+    - **User**: Mengelola data dan alur kerja miliknya sendiri.
+- **Pelaporan & Analitik**: Endpoint terdedikasi untuk menghasilkan laporan agregat (summary, stok, penggunaan, dll.) dengan filter dinamis.
+- **Ekspor ke Excel**: Kemampuan untuk mengekspor semua laporan utama ke dalam format file `.xlsx` yang terformat dengan baik.
 
 ---
 
-## ⚙️ Teknologi yang Digunakan
+## 🏛️ Pola Arsitektur
+
+Aplikasi ini telah direfaktor secara ekstensif untuk mengikuti praktik terbaik dalam pengembangan perangkat lunak modern:
+
+- **Service-Oriented Architecture**: Semua logika bisnis yang kompleks (misalnya, proses persetujuan, penyesuaian stok, validasi) dienkapsulasi dalam **Service Class** yang terdedikasi.
+- **Thin Controllers**: Controller hanya bertanggung jawab untuk menangani request dan response HTTP, mendelegasikan semua pekerjaan ke service. Ini membuat controller bersih, mudah dibaca, dan fokus.
+- **Form Requests**: Semua validasi dan otorisasi untuk request `POST` dan `PUT` ditangani oleh kelas **Form Request** khusus, memisahkan validasi dari logika controller.
+- **Policies**: Semua aturan otorisasi (siapa yang dapat melihat, membuat, atau mengubah data) terpusat di dalam kelas **Policy**, menyediakan satu sumber kebenaran untuk perizinan.
+- **Lean Models**: Model Eloquent difokuskan pada representasi data, relasi, dan query scope, sementara semua logika bisnis yang kompleks telah dipindahkan ke service.
+
+---
+
+## ⚙️ Teknologi & Konsep
 
 - **Backend**: Laravel 12
-  - Laravel Sanctum (stateless API auth)
-  - Spatie Laravel Permission (role & permission)
-  - API Resource (standarisasi respons)
-  - UUID/ULID sebagai primary key
-- **Frontend**: Vue.js 3 (Vite), Axios
-- **Database**: MariaDB
-- **Security**:
-  - CORS disesuaikan (`FRONTEND_URL`)
-  - Password terenkripsi
-  - Middleware, policy, dan guards untuk validasi akses
+- **Autentikasi**: Laravel Sanctum (Stateless API)
+- **Otorisasi**: Spatie Laravel Permission (Roles & Permissions) & Laravel Policies
+- **Database**: MariaDB / MySQL
+- **Primary Keys**: ULID/UUID untuk kunci utama yang tidak berurutan dan aman.
+- **API Response**: Standarisasi menggunakan Laravel API Resources.
 
 ---
 
-## ✍️ Cara Setup Proyek (Installation & Environment)
+## ✍️ Panduan Instalasi
 
-1. **Clone repository:**
-   ```bash
-   git clone https://github.com/apinlight/Backend-of-SIPB.git
-   cd Backend-of-SIPB
-   ```
-2. **Install dependencies:**
-   ```bash
-   composer install
-   ```
-3. **Copy dan atur file enviroment:**
-   ```bash
-   cp .env.example .env
-   ```
-4. **Generate key:**
-   ```bash
-   php artisan key:generate
-   ```
-5. **Konfigurasi `.env`:**
-   * Atur koneksi database:
-     ```bash
-     DB_CONNECTION=mysql
-     DB_HOST=127.0.0.1
-     DB_PORT=3306
-     DB_DATABASE=sipb
-     DB_USERNAME=root
-     DB_PASSWORD=
-     ```
-   * Atur URL frontend untuk CORS:
-     ```bash
-     FRONTEND_URL=http://127.0.0.2:5173
-     ```
-6. **Jalankan migrasi dan seeder (opsional):**
-   ```bash
-   php artisan migrate
-   php artisan db:seed
-   ```
-7. **Jalankan server:**
-  ```bash
-  php artisan serve
-  ```
-
----
-
-## ✅ Status
-Fitur login/logout, role-based access, dan semua endpoint API utama sudah berjalan dengan baik.
+1.  **Clone repository:**
+    ```bash
+    git clone [https://github.com/apinlight/Backend-of-SIPB.git](https://github.com/apinlight/Backend-of-SIPB.git)
+    cd Backend-of-SIPB
+    ```
+2.  **Install dependencies:**
+    ```bash
+    composer install
+    ```
+3.  **Setup file environment:**
+    ```bash
+    cp .env.example .env
+    ```
+4.  **Generate key aplikasi:**
+    ```bash
+    php artisan key:generate
+    ```
+5.  **Konfigurasi `.env`:**
+    - Atur koneksi database (DB_DATABASE, DB_USERNAME, DB_PASSWORD).
+    - Atur URL frontend untuk CORS: `FRONTEND_URL=http://localhost:5173`
+6.  **Jalankan migrasi dan seeder:**
+    ```bash
+    php artisan migrate --seed
+    ```
+7.  **Jalankan server:**
+    ```bash
+    php artisan serve
+    ```
 
 ---
 
 ## ℹ️ Catatan
-Untuk saat ini belum tersedia link demo production. Semua pengujian dilakukan di environment development.
 
-Dokumentasi API tersedia di *dokumentasi-api* atau dapat diakses melalui halaman dokumentasi pada aplikasi.
-
+Dokumentasi API lengkap tersedia di file `dokumentasi-api.md`.
