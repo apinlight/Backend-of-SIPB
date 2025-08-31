@@ -1,5 +1,5 @@
 <?php
-// app/Http/Resources/GudangResource.php
+
 namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
@@ -12,24 +12,18 @@ class GudangResource extends JsonResource
         return [
             'unique_id' => $this->unique_id,
             'id_barang' => $this->id_barang,
-            'jumlah_barang' => $this->jumlah_barang,
+            'jumlah_barang' => (int) $this->jumlah_barang,
+            'keterangan' => $this->keterangan,
+            'tipe' => $this->tipe,
             
-            // ✅ ADD: Additional fields that might be needed
-            'keterangan' => $this->keterangan ?? null,
-            'tipe' => $this->tipe ?? 'biasa', // manual vs biasa
+            // Relationships
+            'user' => UserResource::make($this->whenLoaded('user')),
+            'barang' => BarangResource::make($this->whenLoaded('barang')),
             
-            // ✅ Relationships
-            'user' => new UserResource($this->whenLoaded('user')),
-            'barang' => new BarangResource($this->whenLoaded('barang')),
+            'total_nilai' => $this->whenLoaded('barang', fn() => ($this->barang->harga_barang ?? 0) * $this->jumlah_barang),
             
-            // ✅ ADD: Calculated fields
-            'total_nilai' => $this->when(
-                $this->relationLoaded('barang') && $this->barang,
-                ($this->barang->harga_barang ?? 0) * $this->jumlah_barang
-            ),
-            
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'created_at' => $this->created_at?->toISOString(),
+            'updated_at' => $this->updated_at?->toISOString(),
         ];
     }
 }

@@ -13,7 +13,9 @@ class JenisBarangResource extends JsonResource
             'id_jenis_barang'   => $this->id_jenis_barang,
             'nama_jenis_barang' => $this->nama_jenis_barang,
             'deskripsi'         => $this->deskripsi,
-            'is_active'         => $this->is_active,
+            'is_active'         => (bool) $this->is_active,
+            'created_at'        => $this->created_at?->toISOString(),
+            'updated_at'        => $this->updated_at?->toISOString(),
         ];
     }
 }

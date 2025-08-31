@@ -1,5 +1,5 @@
 <?php
-// app/Http/Resources/DetailPengajuanResource.php
+
 namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
@@ -12,26 +12,22 @@ class DetailPengajuanResource extends JsonResource
         return [
             'id_pengajuan' => $this->id_pengajuan,
             'id_barang' => $this->id_barang,
-            'jumlah' => $this->jumlah,
+            'jumlah' => (int) $this->jumlah,
+            'keterangan' => $this->keterangan,
+
+            // Simple calculation is acceptable here
+            'total_harga' => $this->whenLoaded('barang', fn() => ($this->barang->harga_barang ?? 0) * $this->jumlah),
             
-            // ✅ ADD: Calculated fields
-            'total_harga' => $this->when(
-                $this->relationLoaded('barang') && $this->barang,
-                ($this->barang->harga_barang ?? 0) * $this->jumlah
-            ),
+            // Relationships
+            'barang' => BarangResource::make($this->whenLoaded('barang')),
+            // Avoid circular dependency by not including the full PengajuanResource here unless necessary
+            'pengajuan' => $this->whenLoaded('pengajuan', [
+                'id_pengajuan' => $this->pengajuan->id_pengajuan,
+                'status_pengajuan' => $this->pengajuan->status_pengajuan,
+            ]),
             
-            // ✅ ADD: Stock information for approval process
-            'stok_tersedia' => $this->when(
-                isset($this->stok_tersedia),
-                $this->stok_tersedia
-            ),
-            
-            // ✅ Relationships
-            'barang' => new BarangResource($this->whenLoaded('barang')),
-            'pengajuan' => new PengajuanResource($this->whenLoaded('pengajuan')),
-            
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'created_at' => $this->created_at?->toISOString(),
+            'updated_at' => $this->updated_at?->toISOString(),
         ];
     }
 }
