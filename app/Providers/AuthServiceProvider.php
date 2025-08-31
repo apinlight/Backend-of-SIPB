@@ -8,15 +8,15 @@ use Illuminate\Support\Facades\Gate;
 class AuthServiceProvider extends ServiceProvider
 {
     protected $policies = [
-        // ✅ UPDATE: Register all policies
         \App\Models\User::class => \App\Policies\UserPolicy::class,
         \App\Models\Barang::class => \App\Policies\BarangPolicy::class,
         \App\Models\JenisBarang::class => \App\Policies\JenisBarangPolicy::class,
         \App\Models\BatasBarang::class => \App\Policies\BatasBarangPolicy::class,
         \App\Models\Pengajuan::class => \App\Policies\PengajuanPolicy::class,
         \App\Models\Gudang::class => \App\Policies\GudangPolicy::class,
-        \App\Models\GlobalSetting::class => \App\Policies\GlobalSettingPolicy::class, // ✅ NEW
-        // ❌ REMOVE: \App\Models\BatasPengajuan::class => \App\Policies\BatasPengajuanPolicy::class,
+        \App\Models\GlobalSetting::class => \App\Policies\GlobalSettingPolicy::class,
+        \App\Models\PenggunaanBarang::class => \App\Policies\PenggunaanBarangPolicy::class,
+        
     ];
 
     public function boot(): void
@@ -40,7 +40,6 @@ class AuthServiceProvider extends ServiceProvider
             return $user->hasRole('admin');
         });
 
-        // ✅ ADD: Branch-specific gates
         Gate::define('view-branch-data', function ($user, $branchName = null) {
             if ($user->hasRole('admin')) {
                 return true;
