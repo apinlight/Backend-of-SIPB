@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Pengajuan;
+use App\Models\DetailPengajuan;
 use App\Models\User;
 use App\Models\Gudang;
 use Illuminate\Http\UploadedFile;
@@ -12,7 +13,6 @@ use Exception;
 
 class PengajuanService
 {
-    // You already have this service, so we inject it here.
     protected $validationService;
 
     public function __construct(PengajuanValidationService $validationService)
@@ -25,7 +25,6 @@ class PengajuanService
         if (isset($data['items'])) {
             $errors = $this->validationService->validatePengajuanLimits($data['unique_id'], $data['items']);
             if (!empty($errors)) {
-                // In a real app, you might create a custom exception for this.
                 throw new Exception(json_encode($errors));
             }
         }
@@ -88,5 +87,52 @@ class PengajuanService
                 $gudang->increment('jumlah_barang', $detail->jumlah);
             }
         });
+    }
+
+    /**
+     * Adds an item to a pengajuan, or updates the quantity if it already exists.
+     */
+    public function addItem(Pengajuan $pengajuan, array $itemData): DetailPengajuan
+    {
+        if (!$pengajuan->isMutable()) {
+            throw new Exception('Cannot modify an approved or rejected pengajuan.');
+        }
+
+        $detail = $pengajuan->details()->updateOrCreate(
+            [
+                'id_barang' => $itemData['id_barang'],
+            ],
+            [
+                'jumlah' => DB::raw("jumlah + {$itemData['jumlah']}"),
+                'keterangan' => $itemData['keterangan'] ?? null,
+            ]
+        );
+
+        return $detail->refresh();
+    }
+
+    /**
+     * Updates an existing item within a pengajuan.
+     */
+    public function updateItem(DetailPengajuan $detail, array $itemData): DetailPengajuan
+    {
+        if (!$detail->pengajuan->isMutable()) {
+            throw new Exception('Cannot modify an approved or rejected pengajuan.');
+        }
+        
+        $detail->update($itemData);
+        return $detail->fresh();
+    }
+
+    /**
+     * Removes an item from a pengajuan.
+     */
+    public function removeItem(DetailPengajuan $detail): void
+    {
+        if (!$detail->pengajuan->isMutable()) {
+            throw new Exception('Cannot modify an approved or rejected pengajuan.');
+        }
+
+        $detail->delete();
     }
 }

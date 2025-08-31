@@ -16,6 +16,7 @@ class AuthServiceProvider extends ServiceProvider
         \App\Models\Gudang::class => \App\Policies\GudangPolicy::class,
         \App\Models\GlobalSetting::class => \App\Policies\GlobalSettingPolicy::class,
         \App\Models\PenggunaanBarang::class => \App\Policies\PenggunaanBarangPolicy::class,
+        \App\Models\DetailPengajuan::class => \App\Policies\DetailPengajuanPolicy::class,
         
     ];
 
