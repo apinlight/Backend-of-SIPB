@@ -1,5 +1,4 @@
 <?php
-// app/Models/GlobalSetting.php
 
 namespace App\Models;
 
@@ -9,23 +8,19 @@ class GlobalSetting extends Model
 {
     protected $table = 'tb_global_settings';
     
+    // Use the default primary key 'id' if it exists. If your primary key is
+    // 'setting_key', you would uncomment the lines below.
+    // protected $primaryKey = 'setting_key'; 
+    // public $incrementing = false;
+    // protected $keyType = 'string';
+
     protected $fillable = [
         'setting_key',
         'setting_value', 
         'setting_description'
     ];
 
-    public static function getMonthlyPengajuanLimit(): int
-    {
-        return (int) self::where('setting_key', 'monthly_pengajuan_limit')
-                        ->value('setting_value') ?? 5;
-    }
-
-    public static function setMonthlyPengajuanLimit(int $limit): void
-    {
-        self::updateOrCreate(
-            ['setting_key' => 'monthly_pengajuan_limit'],
-            ['setting_value' => $limit]
-        );
-    }
+    // The static business logic methods (`get...` and `set...`) have been
+    // successfully moved to the GlobalSettingsService. The model is now a
+    // clean representation of the data in the tb_global_settings table.
 }

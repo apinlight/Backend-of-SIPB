@@ -1,54 +1,46 @@
 <?php
-// app/Http/Controllers/Api/GlobalSettingsController.php
 
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\SetMonthlyLimitRequest;
 use App\Models\GlobalSetting;
-use Illuminate\Http\Request;
+use App\Services\GlobalSettingsService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\JsonResponse;
 
 class GlobalSettingsController extends Controller
 {
     use AuthorizesRequests;
 
-    // GET /api/v1/global-settings
-    public function index()
+    public function __construct(protected GlobalSettingsService $settingsService)
+    {
+    }
+
+    public function index(): JsonResponse
     {
         $this->authorize('viewAny', GlobalSetting::class);
-        
-        $settings = GlobalSetting::all()->pluck('setting_value', 'setting_key');
-        
-        return response()->json([
-            'status' => true,
-            'data' => $settings
-        ]);
+        $settings = $this->settingsService->getAllSettings();
+        return response()->json(['status' => true, 'data' => $settings]);
     }
 
-    // GET /api/v1/global-settings/monthly-limit
-    public function getMonthlyLimit()
+    public function getMonthlyLimit(): JsonResponse
     {
-        return response()->json([
-            'status' => true,
-            'data' => ['monthly_limit' => GlobalSetting::getMonthlyPengajuanLimit()]
-        ]);
+        $this->authorize('viewAny', GlobalSetting::class);
+        $limit = $this->settingsService->getMonthlyLimit();
+        return response()->json(['status' => true, 'data' => ['monthly_limit' => $limit]]);
     }
 
-    // PUT /api/v1/global-settings/monthly-limit
-    public function setMonthlyLimit(Request $request)
+    public function setMonthlyLimit(SetMonthlyLimitRequest $request): JsonResponse
     {
         $this->authorize('create', GlobalSetting::class);
-        
-        $data = $request->validate([
-            'monthly_limit' => 'required|integer|min:1|max:50'
-        ]);
-
-        GlobalSetting::setMonthlyPengajuanLimit($data['monthly_limit']);
+        $limit = $request->validated()['monthly_limit'];
+        $this->settingsService->setMonthlyLimit($limit);
 
         return response()->json([
             'status' => true,
             'message' => 'Monthly pengajuan limit updated successfully',
-            'data' => ['monthly_limit' => $data['monthly_limit']]
+            'data' => ['monthly_limit' => $limit]
         ]);
     }
 }
