@@ -13,8 +13,7 @@ use Spatie\Permission\Traits\HasRoles;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
- * ✅ THE FIX: A complete docblock (blueprint) for your User model.
- *
+ * @property-read \Laravel\Sanctum\PersonalAccessToken|null $currentAccessToken
  * @property string $unique_id
  * @property string $username
  * @property string $email
@@ -24,12 +23,11 @@ use Laravel\Sanctum\HasApiTokens;
  * @property \Illuminate\Support\Carbon|null $last_login_at
  * @property string|null $last_login_ip
  * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Permission\Models\Role[] $roles
- * @property-read \Laravel\Sanctum\PersonalAccessToken|null $currentAccessToken
  */
 class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasRoles, HasFactory, Notifiable, HasUlids;
-
+    
     protected $table = 'tb_users';
     protected $primaryKey = 'unique_id';
     public $incrementing = false;
@@ -37,15 +35,23 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $hidden = ['password'];
     public $timestamps = true;
 
+    // ✅ FIX: Add the new columns to the fillable array
     protected $fillable = [
         'unique_id',
         'username',
         'email',
         'password',
         'branch_name',
-        'is_active', // Assuming this is in your fillable array based on the error
-        'last_login_at', // Assuming this is also fillable
-        'last_login_ip', // Assuming this is also fillable
+        'is_active',
+        'last_login_at',
+        'last_login_ip',
+    ];
+
+    // ✅ FIX: Tell Eloquent to treat 'last_login_at' as a Carbon date object
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'is_active' => 'boolean',
+        'last_login_at' => 'datetime',
     ];
 
     public function pengajuan()
@@ -62,7 +68,6 @@ class User extends Authenticatable implements MustVerifyEmail
     
     public function setPasswordAttribute($value)
     {
-        // Check if the value is already hashed to avoid double-hashing
         if (Hash::needsRehash($value)) {
             $this->attributes['password'] = Hash::make($value);
         } else {
@@ -79,7 +84,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(PenggunaanBarang::class, 'unique_id', 'unique_id');
     }
-
+    
     protected static function booted()
     {
         static::creating(function ($user) {
