@@ -1,8 +1,6 @@
 <?php
 
 use App\Http\Controllers\Api\Auth\TokenAuthController;
-use App\Http\Controllers\Api\Auth\PasswordResetLinkController;
-use App\Http\Controllers\Api\Auth\NewPasswordController;
 use Illuminate\Support\Facades\Route;
 
 // ✅ PUBLIC AUTH ROUTES - No authentication required (STATELESS)
@@ -16,12 +14,6 @@ Route::prefix('api/v1')
         
         Route::post('/login', [TokenAuthController::class, 'login'])
             ->name('login');
-        
-        Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])
-            ->name('password.email');
-        
-        Route::post('/reset-password', [NewPasswordController::class, 'store'])
-            ->name('password.update');
     });
 
 // ✅ PROTECTED AUTH ROUTES - Authentication required (STATELESS)
