@@ -9,7 +9,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Gudang extends Pivot
 {
     protected $table = 'tb_gudang';
-    public $incrementing = true; // Pivot tables often have an auto-incrementing ID
+
+    /**
+     * ✅ FIX: For a pivot model with a composite key, we must tell Eloquent
+     * that it does not have an incrementing primary key.
+     */
+    public $incrementing = false;
 
     protected $fillable = [
         'unique_id',

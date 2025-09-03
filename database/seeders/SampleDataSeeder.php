@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\{User, Barang, Pengajuan, DetailPengajuan, Gudang};
-use Illuminate\Support\Str;
 
 class SampleDataSeeder extends Seeder
 {
@@ -25,15 +24,16 @@ class SampleDataSeeder extends Seeder
         
         foreach ($users as $user) {
             foreach ($barangList->random(5) as $barang) { // Random 5 items per user
-                Gudang::updateOrCreate(
-                    [
-                        'unique_id' => $user->unique_id,
-                        'id_barang' => $barang->id_barang
-                    ],
-                    [
-                        'jumlah_barang' => rand(1, 50) // Random stock 1-50
-                    ]
-                );
+                // ✅ FIX: Use a more explicit approach that works perfectly with composite keys.
+                // This finds the record or creates a new instance in memory.
+                $gudang = Gudang::firstOrNew([
+                    'unique_id' => $user->unique_id,
+                    'id_barang' => $barang->id_barang
+                ]);
+
+                // We then set the value and save. This works for both new and existing records.
+                $gudang->jumlah_barang = rand(1, 50);
+                $gudang->save();
             }
         }
     }
