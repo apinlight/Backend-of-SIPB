@@ -6,7 +6,7 @@ use App\Http\Controllers\Api\Auth\NewPasswordController;
 use Illuminate\Support\Facades\Route;
 
 // ✅ PUBLIC AUTH ROUTES - No authentication required (STATELESS)
-Route::prefix('api')
+Route::prefix('api/v1')
     ->middleware(['api.public', 'api.rate_limit:5,1']) // ✅ 5 attempts per minute for auth
     ->group(function () {
         
@@ -25,7 +25,7 @@ Route::prefix('api')
     });
 
 // ✅ PROTECTED AUTH ROUTES - Authentication required (STATELESS)
-Route::prefix('api')
+Route::prefix('api/v1')
     ->middleware(['api.protected', 'api.rate_limit:30,1']) // ✅ 30 requests per minute for authenticated
     ->group(function () {
         
@@ -61,8 +61,3 @@ Route::prefix('api')
         Route::delete('/sessions/expired', [TokenAuthController::class, 'cleanExpiredTokens'])
             ->name('auth.clean-expired');
     });
-
-// ✅ CORS preflight for SPA (STATELESS)
-Route::options('/api/{any}', fn() => response('', 204))
-    ->where('any', '.*')
-    ->middleware('cors.custom');
