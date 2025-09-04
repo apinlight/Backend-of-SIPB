@@ -19,12 +19,13 @@ class DetailPengajuanController extends Controller
 
     public function __construct(protected PengajuanService $pengajuanService)
     {
-        // Use the 'detail_pengajuan' parameter name for route model binding
-        $this->authorizeResource(DetailPengajuan::class, 'detail_pengajuan');
+        // ❌ REMOVE THIS to prevent the 500 error
+        // $this->authorizeResource(DetailPengajuan::class, 'detail_pengajuan');
     }
     
     public function store(StoreDetailPengajuanRequest $request): JsonResponse
     {
+        // Authorization is correctly handled by StoreDetailPengajuanRequest
         $pengajuan = Pengajuan::findOrFail($request->validated()['id_pengajuan']);
         
         $detail = $this->pengajuanService->addItem($pengajuan, $request->validated());
@@ -36,6 +37,9 @@ class DetailPengajuanController extends Controller
 
     public function update(Request $request, DetailPengajuan $detail_pengajuan): JsonResponse
     {
+        // ✅ ADD manual authorization for updating the item
+        $this->authorize('update', $detail_pengajuan);
+
         $validatedData = $request->validate([
             'jumlah'     => 'sometimes|required|integer|min:1',
             'keterangan' => 'nullable|string|max:500',
@@ -48,6 +52,9 @@ class DetailPengajuanController extends Controller
 
     public function destroy(DetailPengajuan $detail_pengajuan): JsonResponse
     {
+        // ✅ ADD manual authorization for deleting the item
+        $this->authorize('delete', $detail_pengajuan);
+
         $this->pengajuanService->removeItem($detail_pengajuan);
         return response()->json(null, HttpResponse::HTTP_NO_CONTENT);
     }
