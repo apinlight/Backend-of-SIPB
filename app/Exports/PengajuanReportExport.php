@@ -84,12 +84,14 @@ class PengajuanDetailSheet implements FromCollection, WithHeadings, WithStyles, 
     {
         return [
             1 => [
-                'font' => ['bold' => true, 'size' => 12],
+                'font' => ['bold' => true,
+                'size' => 12,
+                'color' => ['rgb' => 'FFFFFF']
+            ],
                 'fill' => [
                     'fillType' => Fill::FILL_SOLID,
                     'startColor' => ['rgb' => '4472C4']
                 ],
-                'font' => ['color' => ['rgb' => 'FFFFFF']],
                 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
             ],
             'F:F' => ['numberFormat' => ['formatCode' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1]],
@@ -177,12 +179,15 @@ class PengajuanSummarySheet implements FromCollection, WithHeadings, WithStyles,
     {
         return [
             1 => [
-                'font' => ['bold' => true, 'size' => 12],
+                'font' => [
+                    'bold' => true,
+                    'size' => 12,
+                    'color' => ['rgb' => 'FFFFFF']
+        ],
                 'fill' => [
                     'fillType' => Fill::FILL_SOLID,
                     'startColor' => ['rgb' => '70AD47']
                 ],
-                'font' => ['color' => ['rgb' => 'FFFFFF']],
                 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
             ],
             'B:B' => [

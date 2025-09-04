@@ -14,6 +14,7 @@ use Laravel\Sanctum\PersonalAccessToken;
 
 class TokenAuthController extends Controller
 {
+    
     public function __construct(protected AuthService $authService)
     {
     }

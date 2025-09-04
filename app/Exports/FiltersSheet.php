@@ -51,12 +51,14 @@ class FiltersSheet implements FromCollection, WithHeadings, WithStyles, WithTitl
     {
         return [
             1 => [
-                'font' => ['bold' => true, 'size' => 12],
+                'font' => ['bold' => true,
+                'size' => 12,
+                'color' => ['rgb' => 'FFFFFF']
+            ],
                 'fill' => [
                     'fillType' => Fill::FILL_SOLID,
                     'startColor' => ['rgb' => '70AD47']
                 ],
-                'font' => ['color' => ['rgb' => 'FFFFFF']],
                 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
             ]
         ];

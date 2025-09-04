@@ -13,7 +13,7 @@ use Spatie\Permission\Traits\HasRoles;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
- * @property-read \Laravel\Sanctum\PersonalAccessToken|null $currentAccessToken
+ * @property-read \Illuminate\Database\Eloquent\Collection|\Laravel\Sanctum\PersonalAccessToken[] $tokens
  * @property string $unique_id
  * @property string $username
  * @property string $email

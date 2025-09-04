@@ -37,7 +37,7 @@ class ApiRateLimitMiddleware
     private function resolveRequestSignature(Request $request): string
     {
         if ($user = $request->user()) {
-            return 'api_rate_limit:' . $user->id;
+            return 'api_rate_limit:' . $user->getAuthIdentifier();
         }
 
         return 'api_rate_limit:' . $request->ip();

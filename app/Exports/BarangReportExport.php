@@ -87,12 +87,15 @@ class BarangDetailSheet implements FromCollection, WithHeadings, WithStyles, Wit
     {
         return [
             1 => [
-                'font' => ['bold' => true, 'size' => 12],
+                'font' => [
+                    'bold' => true, 
+                    'size' => 12,
+                    'color' => ['rgb' => 'FFFFFF']
+                ],
                 'fill' => [
                     'fillType' => Fill::FILL_SOLID,
                     'startColor' => ['rgb' => '4472C4']
                 ],
-                'font' => ['color' => ['rgb' => 'FFFFFF']],
                 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
             ],
             'D:D' => ['numberFormat' => ['formatCode' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1]],
@@ -185,12 +188,15 @@ class BarangSummarySheet implements FromCollection, WithHeadings, WithStyles, Wi
     {
         return [
             1 => [
-                'font' => ['bold' => true, 'size' => 12],
+                'font' => [
+                    'bold' => true, 
+                    'size' => 12,
+                    'color' => ['rgb' => 'FFFFFF']
+                ],
                 'fill' => [
                     'fillType' => Fill::FILL_SOLID,
                     'startColor' => ['rgb' => '70AD47']
                 ],
-                'font' => ['color' => ['rgb' => 'FFFFFF']],
                 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
             ],
             'B:B' => [
