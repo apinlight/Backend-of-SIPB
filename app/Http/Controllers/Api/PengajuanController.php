@@ -18,11 +18,15 @@ class PengajuanController extends Controller
 
     public function __construct(protected PengajuanService $pengajuanService)
     {
-        $this->authorizeResource(Pengajuan::class, 'pengajuan');
+        // ❌ REMOVE THIS to prevent the 500 error
+        // $this->authorizeResource(Pengajuan::class, 'pengajuan');
     }
 
     public function index(Request $request): JsonResponse
     {
+        // ✅ ADD manual authorization
+        $this->authorize('viewAny', Pengajuan::class);
+
         $query = Pengajuan::with(['user', 'details.barang'])
             ->forUser($request->user()); // Assumes forUser scope exists
 
@@ -37,6 +41,7 @@ class PengajuanController extends Controller
 
     public function store(StorePengajuanRequest $request): JsonResponse
     {
+        // Authorization is correctly handled by StorePengajuanRequest
         try {
             $pengajuan = $this->pengajuanService->create(
                 $request->validated(),
@@ -50,11 +55,15 @@ class PengajuanController extends Controller
 
     public function show(Pengajuan $pengajuan): JsonResponse
     {
+        // ✅ ADD manual authorization
+        $this->authorize('view', $pengajuan);
+        
         return (new PengajuanResource($pengajuan->load(['user', 'details.barang', 'approver', 'rejector'])))->response();
     }
 
     public function update(Request $request, Pengajuan $pengajuan): JsonResponse
     {
+        // This method already had the correct authorization check. Excellent.
         $this->authorize('update', $pengajuan);
 
         $data = $request->validate([
@@ -73,6 +82,9 @@ class PengajuanController extends Controller
 
     public function destroy(Pengajuan $pengajuan): JsonResponse
     {
+        // ✅ ADD manual authorization
+        $this->authorize('delete', $pengajuan);
+        
         try {
             $this->pengajuanService->delete($pengajuan);
             return response()->json(null, HttpResponse::HTTP_NO_CONTENT);
