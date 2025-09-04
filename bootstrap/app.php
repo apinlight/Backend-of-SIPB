@@ -19,6 +19,8 @@ return Application::configure(basePath: dirname(__DIR__))
         
         // ✅ Global middleware stack
         $middleware->api(prepend: [
+
+            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             \App\Http\Middleware\TrustProxies::class,
             \App\Http\Middleware\ForceHttpsInProduction::class,
             \App\Http\Middleware\SecurityHeadersMiddleware::class,

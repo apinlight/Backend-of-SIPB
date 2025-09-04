@@ -19,10 +19,17 @@ class UserController extends Controller
 
     public function __construct(protected UserService $userService)
     {
-        // Use the 'user' parameter name for route model binding
-        $this->authorizeResource(User::class, 'user');
+        // The problematic line that caused the 'middleware' error is removed.
+        // // Use the 'user' parameter name for route model binding
+        // $this->authorizeResource(User::class, 'user');
     }
 
+    public function profile(Request $request): JsonResponse
+    {
+        // The 'auth:sanctum' middleware in your route file ensures we have a user.
+        // We just need to load their roles and return them.
+        return (new UserResource($request->user()->load('roles')))->response();
+    }
     public function index(Request $request): JsonResponse
     {
         $this->authorize('viewAny', User::class);
