@@ -14,6 +14,8 @@ use Laravel\Sanctum\HasApiTokens;
 
 /**
  * @property-read \Illuminate\Database\Eloquent\Collection|\Laravel\Sanctum\PersonalAccessToken[] $tokens
+ * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Permission\Models\Role[] $roles
+ * @property-read \Laravel\Sanctum\PersonalAccessToken|null $currentAccessToken
  * @property string $unique_id
  * @property string $username
  * @property string $email
@@ -22,7 +24,6 @@ use Laravel\Sanctum\HasApiTokens;
  * @property bool $is_active
  * @property \Illuminate\Support\Carbon|null $last_login_at
  * @property string|null $last_login_ip
- * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Permission\Models\Role[] $roles
  */
 class User extends Authenticatable implements MustVerifyEmail
 {

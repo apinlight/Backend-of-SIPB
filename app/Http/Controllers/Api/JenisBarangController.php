@@ -19,7 +19,7 @@ class JenisBarangController extends Controller
 
     public function __construct(protected JenisBarangService $jenisBarangService)
     {
-        $this->authorizeResource(JenisBarang::class, 'jenis_barang');
+        // $this->authorizeResource(JenisBarang::class, 'jenis_barang');
     }
 
     public function index(Request $request): JsonResponse
