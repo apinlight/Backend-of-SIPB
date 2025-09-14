@@ -2,13 +2,11 @@
 
 namespace App\Services;
 
-use App\Models\Barang;
 use App\Models\BatasBarang;
 use App\Models\DetailPengajuan;
-use App\Models\GlobalSetting;
+use App\Models\Gudang;
 use App\Models\Pengajuan;
 use App\Models\User;
-use App\Models\Gudang;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -16,47 +14,51 @@ use Exception;
 
 class PengajuanService
 {
-    protected $validationService;
+    // ✅ FIX: Instead of the old validation service, we inject the new settings service.
+    protected $settingsService;
 
-    public function __construct(PengajuanValidationService $validationService)
+    public function __construct(GlobalSettingsService $settingsService)
     {
-        $this->validationService = $validationService;
+        $this->settingsService = $settingsService;
     }
 
     public function create(array $data, ?UploadedFile $file): Pengajuan
     {
+        // ✅ FIX: The validation logic is now performed directly inside this service.
         if (isset($data['items'])) {
-            $errors = $this->validationService->validatePengajuanLimits($data['unique_id'], $data['items']);
-            if (!empty($errors)) {
-                throw new Exception(json_encode($errors));
-            }
+            $this->validatePengajuanLimits($data['unique_id'], $data['items']);
         }
+
         if ($file && ($data['tipe_pengajuan'] ?? 'biasa') === 'mandiri') {
             $data['bukti_file'] = $file->store('bukti-pengajuan', 'public');
         }
+
         $data['status_pengajuan'] = $data['status_pengajuan'] ?? Pengajuan::STATUS_PENDING;
-        return Pengajuan::create($data);
+        
+        $pengajuan = Pengajuan::create($data);
+
+        // If items are included, create them now in a single transaction.
+        if (isset($data['items'])) {
+            $pengajuan->details()->createMany($data['items']);
+        }
+
+        return $pengajuan;
     }
 
     public function updateStatus(Pengajuan $pengajuan, User $user, array $data): Pengajuan
     {
         $newStatus = $data['status_pengajuan'];
 
-        if ($newStatus === 'Disetujui') {
-            $stockErrors = $pengajuan->validateStockLimits();
+        if ($newStatus === Pengajuan::STATUS_APPROVED) {
+            $stockErrors = $this->validateStockLimitsOnApproval($pengajuan);
             if (!empty($stockErrors)) {
                 throw new Exception(json_encode($stockErrors));
             }
         }
+        
+        $this->updateStatusAndAudit($pengajuan, $user, $newStatus, $data);
 
-        // Use the audit method from the model
-        $pengajuan->updateStatus($newStatus, [
-            'approval_notes' => $data['approval_notes'] ?? null,
-            'rejection_reason' => $data['rejection_reason'] ?? null,
-        ]);
-
-        // If approved, move the stock atomically
-        if ($newStatus === 'Disetujui' && in_array($pengajuan->tipe_pengajuan, ['biasa', 'manual'])) {
+        if ($newStatus === Pengajuan::STATUS_APPROVED && in_array($pengajuan->tipe_pengajuan, ['biasa', 'manual'])) {
             $this->transferStockToGudang($pengajuan);
         }
 
@@ -68,14 +70,62 @@ class PengajuanService
         if (!$pengajuan->canBeDeleted()) {
             throw new Exception('Cannot delete an approved or completed pengajuan.');
         }
-
         if ($pengajuan->bukti_file && Storage::disk('public')->exists($pengajuan->bukti_file)) {
             Storage::disk('public')->delete($pengajuan->bukti_file);
         }
-
         $pengajuan->delete();
     }
+    
+    // --- PRIVATE HELPER METHODS ---
 
+    private function validatePengajuanLimits(string $userId, array $items): void
+    {
+        $user = User::find($userId);
+        if (!$user || $user->hasRole('admin')) return;
+
+        $monthlyLimit = $this->settingsService->getMonthlyLimit();
+        $currentMonthCount = Pengajuan::where('unique_id', $userId)
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->whereIn('status_pengajuan', [Pengajuan::STATUS_PENDING, Pengajuan::STATUS_APPROVED])
+            ->count();
+        
+        if ($currentMonthCount >= $monthlyLimit) {
+            throw new Exception(json_encode(['monthly_limit' => "Monthly submission limit of {$monthlyLimit} has been reached."]));
+        }
+    }
+    
+    private function validateStockLimitsOnApproval(Pengajuan $pengajuan): array
+    {
+        $errors = [];
+        foreach ($pengajuan->details as $detail) {
+            $currentStock = Gudang::where('unique_id', $pengajuan->unique_id)
+                ->where('id_barang', $detail->id_barang)
+                ->value('jumlah_barang') ?? 0;
+            $limit = BatasBarang::where('id_barang', $detail->id_barang)->value('batas_barang') ?? PHP_INT_MAX;
+            $newTotal = $currentStock + $detail->jumlah;
+            if ($newTotal > $limit) {
+                $errors[] = "Stock for item {$detail->barang->nama_barang} will exceed limit ({$newTotal} > {$limit})";
+            }
+        }
+        return $errors;
+    }
+
+    private function updateStatusAndAudit(Pengajuan $pengajuan, User $user, string $status, array $data): void
+    {
+        $updateData = ['status_pengajuan' => $status];
+        if ($status === Pengajuan::STATUS_APPROVED) {
+            $updateData['approved_at'] = now();
+            $updateData['approved_by'] = $user->unique_id;
+            $updateData['approval_notes'] = $data['approval_notes'] ?? null;
+        } elseif ($status === Pengajuan::STATUS_REJECTED) {
+            $updateData['rejected_at'] = now();
+            $updateData['rejected_by'] = $user->unique_id;
+            $updateData['rejection_reason'] = $data['rejection_reason'] ?? null;
+        }
+        $pengajuan->update($updateData);
+    }
+    
     protected function transferStockToGudang(Pengajuan $pengajuan): void
     {
         DB::transaction(function () use ($pengajuan) {
@@ -88,137 +138,4 @@ class PengajuanService
             }
         });
     }
-
-    /**
-     * Adds an item to a pengajuan, or updates the quantity if it already exists.
-     */
-    public function addItem(Pengajuan $pengajuan, array $itemData): DetailPengajuan
-    {
-        if (!$pengajuan->isMutable()) {
-            throw new Exception('Cannot modify an approved or rejected pengajuan.');
-        }
-
-        $detail = $pengajuan->details()->updateOrCreate(
-            [
-                'id_barang' => $itemData['id_barang'],
-            ],
-            [
-                'jumlah' => DB::raw("jumlah + {$itemData['jumlah']}"),
-                'keterangan' => $itemData['keterangan'] ?? null,
-            ]
-        );
-
-        return $detail->refresh();
-    }
-
-    /**
-     * Updates an existing item within a pengajuan.
-     */
-    public function updateItem(DetailPengajuan $detail, array $itemData): DetailPengajuan
-    {
-        if (!$detail->pengajuan->isMutable()) {
-            throw new Exception('Cannot modify an approved or rejected pengajuan.');
-        }
-        
-        $detail->update($itemData);
-        return $detail->fresh();
-    }
-
-    /**
-     * Removes an item from a pengajuan.
-     */
-    public function removeItem(DetailPengajuan $detail): void
-    {
-        if (!$detail->pengajuan->isMutable()) {
-            throw new Exception('Cannot modify an approved or rejected pengajuan.');
-        }
-
-        $detail->delete();
-    }
-
-    /**
-     * Gathers all necessary data for the main procurement creation UI.
-     * This is an aggregation of multiple efficient queries.
-     */
-    public function getInfoForForm(User $user, array $filters = []): array
-    {
-        $barangQuery = Barang::with('jenisBarang')->where('is_active', true)->orderBy('nama_barang');
-        if (!empty($filters['search'])) {
-            $search = $filters['search'];
-            $barangQuery->where(fn($q) => 
-                $q->where('nama_barang', 'like', "%{$search}%")
-                  ->orWhere('id_barang', 'like', "%{$search}%")
-            );
-        }
-
-        $barangList = $barangQuery->get();
-        $itemIds = $barangList->pluck('id_barang');
-
-        $userStock = Gudang::where('unique_id', $user->unique_id)
-            ->whereIn('id_barang', $itemIds)
-            ->pluck('jumlah_barang', 'id_barang');
-
-        $barangLimits = BatasBarang::whereIn('id_barang', $itemIds)
-            ->pluck('batas_barang', 'id_barang');
-
-        $adminStock = ($user->hasRole(['admin', 'manager']))
-            ? Gudang::whereHas('user', fn($q) => $q->whereHas('roles', fn($rq) => $rq->where('name', 'admin')))
-                ->whereIn('id_barang', $itemIds)
-                ->select('id_barang', DB::raw('SUM(jumlah_barang) as total_stock'))
-                ->groupBy('id_barang')
-                ->pluck('total_stock', 'id_barang')
-            : collect();
-
-        $monthlyLimit = GlobalSetting::where('key', 'monthly_pengajuan_limit')->value('value') ?? 0;
-
-        $monthlyPengajuan = Pengajuan::where('unique_id', $user->unique_id)
-            ->whereMonth('created_at', now()->month)
-            ->whereYear('created_at', now()->year)
-            ->where('tipe_pengajuan', '!=', 'mandiri')
-            ->get();
-            
-        return [
-            'barang' => $barangList,
-            'userStock' => $userStock,
-            'adminStock' => $adminStock,
-            'barangLimits' => $barangLimits,
-            'monthlyLimit' => (int)$monthlyLimit,
-            'pengajuanCount' => $monthlyPengajuan->count(),
-            'pendingCount' => $monthlyPengajuan->where('status_pengajuan', Pengajuan::STATUS_PENDING)->count(),
-        ];
-    }
-
-    /**
-     * Gets a user's procurement history for a specific item.
-     */
-    public function getItemHistory(User $user, string $barangId, int $months = 6): array
-    {
-        $startDate = now()->subMonths($months)->startOfMonth();
-
-        $history = DetailPengajuan::where('id_barang', $barangId)
-            ->whereHas('pengajuan', function($q) use ($user, $startDate) {
-                $q->where('unique_id', $user->unique_id)->where('created_at', '>=', $startDate);
-            })
-            ->with(['pengajuan:id_pengajuan,status_pengajuan,created_at'])
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        $summary = [
-            'total_requested' => $history->sum('jumlah'),
-            'approved_count' => $history->where('pengajuan.status_pengajuan', Pengajuan::STATUS_APPROVED)->count(),
-            'pending_count' => $history->where('pengajuan.status_pengajuan', Pengajuan::STATUS_PENDING)->count(),
-            'rejected_count' => $history->where('pengajuan.status_pengajuan', Pengajuan::STATUS_REJECTED)->count(),
-        ];
-
-        return [
-            'history' => $history,
-            'summary' => $summary,
-            'period' => [
-                'start' => $startDate->toDateString(),
-                'end' => now()->toDateString(),
-                'months' => $months,
-            ],
-        ];
-    }
-
 }
