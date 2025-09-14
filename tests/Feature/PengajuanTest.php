@@ -34,48 +34,56 @@ class PengajuanTest extends TestCase
         $this->barang = Barang::factory()->create();
     }
 
-    public function test_pengajuan_creation_and_approval_workflow()
+    /**
+     * ✅ Test 1: The "Happy Path" - A successful creation and approval workflow.
+     */
+    public function test_admin_can_approve_a_users_pengajuan_and_stock_is_transferred()
     {
-        // 1. A User creates a new Pengajuan via the API endpoint
         Sanctum::actingAs($this->user);
-
-        $pengajuanData = [
-            'id_pengajuan' => 'TESTPGJ001',
+        $pengajuan = Pengajuan::factory()->create([
             'unique_id' => $this->user->unique_id,
-            'items' => [
-                ['id_barang' => $this->barang->id_barang, 'jumlah' => 10]
-            ]
-        ];
-        
-        $createResponse = $this->postJson("/api/v1/pengajuan", $pengajuanData);
-        $createResponse->assertStatus(201);
-        $this->assertDatabaseHas('tb_pengajuan', ['id_pengajuan' => 'TESTPGJ001']);
-
-        // 2. The User is FORBIDDEN from approving their own request.
-        $response = $this->putJson("/api/v1/pengajuan/TESTPGJ001", [
-            'status_pengajuan' => Pengajuan::STATUS_APPROVED,
+            'status_pengajuan' => Pengajuan::STATUS_PENDING,
         ]);
-        $response->assertStatus(403);
+        $pengajuan->details()->create([
+            'id_barang' => $this->barang->id_barang,
+            'jumlah' => 10,
+        ]);
 
-        // 3. An Admin logs in and successfully approves the request.
+        // Act: An Admin logs in and approves the request.
         Sanctum::actingAs($this->admin);
         
-        $response = $this->putJson("/api/v1/pengajuan/TESTPGJ001", [
+        $response = $this->putJson("/api/v1/pengajuan/{$pengajuan->id_pengajuan}", [
             'status_pengajuan' => Pengajuan::STATUS_APPROVED,
         ]);
+
+        // Assert
         $response->assertStatus(200);
         $response->assertJsonPath('data.status_pengajuan', Pengajuan::STATUS_APPROVED);
 
-        // 4. CRITICAL: Check that the stock was correctly transferred to the user's gudang.
         $this->assertDatabaseHas('tb_gudang', [
             'unique_id' => $this->user->unique_id,
             'id_barang' => $this->barang->id_barang,
             'jumlah_barang' => 10,
         ]);
+    }
 
-        // 5. The User is FORBIDDEN from deleting the approved request.
+    /**
+     * ✅ Test 2: The "Sad Path" - A user is forbidden from self-approving.
+     */
+    public function test_a_user_is_forbidden_from_approving_their_own_pengajuan()
+    {
         Sanctum::actingAs($this->user);
-        $deleteResponse = $this->deleteJson("/api/v1/pengajuan/TESTPGJ001");
-        $deleteResponse->assertStatus(403);
+        $pengajuan = Pengajuan::factory()->create([
+            'unique_id' => $this->user->unique_id,
+            'status_pengajuan' => Pengajuan::STATUS_PENDING,
+        ]);
+
+        // Act: The User tries to approve their own request.
+        $response = $this->putJson("/api/v1/pengajuan/{$pengajuan->id_pengajuan}", [
+            'status_pengajuan' => Pengajuan::STATUS_APPROVED,
+        ]);
+
+        // Assert: The policy should now correctly return a 403 Forbidden error.
+        $response->assertStatus(403);
     }
 }

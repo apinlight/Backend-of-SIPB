@@ -1,107 +1,74 @@
 <?php
-// app/Policies/PengajuanPolicy.php
+
 namespace App\Policies;
 
 use App\Models\User;
 use App\Models\Pengajuan;
+use Illuminate\Auth\Access\Response;
 
 class PengajuanPolicy
 {
-    public function viewAny(User $user)
-    {
-        return $user->hasAnyRole(['admin', 'manager', 'user']);
-    }
-
-    public function view(User $user, Pengajuan $pengajuan)
+    /**
+     * Admins can perform any action.
+     */
+    public function before(User $user, string $ability): bool|null
     {
         if ($user->hasRole('admin')) {
-            return true; // Admin can view all pengajuan
+            return true;
         }
-        
+        return null; // Let other methods decide
+    }
+
+    public function viewAny(User $user): bool
+    {
+        return true; // All authenticated users can view the list (the query scope will filter)
+    }
+
+    public function view(User $user, Pengajuan $pengajuan): bool
+    {
         if ($user->hasRole('manager')) {
-            // Manager can view pengajuan from same branch
+            // Manager can view requests from their own branch
             return $user->branch_name === $pengajuan->user->branch_name;
         }
-        
-        // User can only view their own pengajuan
+        // User can only view their own request
         return $user->unique_id === $pengajuan->unique_id;
     }
 
-    public function create(User $user)
+    public function create(User $user): bool
     {
-        // ✅ FIX: Users can create pengajuan
-        return $user->hasRole('user');
+        // Any authenticated user can attempt to create a request.
+        return true;
     }
 
-    public function update(User $user, Pengajuan $pengajuan)
+    /**
+     * ✅ FIX: This is the corrected update logic.
+     * It only allows Managers to update requests from their own branch.
+     * Admins are handled by the before() method.
+     * Regular users are now correctly forbidden from updating (approving/rejecting).
+     */
+    public function update(User $user, Pengajuan $pengajuan): Response
     {
-        if ($user->hasRole('admin')) {
-            return true; // Admin can update any pengajuan
+        if ($user->hasRole('manager')) {
+            return $user->branch_name === $pengajuan->user->branch_name
+                ? Response::allow()
+                : Response::deny('You can only update requests from your own branch.');
         }
-        
-        if ($user->hasRole('user')) {
-            // ✅ FIX: Use correct status
-            return $user->unique_id === $pengajuan->unique_id && 
-                   $pengajuan->status_pengajuan === 'Menunggu Persetujuan';
+
+        // Admins are handled by the before() method.
+        // All other users are denied permission to update (which includes changing status).
+        return Response::deny('You do not have permission to update this request.');
+    }
+
+    public function delete(User $user, Pengajuan $pengajuan): Response
+    {
+        // First, check if the request is in a state where it can be deleted at all.
+        if (!$pengajuan->canBeDeleted()) {
+            return Response::deny('You cannot delete a request that has already been processed.');
         }
-        
-        return false;
-    }
 
-    public function delete(User $user, Pengajuan $pengajuan)
-    {
-        if ($user->hasRole('admin')) {
-            return true; // Admin can delete any pengajuan
-        }
-        
-        // ✅ FIX: Users can only delete their own pending pengajuan
-        return $user->unique_id === $pengajuan->unique_id && 
-               $pengajuan->status_pengajuan === 'Menunggu Persetujuan';
-    }
-
-    // ✅ FIX: Use correct status values
-    public function approve(User $user, Pengajuan $pengajuan)
-    {
-        return $user->hasRole('admin') && 
-               $pengajuan->status_pengajuan === 'Menunggu Persetujuan';
-    }
-
-    public function reject(User $user, Pengajuan $pengajuan)
-    {
-        return $user->hasRole('admin') && 
-               $pengajuan->status_pengajuan === 'Menunggu Persetujuan';
-    }
-
-    // ✅ ADD: Scope-based viewing policies
-    public function viewOwn(User $user)
-    {
-        return $user->hasAnyRole(['admin', 'manager', 'user']);
-    }
-
-    public function viewBranch(User $user)
-    {
-        return $user->hasAnyRole(['admin', 'manager']);
-    }
-
-    public function viewAll(User $user)
-    {
-        return $user->hasRole('admin');
-    }
-
-    // ✅ ADD: Approval workflow policies
-    public function viewPending(User $user)
-    {
-        return $user->hasRole('admin');
-    }
-
-    public function viewApproved(User $user)
-    {
-        return $user->hasRole('admin');
-    }
-
-    // ✅ ADD: Manual pengajuan policy
-    public function createManual(User $user)
-    {
-        return $user->hasRole('admin');
+        // Then, check if the current user is the owner (Admins are handled by before()).
+        return $user->unique_id === $pengajuan->unique_id
+            ? Response::allow()
+            : Response::deny('You do not own this request.');
     }
 }
