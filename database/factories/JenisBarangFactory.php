@@ -18,10 +18,10 @@ class JenisBarangFactory extends Factory
     public function definition(): array
     {
         return [
-            'id_jenis_barang' => 'JB' . Str::ulid(),
+            // ✅ FIX: This factory now perfectly matches your JenisBarang model and schema.
+            'id_jenis_barang'   => 'JB' . Str::ulid(),
             'nama_jenis_barang' => $this->faker->unique()->word(),
-            'deskripsi' => $this->faker->sentence(),
-            'is_active' => true,
+            'is_active'         => true,
         ];
     }
 }
