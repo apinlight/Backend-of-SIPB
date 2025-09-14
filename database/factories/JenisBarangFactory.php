@@ -1,18 +1,27 @@
 <?php
 
 namespace Database\Factories;
-use App\Models\JenisBarang;
+
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
+
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\JenisBarang>
+ */
 class JenisBarangFactory extends Factory
 {
-    protected $model = JenisBarang::class;
-
-    public function definition()
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
+    public function definition(): array
     {
         return [
-            'id_jenis_barang' => 'JB' . $this->faker->unique()->numberBetween(1000, 9999),
-            'nama_jenis_barang' => $this->faker->word,
+            'id_jenis_barang' => 'JB' . Str::ulid(),
+            'nama_jenis_barang' => $this->faker->unique()->word(),
+            'deskripsi' => $this->faker->sentence(),
+            'is_active' => true,
         ];
     }
 }
