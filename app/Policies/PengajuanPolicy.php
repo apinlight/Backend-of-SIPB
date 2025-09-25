@@ -16,28 +16,25 @@ class PengajuanPolicy
         if ($user->hasRole('admin')) {
             return true;
         }
-        return null; // Let other methods decide
+        return null;
     }
 
     public function viewAny(User $user): bool
     {
-        return true; // All authenticated users can view the list (the query scope will filter)
+        return true; // The controller's query scope will handle filtering.
     }
 
     public function view(User $user, Pengajuan $pengajuan): bool
     {
         if ($user->hasRole('manager')) {
-            // Manager can view requests from their own branch
             return $user->branch_name === $pengajuan->user->branch_name;
         }
-        // User can only view their own request
         return $user->unique_id === $pengajuan->unique_id;
     }
 
     public function create(User $user): bool
     {
-        // Any authenticated user can attempt to create a request.
-        return true;
+        return true; // Any authenticated user can attempt to create a request.
     }
 
     /**
@@ -53,20 +50,15 @@ class PengajuanPolicy
                 ? Response::allow()
                 : Response::deny('You can only update requests from your own branch.');
         }
-
-        // Admins are handled by the before() method.
-        // All other users are denied permission to update (which includes changing status).
+        // Admins are handled by before(). All other users are denied.
         return Response::deny('You do not have permission to update this request.');
     }
 
     public function delete(User $user, Pengajuan $pengajuan): Response
     {
-        // First, check if the request is in a state where it can be deleted at all.
         if (!$pengajuan->canBeDeleted()) {
             return Response::deny('You cannot delete a request that has already been processed.');
         }
-
-        // Then, check if the current user is the owner (Admins are handled by before()).
         return $user->unique_id === $pengajuan->unique_id
             ? Response::allow()
             : Response::deny('You do not own this request.');

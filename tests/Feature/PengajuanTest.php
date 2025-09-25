@@ -6,6 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\Barang;
+use App\Models\Gudang;
 use App\Models\Pengajuan;
 use Spatie\Permission\Models\Role;
 use Laravel\Sanctum\Sanctum;
@@ -32,11 +33,14 @@ class PengajuanTest extends TestCase
         $this->user->assignRole('user');
         
         $this->barang = Barang::factory()->create();
+
+        Gudang::create([
+            'unique_id' => $this->admin->unique_id,
+            'id_barang' => $this->barang->id_barang,
+            'jumlah_barang' => 100,
+        ]);
     }
 
-    /**
-     * ✅ Test 1: The "Happy Path" - A successful creation and approval workflow.
-     */
     public function test_admin_can_approve_a_users_pengajuan_and_stock_is_transferred()
     {
         Sanctum::actingAs($this->user);
@@ -49,14 +53,12 @@ class PengajuanTest extends TestCase
             'jumlah' => 10,
         ]);
 
-        // Act: An Admin logs in and approves the request.
         Sanctum::actingAs($this->admin);
         
         $response = $this->putJson("/api/v1/pengajuan/{$pengajuan->id_pengajuan}", [
             'status_pengajuan' => Pengajuan::STATUS_APPROVED,
         ]);
 
-        // Assert
         $response->assertStatus(200);
         $response->assertJsonPath('data.status_pengajuan', Pengajuan::STATUS_APPROVED);
 
@@ -65,25 +67,23 @@ class PengajuanTest extends TestCase
             'id_barang' => $this->barang->id_barang,
             'jumlah_barang' => 10,
         ]);
+        
+        $this->assertDatabaseHas('tb_gudang', [
+            'unique_id' => $this->admin->unique_id,
+            'id_barang' => $this->barang->id_barang,
+            'jumlah_barang' => 90,
+        ]);
     }
 
-    /**
-     * ✅ Test 2: The "Sad Path" - A user is forbidden from self-approving.
-     */
     public function test_a_user_is_forbidden_from_approving_their_own_pengajuan()
     {
         Sanctum::actingAs($this->user);
-        $pengajuan = Pengajuan::factory()->create([
-            'unique_id' => $this->user->unique_id,
-            'status_pengajuan' => Pengajuan::STATUS_PENDING,
-        ]);
+        $pengajuan = Pengajuan::factory()->create(['unique_id' => $this->user->unique_id]);
 
-        // Act: The User tries to approve their own request.
         $response = $this->putJson("/api/v1/pengajuan/{$pengajuan->id_pengajuan}", [
             'status_pengajuan' => Pengajuan::STATUS_APPROVED,
         ]);
-
-        // Assert: The policy should now correctly return a 403 Forbidden error.
+        
         $response->assertStatus(403);
     }
 }

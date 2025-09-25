@@ -11,8 +11,9 @@ class Gudang extends Pivot
     protected $table = 'tb_gudang';
 
     /**
-     * ✅ FIX: For a pivot model with a composite key, we must tell Eloquent
-     * that it does not have an incrementing primary key.
+     * ✅ FIX: A pivot model with a composite key MUST have incrementing set to false
+     * and should NOT have a primaryKey property defined, as its key is the combination
+     * of its foreign keys.
      */
     public $incrementing = false;
 

@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\BatasBarang;
-use App\Models\DetailPengajuan;
 use App\Models\Gudang;
 use App\Models\Pengajuan;
 use App\Models\User;
@@ -14,7 +13,6 @@ use Exception;
 
 class PengajuanService
 {
-    // ✅ FIX: Instead of the old validation service, we inject the new settings service.
     protected $settingsService;
 
     public function __construct(GlobalSettingsService $settingsService)
@@ -24,88 +22,65 @@ class PengajuanService
 
     public function create(array $data, ?UploadedFile $file): Pengajuan
     {
-        // ✅ FIX: The validation logic is now performed directly inside this service.
-        if (isset($data['items'])) {
-            $this->validatePengajuanLimits($data['unique_id'], $data['items']);
-        }
-
+        $this->validateMonthlyLimit($data['unique_id']);
         if ($file && ($data['tipe_pengajuan'] ?? 'biasa') === 'mandiri') {
             $data['bukti_file'] = $file->store('bukti-pengajuan', 'public');
         }
-
         $data['status_pengajuan'] = $data['status_pengajuan'] ?? Pengajuan::STATUS_PENDING;
-        
         $pengajuan = Pengajuan::create($data);
-
-        // If items are included, create them now in a single transaction.
         if (isset($data['items'])) {
             $pengajuan->details()->createMany($data['items']);
         }
-
         return $pengajuan;
     }
 
-    public function updateStatus(Pengajuan $pengajuan, User $user, array $data): Pengajuan
+    public function updateStatus(Pengajuan $pengajuan, User $approver, array $data): Pengajuan
     {
         $newStatus = $data['status_pengajuan'];
 
         if ($newStatus === Pengajuan::STATUS_APPROVED) {
-            $stockErrors = $this->validateStockLimitsOnApproval($pengajuan);
+            $stockErrors = $this->validateStockLimitsOnApproval($pengajuan, $approver);
             if (!empty($stockErrors)) {
                 throw new Exception(json_encode($stockErrors));
             }
         }
         
-        $this->updateStatusAndAudit($pengajuan, $user, $newStatus, $data);
+        $this->updateStatusAndAudit($pengajuan, $approver, $newStatus, $data);
 
         if ($newStatus === Pengajuan::STATUS_APPROVED && in_array($pengajuan->tipe_pengajuan, ['biasa', 'manual'])) {
-            $this->transferStockToGudang($pengajuan);
+            $this->transferStock($pengajuan, $approver);
         }
-
         return $pengajuan->fresh(['user', 'details.barang', 'approver', 'rejector']);
     }
 
     public function delete(Pengajuan $pengajuan): void
     {
-        if (!$pengajuan->canBeDeleted()) {
-            throw new Exception('Cannot delete an approved or completed pengajuan.');
-        }
-        if ($pengajuan->bukti_file && Storage::disk('public')->exists($pengajuan->bukti_file)) {
-            Storage::disk('public')->delete($pengajuan->bukti_file);
-        }
+        if (!$pengajuan->canBeDeleted()) { throw new Exception('Cannot delete an approved or completed pengajuan.'); }
+        if ($pengajuan->bukti_file && Storage::disk('public')->exists($pengajuan->bukti_file)) { Storage::disk('public')->delete($pengajuan->bukti_file); }
         $pengajuan->delete();
     }
     
-    // --- PRIVATE HELPER METHODS ---
-
-    private function validatePengajuanLimits(string $userId, array $items): void
+    private function validateMonthlyLimit(string $userId): void
     {
         $user = User::find($userId);
         if (!$user || $user->hasRole('admin')) return;
-
         $monthlyLimit = $this->settingsService->getMonthlyLimit();
         $currentMonthCount = Pengajuan::where('unique_id', $userId)
-            ->whereMonth('created_at', now()->month)
-            ->whereYear('created_at', now()->year)
-            ->whereIn('status_pengajuan', [Pengajuan::STATUS_PENDING, Pengajuan::STATUS_APPROVED])
-            ->count();
-        
+            ->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)
+            ->whereIn('status_pengajuan', [Pengajuan::STATUS_PENDING, Pengajuan::STATUS_APPROVED])->count();
         if ($currentMonthCount >= $monthlyLimit) {
             throw new Exception(json_encode(['monthly_limit' => "Monthly submission limit of {$monthlyLimit} has been reached."]));
         }
     }
     
-    private function validateStockLimitsOnApproval(Pengajuan $pengajuan): array
+    private function validateStockLimitsOnApproval(Pengajuan $pengajuan, User $approver): array
     {
         $errors = [];
         foreach ($pengajuan->details as $detail) {
-            $currentStock = Gudang::where('unique_id', $pengajuan->unique_id)
-                ->where('id_barang', $detail->id_barang)
-                ->value('jumlah_barang') ?? 0;
-            $limit = BatasBarang::where('id_barang', $detail->id_barang)->value('batas_barang') ?? PHP_INT_MAX;
-            $newTotal = $currentStock + $detail->jumlah;
-            if ($newTotal > $limit) {
-                $errors[] = "Stock for item {$detail->barang->nama_barang} will exceed limit ({$newTotal} > {$limit})";
+            $sourceStock = Gudang::where('unique_id', $approver->unique_id)
+                ->where('id_barang', $detail->id_barang)->value('jumlah_barang') ?? 0;
+            if ($sourceStock < $detail->jumlah) {
+                $errors[] = "Insufficient central stock for item {$detail->barang->nama_barang}. Available: {$sourceStock}, Requested: {$detail->jumlah}";
             }
         }
         return $errors;
@@ -126,15 +101,24 @@ class PengajuanService
         $pengajuan->update($updateData);
     }
     
-    protected function transferStockToGudang(Pengajuan $pengajuan): void
+    protected function transferStock(Pengajuan $pengajuan, User $approver): void
     {
-        DB::transaction(function () use ($pengajuan) {
+        DB::transaction(function () use ($pengajuan, $approver) {
             foreach ($pengajuan->details as $detail) {
-                $gudang = Gudang::firstOrCreate(
+                // ✅ THE FINAL FIX: Build a query with the composite key to update the source.
+                $updatedRows = Gudang::where('unique_id', $approver->unique_id)
+                    ->where('id_barang', $detail->id_barang)
+                    ->decrement('jumlah_barang', $detail->jumlah);
+
+                if ($updatedRows === 0) {
+                    throw new Exception("Failed to decrement stock for item {$detail->id_barang}. The source stock might not exist or be insufficient.");
+                }
+
+                // ✅ FIX: Use a query for the destination as well for consistency and safety.
+                Gudang::updateOrCreate(
                     ['unique_id' => $pengajuan->unique_id, 'id_barang' => $detail->id_barang],
-                    ['jumlah_barang' => 0]
+                    ['jumlah_barang' => DB::raw("jumlah_barang + {$detail->jumlah}")]
                 );
-                $gudang->increment('jumlah_barang', $detail->jumlah);
             }
         });
     }
