@@ -77,8 +77,8 @@ Semua endpoint, kecuali yang ditandai publik, memerlukan header `Authorization: 
 ### Pengajuan (Procurement)
 - `GET /pengajuan`: Melihat daftar pengajuan (sesuai hak akses).
 - `POST /pengajuan`: Membuat pengajuan baru.
-- `GET /pengajuan/{pengajuan}`: Melihat detail pengajuan.
-- `PUT /pengajuan/{pengajuan}`: (Admin) Memperbarui status pengajuan (approve/reject).
+- `GET /pengajuan/{pengajuan}`: Melihat detail pengajuan (sesuai hak akses).
+- `PUT /pengajuan/{pengajuan}`: **(Admin/Manager)** Memperbarui status pengajuan (approve/reject).
 - `DELETE /pengajuan/{pengajuan}`: Menghapus pengajuan (jika status memungkinkan).
 
 **Aksi Tambahan:**
@@ -98,8 +98,8 @@ Semua endpoint, kecuali yang ditandai publik, memerlukan header `Authorization: 
 - `DELETE /penggunaan-barang/{penggunaan_barang}`: Menghapus catatan penggunaan.
 
 **Aksi Tambahan:**
-- `POST /penggunaan-barang/{penggunaan_barang}/approve`: (Admin/Manager) Menyetujui permintaan penggunaan.
-- `POST /penggunaan-barang/{penggunaan_barang}/reject`: (Admin/Manager) Menolak permintaan penggunaan.
+- `POST /penggunaan-barang/{penggunaan_barang}/approve`: **(Admin/Manager)** Menyetujui permintaan penggunaan.
+- `POST /penggunaan-barang/{penggunaan_barang}/reject`: **(Admin/Manager)** Menolak permintaan penggunaan.
 - `GET /penggunaan-barang/pending/approvals`: (Admin/Manager) Melihat daftar permintaan yang menunggu persetujuan.
 - `GET /stok/tersedia`: Mendapatkan daftar stok yang tersedia untuk pengguna saat ini.
 - `GET /stok/tersedia/{id_barang}`: Mendapatkan jumlah stok spesifik yang tersedia.
@@ -120,4 +120,3 @@ Semua endpoint, kecuali yang ditandai publik, memerlukan header `Authorization: 
 - `GET /global-settings`: (Admin) Melihat semua pengaturan global.
 - `GET /global-settings/monthly-limit`: (Admin) Melihat batas pengajuan bulanan.
 - `PUT /global-settings/monthly-limit`: (Admin) Mengubah batas pengajuan bulanan.
-

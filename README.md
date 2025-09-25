@@ -11,12 +11,28 @@ SIPB adalah sebuah API backend yang tangguh untuk aplikasi pencatatan, pengelola
     - **Pengajuan (Procurement)**: Alur kerja untuk meminta barang baru, lengkap dengan validasi batas stok dan limit bulanan.
     - **Gudang (Stock Management)**: Pencatatan stok per pengguna dengan operasi yang aman secara transaksional.
     - **Penggunaan Barang (Consumption)**: Alur kerja untuk mencatat pemakaian barang, lengkap dengan alur persetujuan (approval).
-- **Manajemen Pengguna & Peran**: Sistem autentikasi berbasis token (Laravel Sanctum) dengan tiga peran utama:
-    - **Admin**: Akses penuh ke seluruh sistem, termasuk pengaturan global.
-    - **Manager**: Mengawasi dan menyetujui permintaan dari semua pengguna dalam `branch_name` yang sama.
-    - **User**: Mengelola data dan alur kerja miliknya sendiri.
+- **Manajemen Pengguna & Peran**: Sistem autentikasi berbasis token (Laravel Sanctum) dengan tiga peran utama.
 - **Pelaporan & Analitik**: Endpoint terdedikasi untuk menghasilkan laporan agregat (summary, stok, penggunaan, dll.) dengan filter dinamis.
 - **Ekspor ke Excel**: Kemampuan untuk mengekspor semua laporan utama ke dalam format file `.xlsx` yang terformat dengan baik.
+
+### Pemetaan Peran Pengguna
+
+Sistem ini dirancang untuk tiga tipe pengguna di dunia nyata, yang dipetakan ke peran teknis sebagai berikut:
+
+1.  **Admin Pusat (`admin`)**:
+    - Bertanggung jawab atas pengelolaan stok pusat.
+    - Menyetujui atau menolak pengajuan barang dari semua cabang.
+    - Memiliki akses penuh ke semua laporan dan manajemen pengguna.
+
+2.  **Manajer (`manager`)**:
+    - Mengawasi semua aktivitas di dalam cabangnya (`branch_name`).
+    - Dapat menyetujui atau menolak pengajuan yang dibuat oleh pengguna di cabangnya.
+    - Memiliki akses ke laporan tingkat cabang dan keseluruhan.
+
+3.  **Admin Cabang (`user`)**:
+    - Pengguna operasional harian di setiap cabang.
+    - Membuat `Pengajuan` barang baru berdasarkan kebutuhan.
+    - Melaporkan `Penggunaan Barang` untuk memperbarui stok cabang.
 
 ---
 
