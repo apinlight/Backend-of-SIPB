@@ -8,31 +8,31 @@ SIPB adalah sebuah API backend yang tangguh untuk aplikasi pencatatan, pengelola
 
 - **Manajemen Inventaris Lengkap**: CRUD untuk Master Data (`Barang`, `Jenis Barang`, `Batas Barang`).
 - **Siklus Hidup Barang**:
-    - **Pengajuan (Procurement)**: Alur kerja untuk meminta barang baru, lengkap dengan validasi batas stok dan limit bulanan.
-    - **Gudang (Stock Management)**: Pencatatan stok per pengguna dengan operasi yang aman secara transaksional.
-    - **Penggunaan Barang (Consumption)**: Alur kerja untuk mencatat pemakaian barang, lengkap dengan alur persetujuan (approval).
-- **Manajemen Pengguna & Peran**: Sistem autentikasi berbasis token (Laravel Sanctum) dengan tiga peran utama.
-- **Pelaporan & Analitik**: Endpoint terdedikasi untuk menghasilkan laporan agregat (summary, stok, penggunaan, dll.) dengan filter dinamis.
-- **Ekspor ke Excel**: Kemampuan untuk mengekspor semua laporan utama ke dalam format file `.xlsx` yang terformat dengan baik.
+    - **Pengajuan (Procurement)**: Alur kerja untuk meminta barang baru.
+    - **Gudang (Stock Management)**: Pencatatan stok per pengguna.
+    - **Penggunaan Barang (Consumption)**: Alur kerja untuk mencatat pemakaian barang.
+- **Manajemen Pengguna & Peran**: Sistem autentikasi berbasis token (Laravel Sanctum).
+- **Pelaporan & Analitik**: Endpoint terdedikasi untuk menghasilkan laporan agregat.
+- **Ekspor ke Excel**: Kemampuan untuk mengekspor laporan ke format `.xlsx`.
 
 ### Pemetaan Peran Pengguna
 
 Sistem ini dirancang untuk tiga tipe pengguna di dunia nyata, yang dipetakan ke peran teknis sebagai berikut:
 
 1.  **Admin Pusat (`admin`)**:
-    - Bertanggung jawab atas pengelolaan stok pusat.
-    - Menyetujui atau menolak pengajuan barang dari semua cabang.
-    - Memiliki akses penuh ke semua laporan dan manajemen pengguna.
+    - **Operator Utama:** Bertanggung jawab atas pengelolaan stok pusat dan semua operasi sistem.
+    - **Pemberi Persetujuan Tunggal:** Merupakan satu-satunya peran yang dapat **menyetujui atau menolak** `Pengajuan` barang dari semua cabang.
+    - **Akses Penuh:** Memiliki akses penuh ke semua laporan dan manajemen pengguna.
 
 2.  **Manajer (`manager`)**:
-    - Mengawasi semua aktivitas di dalam cabangnya (`branch_name`).
-    - Dapat menyetujui atau menolak pengajuan yang dibuat oleh pengguna di cabangnya.
-    - Memiliki akses ke laporan tingkat cabang dan keseluruhan.
+    - **Pemantau Pusat:** Berada di kantor pusat dan memiliki hak akses untuk **melihat dan memantau** data.
+    - **Akses Laporan Global:** Dapat melihat dan mengekspor laporan dari **seluruh cabang** untuk keperluan analisis.
+    - **Read-Only:** Tidak memiliki hak untuk melakukan operasi seperti membuat atau menyetujui pengajuan.
 
 3.  **Admin Cabang (`user`)**:
-    - Pengguna operasional harian di setiap cabang.
-    - Membuat `Pengajuan` barang baru berdasarkan kebutuhan.
-    - Melaporkan `Penggunaan Barang` untuk memperbarui stok cabang.
+    - **Operator Cabang:** Pengguna operasional harian di setiap kantor cabang.
+    - **Membuat Permintaan:** Membuat `Pengajuan` barang baru berdasarkan kebutuhan cabangnya.
+    - **Melaporkan Penggunaan:** Melaporkan `Penggunaan Barang` untuk memperbarui data stok di cabangnya.
 
 ---
 
@@ -40,11 +40,11 @@ Sistem ini dirancang untuk tiga tipe pengguna di dunia nyata, yang dipetakan ke 
 
 Aplikasi ini telah direfaktor secara ekstensif untuk mengikuti praktik terbaik dalam pengembangan perangkat lunak modern:
 
-- **Service-Oriented Architecture**: Semua logika bisnis yang kompleks (misalnya, proses persetujuan, penyesuaian stok, validasi) dienkapsulasi dalam **Service Class** yang terdedikasi.
-- **Thin Controllers**: Controller hanya bertanggung jawab untuk menangani request dan response HTTP, mendelegasikan semua pekerjaan ke service. Ini membuat controller bersih, mudah dibaca, dan fokus.
-- **Form Requests**: Semua validasi dan otorisasi untuk request `POST` dan `PUT` ditangani oleh kelas **Form Request** khusus, memisahkan validasi dari logika controller.
-- **Policies**: Semua aturan otorisasi (siapa yang dapat melihat, membuat, atau mengubah data) terpusat di dalam kelas **Policy**, menyediakan satu sumber kebenaran untuk perizinan.
-- **Lean Models**: Model Eloquent difokuskan pada representasi data, relasi, dan query scope, sementara semua logika bisnis yang kompleks telah dipindahkan ke service.
+- **Service-Oriented Architecture**: Semua logika bisnis yang kompleks dienkapsulasi dalam **Service Class**.
+- **Thin Controllers**: Controller hanya bertanggung jawab untuk menangani request dan response HTTP.
+- **Form Requests**: Semua validasi dan otorisasi ditangani oleh kelas Form Request.
+- **Policies**: Semua aturan otorisasi terpusat di dalam kelas Policy.
+- **Lean Models**: Model Eloquent difokuskan pada representasi data, relasi, dan query scope.
 
 ---
 
@@ -52,9 +52,9 @@ Aplikasi ini telah direfaktor secara ekstensif untuk mengikuti praktik terbaik d
 
 - **Backend**: Laravel 12
 - **Autentikasi**: Laravel Sanctum (Stateless API)
-- **Otorisasi**: Spatie Laravel Permission (Roles & Permissions) & Laravel Policies
+- **Otorisasi**: Spatie Laravel Permission & Laravel Policies
 - **Database**: MariaDB / MySQL
-- **Primary Keys**: ULID/UUID untuk kunci utama yang tidak berurutan dan aman.
+- **Primary Keys**: ULID/UUID
 - **API Response**: Standarisasi menggunakan Laravel API Resources.
 
 ---
@@ -66,29 +66,12 @@ Aplikasi ini telah direfaktor secara ekstensif untuk mengikuti praktik terbaik d
     git clone [https://github.com/apinlight/Backend-of-SIPB.git](https://github.com/apinlight/Backend-of-SIPB.git)
     cd Backend-of-SIPB
     ```
-2.  **Install dependencies:**
-    ```bash
-    composer install
-    ```
-3.  **Setup file environment:**
-    ```bash
-    cp .env.example .env
-    ```
-4.  **Generate key aplikasi:**
-    ```bash
-    php artisan key:generate
-    ```
-5.  **Konfigurasi `.env`:**
-    - Atur koneksi database (DB_DATABASE, DB_USERNAME, DB_PASSWORD).
-    - Atur URL frontend untuk CORS: `FRONTEND_URL=http://localhost:5173`
-6.  **Jalankan migrasi dan seeder:**
-    ```bash
-    php artisan migrate --seed
-    ```
-7.  **Jalankan server:**
-    ```bash
-    php artisan serve
-    ```
+2.  **Install dependencies:** `composer install`
+3.  **Setup file environment:** `cp .env.example .env`
+4.  **Generate key aplikasi:** `php artisan key:generate`
+5.  **Konfigurasi `.env`:** Atur koneksi database dan `FRONTEND_URL`.
+6.  **Jalankan migrasi dan seeder:** `php artisan migrate --seed`
+7.  **Jalankan server:** `php artisan serve`
 
 ---
 
