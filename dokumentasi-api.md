@@ -24,15 +24,15 @@ Semua endpoint, kecuali yang ditandai publik, memerlukan header `Authorization: 
 ## Endpoint Utama
 
 ### Users
-- `GET /users`: (Admin) Mendapatkan daftar semua pengguna.
+- `GET /users`: (Admin, Manager) Mendapatkan daftar semua pengguna.
 - `POST /users`: (Admin) Membuat pengguna baru.
-- `GET /users/{user}`: (Admin) Mendapatkan detail satu pengguna.
+- `GET /users/{user}`: (Admin, Manager) Mendapatkan detail satu pengguna.
 - `PUT /users/{user}`: (Admin) Memperbarui pengguna.
 - `DELETE /users/{user}`: (Admin) Menghapus pengguna.
 
 **Aksi Tambahan:**
-- `POST /users/{user}/toggle-status`: (Admin/Manager) Mengaktifkan/menonaktifkan pengguna.
-- `POST /users/{user}/reset-password`: (Admin/Manager) Mereset password pengguna.
+- `POST /users/{user}/toggle-status`: **(Admin)** Mengaktifkan/menonaktifkan pengguna.
+- `POST /users/{user}/reset-password`: **(Admin)** Mereset password pengguna.
 - `GET /profile`: Mendapatkan profil pengguna yang sedang login.
 - `PUT /profile`: Memperbarui profil pengguna yang sedang login.
 
@@ -66,10 +66,10 @@ Semua endpoint, kecuali yang ditandai publik, memerlukan header `Authorization: 
 
 ### Gudang (Stock)
 - `GET /gudang`: Melihat daftar stok (sesuai hak akses).
-- `POST /gudang`: (Admin/Manager) Menambahkan stok baru.
+- `POST /gudang`: **(Admin)** Menambahkan stok baru.
 - `GET /gudang/{unique_id}/{id_barang}`: Melihat detail stok spesifik.
-- `PUT /gudang/{unique_id}/{id_barang}`: Memperbarui catatan stok.
-- `DELETE /gudang/{unique_id}/{id_barang}`: Menghapus catatan stok.
+- `PUT /gudang/{unique_id}/{id_barang}`: **(Admin)** Memperbarui catatan stok.
+- `DELETE /gudang/{unique_id}/{id_barang}`: **(Admin)** Menghapus catatan stok.
 
 **Aksi Tambahan:**
 - `POST /gudang/{unique_id}/{id_barang}/adjust-stock`: (Admin) Melakukan penyesuaian manual pada jumlah stok.

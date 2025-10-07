@@ -60,8 +60,8 @@ Route::prefix('v1')->group(function () {
         });
 
         Route::prefix('users')->group(function () {
-            Route::post('{user}/toggle-status', [UserController::class, 'toggleStatus'])->middleware('role:admin|manager');
-            Route::post('{user}/reset-password', [UserController::class, 'resetPassword'])->middleware('role:admin|manager');
+            Route::post('{user}/toggle-status', [UserController::class, 'toggleStatus'])->middleware('role:admin');
+            Route::post('{user}/reset-password', [UserController::class, 'resetPassword'])->middleware('role:admin');
         });
         
         Route::post('batas-barang/check-allocation', [BatasBarangController::class, 'checkAllocation']);
