@@ -109,14 +109,16 @@ class LaporanService
             'avg_nilai' => $details->avg('total_nilai'),
         ];
 
-        // ✅ PERBAIKAN: Gunakan callback eksplisit untuk membantu linter.
-        $byStatus = $details->groupBy('status_pengajuan')->map(function($items, $status) use ($details) {
+        // ✅ PERBAIKAN FINAL: Tambahkan type hint 'Collection' pada $items.
+        // Ini secara eksplisit memberitahu linter bahwa $items adalah sebuah objek Collection,
+        // sehingga semua error akan hilang.
+        $byStatus = $details->groupBy('status_pengajuan')->map(function(Collection $items, $status) use ($details) {
             return [
                 'status' => $status,
                 'count' => $items->count(),
-                'total_items' => $items->sum(fn($item) => $item['total_items']),
-                'total_nilai' => $items->sum(fn($item) => $item['total_nilai']),
-                'avg_nilai' => $items->avg(fn($item) => $item['total_nilai']),
+                'total_items' => $items->sum('total_items'),
+                'total_nilai' => $items->sum('total_nilai'),
+                'avg_nilai' => $items->avg('total_nilai'),
                 'percentage' => $details->count() > 0 ? round(($items->count() / $details->count()) * 100, 1) : 0,
             ];
         })->values();
