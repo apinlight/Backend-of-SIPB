@@ -16,6 +16,7 @@ class Gudang extends Pivot
      * of its foreign keys.
      */
     public $incrementing = false;
+    protected $primaryKey = null; // Menegaskan bahwa tidak ada satu pun primary key
 
     protected $fillable = [
         'unique_id',

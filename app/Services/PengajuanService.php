@@ -105,16 +105,18 @@ class PengajuanService
     {
         DB::transaction(function () use ($pengajuan, $approver) {
             foreach ($pengajuan->details as $detail) {
-                // ✅ THE FINAL FIX: Build a query with the composite key to update the source.
+                // ✅ PERBAIKAN FINAL: Buat query dengan composite key untuk memperbarui sumber.
                 $updatedRows = Gudang::where('unique_id', $approver->unique_id)
                     ->where('id_barang', $detail->id_barang)
                     ->decrement('jumlah_barang', $detail->jumlah);
 
+                // Ini adalah pengaman penting. Jika baris tidak ada atau decrement gagal,
+                // kita lempar error.
                 if ($updatedRows === 0) {
-                    throw new Exception("Failed to decrement stock for item {$detail->id_barang}. The source stock might not exist or be insufficient.");
+                    throw new Exception("Gagal mengurangi stok untuk item {$detail->id_barang}. Stok sumber mungkin tidak ada atau tidak mencukupi.");
                 }
 
-                // ✅ FIX: Use a query for the destination as well for consistency and safety.
+                // ✅ PERBAIKAN: Gunakan updateOrCreate dengan DB::raw untuk keamanan dan konsistensi.
                 Gudang::updateOrCreate(
                     ['unique_id' => $pengajuan->unique_id, 'id_barang' => $detail->id_barang],
                     ['jumlah_barang' => DB::raw("jumlah_barang + {$detail->jumlah}")]
