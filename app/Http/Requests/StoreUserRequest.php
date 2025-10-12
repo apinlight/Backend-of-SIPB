@@ -12,7 +12,7 @@ class StoreUserRequest extends FormRequest
         $currentUser = $this->user();
 
         // Check if the current user is authorized to create a user at all
-        if (!$currentUser->can('create', \App\Models\User::class)) {
+        if (! $currentUser->can('create', \App\Models\User::class)) {
             return false;
         }
 
@@ -32,14 +32,14 @@ class StoreUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'unique_id'   => 'required|string|unique:tb_users,unique_id',
-            'username'    => 'required|string|max:255|unique:tb_users,username',
-            'email'       => 'required|email|max:255|unique:tb_users,email',
-            'password'    => ['required', 'confirmed', Password::min(6)],
+            'unique_id' => 'required|string|unique:tb_users,unique_id',
+            'username' => 'required|string|max:255|unique:tb_users,username',
+            'email' => 'required|email|max:255|unique:tb_users,email',
+            'password' => ['required', 'confirmed', Password::min(6)],
             'branch_name' => 'required|string|max:255',
-            'is_active'   => 'sometimes|boolean',
-            'roles'       => 'sometimes|array',
-            'roles.*'     => 'string|exists:roles,name',
+            'is_active' => 'sometimes|boolean',
+            'roles' => 'sometimes|array',
+            'roles.*' => 'string|exists:roles,name',
         ];
     }
 }

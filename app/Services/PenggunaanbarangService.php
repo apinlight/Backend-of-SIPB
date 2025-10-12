@@ -2,11 +2,11 @@
 
 namespace App\Services;
 
-use App\Models\PenggunaanBarang;
 use App\Models\Gudang;
+use App\Models\PenggunaanBarang;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
 use Exception;
+use Illuminate\Support\Facades\DB;
 
 class PenggunaanBarangService
 {
@@ -77,7 +77,7 @@ class PenggunaanBarangService
     {
         $keterangan = $penggunaan->keterangan;
         if ($reason) {
-            $keterangan .= ' | Ditolak: ' . $reason;
+            $keterangan .= ' | Ditolak: '.$reason;
         }
 
         $penggunaan->update([

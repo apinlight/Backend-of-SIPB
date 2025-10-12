@@ -1,8 +1,9 @@
 <?php
+
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\File;
 use GrahamCampbell\Markdown\Facades\Markdown;
+use Illuminate\Support\Facades\File;
 
 class DocsController extends Controller
 {

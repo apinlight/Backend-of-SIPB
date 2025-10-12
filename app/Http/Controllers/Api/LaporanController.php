@@ -2,25 +2,23 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Services\LaporanService;
 use App\Exports\BarangReportExport;
 use App\Exports\PengajuanReportExport;
 use App\Exports\PenggunaanReportExport;
 use App\Exports\StokReportExport;
 use App\Exports\SummaryReportExport;
+use App\Http\Controllers\Controller;
+use App\Services\LaporanService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
 class LaporanController extends Controller
 {
     use AuthorizesRequests;
 
-    public function __construct(protected LaporanService $laporanService)
-    {
-    }
+    public function __construct(protected LaporanService $laporanService) {}
 
     private function getFilters(Request $request): array
     {
@@ -31,6 +29,7 @@ class LaporanController extends Controller
     {
         $this->authorize('viewAny', \App\Models\Pengajuan::class);
         $data = $this->laporanService->getSummaryReport($request->user(), $this->getFilters($request));
+
         return response()->json(['status' => true, 'data' => $data]);
     }
 
@@ -39,6 +38,7 @@ class LaporanController extends Controller
         $this->authorize('viewAny', \App\Models\Barang::class);
         // ✅ PERUBAHAN: Service sekarang mengembalikan array, kita hanya butuh 'details' untuk JSON response.
         $reportData = $this->laporanService->getBarangReport($request->user(), $this->getFilters($request));
+
         return response()->json(['status' => true, 'data' => $reportData['details']]);
     }
 
@@ -46,6 +46,7 @@ class LaporanController extends Controller
     {
         $this->authorize('viewAny', \App\Models\Pengajuan::class);
         $reportData = $this->laporanService->getPengajuanReport($request->user(), $this->getFilters($request));
+
         return response()->json(['status' => true, 'data' => $reportData['details']]);
     }
 
@@ -53,6 +54,7 @@ class LaporanController extends Controller
     {
         $this->authorize('viewAny', \App\Models\PenggunaanBarang::class);
         $reportData = $this->laporanService->getPenggunaanReport($request->user(), $this->getFilters($request));
+
         return response()->json(['status' => true, 'data' => $reportData['details']]);
     }
 
@@ -60,6 +62,7 @@ class LaporanController extends Controller
     {
         $this->authorize('viewAny', \App\Models\Gudang::class);
         $reportData = $this->laporanService->getStokReport($request->user(), $this->getFilters($request));
+
         return response()->json(['status' => true, 'data' => $reportData['stocks']]);
     }
 
@@ -70,8 +73,8 @@ class LaporanController extends Controller
         $this->authorize('viewAny', \App\Models\Pengajuan::class);
         $filters = $this->getFilters($request);
         $data = $this->laporanService->getSummaryReport($request->user(), $filters);
-        $fileName = 'Summary_Report_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
-        
+        $fileName = 'Summary_Report_'.now()->format('Y-m-d_H-i-s').'.xlsx';
+
         return Excel::download(new SummaryReportExport($data, $filters, $request->user()), $fileName);
     }
 
@@ -81,8 +84,8 @@ class LaporanController extends Controller
         $filters = $this->getFilters($request);
         // ✅ PERUBAHAN: Ambil data lengkap (detail dan summary) dari service.
         $reportData = $this->laporanService->getBarangReport($request->user(), $filters);
-        $fileName = 'Barang_Report_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
-        
+        $fileName = 'Barang_Report_'.now()->format('Y-m-d_H-i-s').'.xlsx';
+
         // Kirim seluruh paket data yang sudah matang ke kelas ekspor.
         return Excel::download(new BarangReportExport($reportData, $filters, $request->user()), $fileName);
     }
@@ -92,8 +95,8 @@ class LaporanController extends Controller
         $this->authorize('viewAny', \App\Models\Pengajuan::class);
         $filters = $this->getFilters($request);
         $reportData = $this->laporanService->getPengajuanReport($request->user(), $filters);
-        $fileName = 'Pengajuan_Report_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
-        
+        $fileName = 'Pengajuan_Report_'.now()->format('Y-m-d_H-i-s').'.xlsx';
+
         return Excel::download(new PengajuanReportExport($reportData, $filters, $request->user()), $fileName);
     }
 
@@ -102,7 +105,7 @@ class LaporanController extends Controller
         $this->authorize('viewAny', \App\Models\PenggunaanBarang::class);
         $filters = $this->getFilters($request);
         $reportData = $this->laporanService->getPenggunaanReport($request->user(), $filters);
-        $fileName = 'Penggunaan_Report_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+        $fileName = 'Penggunaan_Report_'.now()->format('Y-m-d_H-i-s').'.xlsx';
 
         return Excel::download(new PenggunaanReportExport($reportData, $filters, $request->user()), $fileName);
     }
@@ -112,9 +115,8 @@ class LaporanController extends Controller
         $this->authorize('viewAny', \App\Models\Gudang::class);
         $filters = $this->getFilters($request);
         $reportData = $this->laporanService->getStokReport($request->user(), $filters);
-        $fileName = 'Stok_Report_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+        $fileName = 'Stok_Report_'.now()->format('Y-m-d_H-i-s').'.xlsx';
 
         return Excel::download(new StokReportExport($reportData, $filters, $request->user()), $fileName);
     }
 }
-

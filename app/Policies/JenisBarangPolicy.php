@@ -1,9 +1,11 @@
 <?php
+
 // app/Policies/JenisBarangPolicy.php
+
 namespace App\Policies;
 
-use App\Models\User;
 use App\Models\JenisBarang;
+use App\Models\User;
 
 class JenisBarangPolicy
 {

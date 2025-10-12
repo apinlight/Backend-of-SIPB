@@ -2,10 +2,10 @@
 
 namespace Tests\Feature\Auth;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
+use Tests\TestCase;
 
 class RegistrationTest extends TestCase
 {
@@ -56,7 +56,7 @@ class RegistrationTest extends TestCase
                 'user' => [
                     'email' => 'test@example.com',
                     'roles' => ['user'], // Assert the default role was assigned
-                ]
+                ],
             ]);
 
         // Assert that the user was actually created in the database.

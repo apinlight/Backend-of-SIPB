@@ -13,9 +13,13 @@ class Barang extends Model
     use HasFactory;
 
     protected $table = 'tb_barang';
+
     protected $primaryKey = 'id_barang';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     protected $fillable = [
         'id_barang',
         'nama_barang',
@@ -23,7 +27,7 @@ class Barang extends Model
         'harga_barang',
         'deskripsi',
         'satuan',
-        'batas_minimum'
+        'batas_minimum',
     ];
 
     public function jenisBarang(): BelongsTo
@@ -35,7 +39,7 @@ class Barang extends Model
     {
         return $this->hasOne(BatasBarang::class, 'id_barang', 'id_barang');
     }
-    
+
     // A Barang has many individual stock records in the Gudang
     public function gudangEntries(): HasMany
     {

@@ -3,15 +3,15 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\BatasBarangResource;
+use App\Http\Requests\CheckAllocationRequest;
 use App\Http\Requests\StoreBatasBarangRequest;
 use App\Http\Requests\UpdateBatasBarangRequest;
-use App\Http\Requests\CheckAllocationRequest;
+use App\Http\Resources\BatasBarangResource;
 use App\Models\BatasBarang;
 use App\Services\BatasBarangService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class BatasBarangController extends Controller
@@ -32,7 +32,7 @@ class BatasBarangController extends Controller
         $query = BatasBarang::with(['barang.jenisBarang']);
 
         $query->when($request->filled('search'), function ($q) use ($request) {
-            $q->whereHas('barang', fn($sq) => $sq->where('nama_barang', 'like', "%{$request->input('search')}%"));
+            $q->whereHas('barang', fn ($sq) => $sq->where('nama_barang', 'like', "%{$request->input('search')}%"));
         });
 
         $batasBarang = $query->paginate(20);
@@ -44,6 +44,7 @@ class BatasBarangController extends Controller
     {
         // Authorization is correctly handled by StoreBatasBarangRequest
         $batas = $this->batasBarangService->create($request->validated());
+
         return BatasBarangResource::make($batas)
             ->response()
             ->setStatusCode(HttpResponse::HTTP_CREATED);
@@ -61,6 +62,7 @@ class BatasBarangController extends Controller
     {
         // Authorization is correctly handled by UpdateBatasBarangRequest
         $batas = $this->batasBarangService->update($batas_barang, $request->validated());
+
         return BatasBarangResource::make($batas)->response();
     }
 
@@ -70,6 +72,7 @@ class BatasBarangController extends Controller
         $this->authorize('delete', $batas_barang);
 
         $batas_barang->delete();
+
         return response()->json(null, HttpResponse::HTTP_NO_CONTENT);
     }
 
@@ -79,10 +82,10 @@ class BatasBarangController extends Controller
         // Authorization is correctly handled by CheckAllocationRequest
         $validated = $request->validated();
         $results = $this->batasBarangService->checkAllocation($validated['unique_id'], $validated['items']);
-        
+
         return response()->json([
             'status' => true,
-            'data'   => $results,
+            'data' => $results,
         ]);
     }
 }

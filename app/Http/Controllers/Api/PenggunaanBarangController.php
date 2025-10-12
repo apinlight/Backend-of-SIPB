@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\PenggunaanBarangResource;
 use App\Http\Requests\StorePenggunaanBarangRequest;
+use App\Http\Resources\PenggunaanBarangResource;
 use App\Models\PenggunaanBarang;
 use App\Services\PenggunaanBarangService;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class PenggunaanBarangController extends Controller
 {
@@ -29,7 +29,7 @@ class PenggunaanBarangController extends Controller
         $query = PenggunaanBarang::with(['user', 'barang.jenisBarang', 'approver'])
             ->forUser($request->user());
 
-        $query->when($request->filled('status'), fn($q) => $q->where('status', 'like', "%{$request->status}%"));
+        $query->when($request->filled('status'), fn ($q) => $q->where('status', 'like', "%{$request->status}%"));
         // ... other filters ...
 
         $penggunaan = $query->orderBy('created_at', 'desc')
@@ -66,6 +66,7 @@ class PenggunaanBarangController extends Controller
         $this->authorize('update', $penggunaan_barang);
 
         $penggunaan_barang->update($request->all());
+
         return (new PenggunaanBarangResource($penggunaan_barang))->response();
     }
 
@@ -75,6 +76,7 @@ class PenggunaanBarangController extends Controller
         $this->authorize('delete', $penggunaan_barang);
 
         $penggunaan_barang->delete();
+
         return response()->json(null, 204);
     }
 
@@ -82,7 +84,7 @@ class PenggunaanBarangController extends Controller
     {
         // This method already had the correct authorization check. Excellent.
         $this->authorize('approve', $penggunaan_barang);
-        
+
         $updatedPenggunaan = $this->penggunaanBarangService->approve($penggunaan_barang, $request->user());
 
         return (new PenggunaanBarangResource($updatedPenggunaan))->response();

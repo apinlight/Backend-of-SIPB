@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\User;
 use App\Models\Pengajuan;
+use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
 class PengajuanPolicy
@@ -11,11 +11,12 @@ class PengajuanPolicy
     /**
      * Admins can perform any action.
      */
-    public function before(User $user, string $ability): bool|null
+    public function before(User $user, string $ability): ?bool
     {
         if ($user->hasRole('admin')) {
             return true;
         }
+
         return null;
     }
 
@@ -29,6 +30,7 @@ class PengajuanPolicy
         if ($user->hasRole('manager')) {
             return $user->branch_name === $pengajuan->user->branch_name;
         }
+
         return $user->unique_id === $pengajuan->unique_id;
     }
 
@@ -50,15 +52,17 @@ class PengajuanPolicy
                 ? Response::allow()
                 : Response::deny('You can only update requests from your own branch.');
         }
+
         // Admins are handled by before(). All other users are denied.
         return Response::deny('You do not have permission to update this request.');
     }
 
     public function delete(User $user, Pengajuan $pengajuan): Response
     {
-        if (!$pengajuan->canBeDeleted()) {
+        if (! $pengajuan->canBeDeleted()) {
             return Response::deny('You cannot delete a request that has already been processed.');
         }
+
         return $user->unique_id === $pengajuan->unique_id
             ? Response::allow()
             : Response::deny('You do not own this request.');

@@ -13,14 +13,13 @@ class GlobalSettingsController extends Controller
 {
     use AuthorizesRequests;
 
-    public function __construct(protected GlobalSettingsService $settingsService)
-    {
-    }
+    public function __construct(protected GlobalSettingsService $settingsService) {}
 
     public function index(): JsonResponse
     {
         $this->authorize('viewAny', GlobalSetting::class);
         $settings = $this->settingsService->getAllSettings();
+
         return response()->json(['status' => true, 'data' => $settings]);
     }
 
@@ -28,6 +27,7 @@ class GlobalSettingsController extends Controller
     {
         $this->authorize('viewAny', GlobalSetting::class);
         $limit = $this->settingsService->getMonthlyLimit();
+
         return response()->json(['status' => true, 'data' => ['monthly_limit' => $limit]]);
     }
 
@@ -40,7 +40,7 @@ class GlobalSettingsController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Monthly pengajuan limit updated successfully',
-            'data' => ['monthly_limit' => $limit]
+            'data' => ['monthly_limit' => $limit],
         ]);
     }
 }

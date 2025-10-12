@@ -14,7 +14,7 @@ class UpdateUserRequest extends FormRequest
         $targetUser = $this->route('user'); // Gets the user from the route
 
         // Check if the current user is authorized to update the target user
-        if (!$currentUser->can('update', $targetUser)) {
+        if (! $currentUser->can('update', $targetUser)) {
             return false;
         }
 
@@ -38,11 +38,11 @@ class UpdateUserRequest extends FormRequest
         return [
             'username' => [
                 'sometimes', 'required', 'string', 'max:255',
-                Rule::unique('tb_users', 'username')->ignore($targetUser->unique_id, 'unique_id')
+                Rule::unique('tb_users', 'username')->ignore($targetUser->unique_id, 'unique_id'),
             ],
             'email' => [
                 'sometimes', 'required', 'email', 'max:255',
-                Rule::unique('tb_users', 'email')->ignore($targetUser->unique_id, 'unique_id')
+                Rule::unique('tb_users', 'email')->ignore($targetUser->unique_id, 'unique_id'),
             ],
             'password' => ['sometimes', 'nullable', 'confirmed', Password::min(6)],
             'branch_name' => 'sometimes|required|string|max:255',

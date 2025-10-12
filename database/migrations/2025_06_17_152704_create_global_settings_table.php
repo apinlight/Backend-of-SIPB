@@ -1,4 +1,5 @@
 <?php
+
 // database/migrations/2025_06_17_152704_create_global_settings_table.php
 
 use Illuminate\Database\Migrations\Migration;
@@ -16,7 +17,7 @@ return new class extends Migration
             $table->string('setting_description')->nullable();
             $table->timestamps();
         });
-        
+
         // Insert default monthly pengajuan limit
         DB::table('tb_global_settings')->insert([
             'setting_key' => 'monthly_pengajuan_limit',

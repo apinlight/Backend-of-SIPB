@@ -20,7 +20,7 @@ class PengajuanFactory extends Factory
     public function definition(): array
     {
         return [
-            'id_pengajuan' => 'PGJ' . Str::ulid(),
+            'id_pengajuan' => 'PGJ'.Str::ulid(),
             'unique_id' => User::factory(), // Automatically create a new User for this Pengajuan
             'status_pengajuan' => Pengajuan::STATUS_PENDING,
             'tipe_pengajuan' => $this->faker->randomElement(['biasa', 'manual']),

@@ -20,6 +20,7 @@ class UserFactory extends Factory
             'branch_name' => $this->faker->company,
         ];
     }
+
     public function admin()
     {
         return $this->afterCreating(function (User $user) {

@@ -3,21 +3,17 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\UserResource;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\ChangePasswordRequest;
+use App\Http\Resources\UserResource;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Laravel\Sanctum\PersonalAccessToken;
 
 class TokenAuthController extends Controller
 {
-    
-    public function __construct(protected AuthService $authService)
-    {
-    }
+    public function __construct(protected AuthService $authService) {}
 
     public function login(LoginRequest $request): JsonResponse
     {
@@ -39,7 +35,7 @@ class TokenAuthController extends Controller
     {
         // Rate limiting is handled by middleware, authorization by the Form Request.
         $tokenData = $this->authService->register($request->validated());
-        
+
         return response()->json([
             'status' => true,
             'message' => 'Registration successful',
@@ -69,12 +65,14 @@ class TokenAuthController extends Controller
     public function logout(Request $request): JsonResponse
     {
         $request->user()->currentAccessToken()->delete();
+
         return response()->json(['status' => true, 'message' => 'Logout successful']);
     }
 
     public function logoutAll(Request $request): JsonResponse
     {
         $request->user()->tokens()->delete();
+
         return response()->json(['status' => true, 'message' => 'Logged out from all devices successfully']);
     }
 
@@ -89,13 +87,14 @@ class TokenAuthController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Password changed successfully. Please login again with your new password.'
+            'message' => 'Password changed successfully. Please login again with your new password.',
         ]);
     }
 
     public function activeSessions(Request $request): JsonResponse
     {
         $tokens = $request->user()->tokens;
+
         return response()->json(['status' => true, 'sessions' => $tokens]);
     }
 
@@ -106,6 +105,7 @@ class TokenAuthController extends Controller
             return response()->json(['status' => false, 'message' => 'Cannot revoke current session.'], 422);
         }
         $token->delete();
+
         return response()->json(['status' => true, 'message' => 'Session revoked successfully']);
     }
 }

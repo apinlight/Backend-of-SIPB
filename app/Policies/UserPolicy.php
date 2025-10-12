@@ -3,34 +3,34 @@
 namespace App\Policies;
 
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class UserPolicy
 {
     /**
      * Admin dapat melakukan aksi apa pun.
      */
-    public function before(User $user, string $ability): bool|null
+    public function before(User $user, string $ability): ?bool
     {
-        if ($user->hasRole('admin')) {
+        if ($user->hasRole(\App\Enums\Role::ADMIN)) {
             return true;
         }
+
         return null;
     }
 
     public function viewAny(User $user): bool
     {
         // BENAR: Admin dan Manager dapat melihat daftar pengguna.
-        return $user->hasAnyRole(['admin', 'manager']);
+        return $user->hasAnyRole([\App\Enums\Role::ADMIN, \App\Enums\Role::MANAGER]);
     }
 
     public function view(User $user, User $targetUser): bool
     {
         // ✅ PERUBAHAN: Manager sekarang adalah peran pusat dan dapat melihat semua pengguna.
-        if ($user->hasRole('manager')) {
+        if ($user->hasRole(\App\Enums\Role::MANAGER)) {
             return true;
         }
-        
+
         // Pengguna biasa hanya dapat melihat profil mereka sendiri.
         return $user->unique_id === $targetUser->unique_id;
     }
@@ -38,7 +38,7 @@ class UserPolicy
     public function create(User $user): bool
     {
         // BENAR: Hanya admin yang dapat membuat pengguna baru.
-        return $user->hasRole('admin');
+        return $user->hasRole(\App\Enums\Role::ADMIN);
     }
 
     public function update(User $user, User $targetUser): bool
@@ -46,16 +46,16 @@ class UserPolicy
         // ✅ PERUBAHAN: Hanya admin yang dapat mengubah pengguna lain.
         // Pengguna biasa hanya dapat memperbarui profil mereka sendiri.
         // Manager TIDAK BISA lagi mengubah pengguna.
-        if ($user->hasRole('admin')) {
+        if ($user->hasRole(\App\Enums\Role::ADMIN)) {
             return true;
         }
-        
+
         return $user->unique_id === $targetUser->unique_id;
     }
 
     public function delete(User $user, User $targetUser): bool
     {
         // BENAR: Admin dapat menghapus siapa pun kecuali diri mereka sendiri.
-        return $user->hasRole('admin') && $user->unique_id !== $targetUser->unique_id;
+        return $user->hasRole(\App\Enums\Role::ADMIN) && $user->unique_id !== $targetUser->unique_id;
     }
 }

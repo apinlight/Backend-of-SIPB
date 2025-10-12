@@ -1,10 +1,11 @@
 <?php
+
 // app/Http/Middleware/RequestValidationMiddleware.php
+
 namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
 
 class RequestValidationMiddleware
@@ -13,17 +14,17 @@ class RequestValidationMiddleware
     {
         // Validate common request requirements
         if ($request->isMethod('POST') || $request->isMethod('PUT') || $request->isMethod('PATCH')) {
-            
+
             // Check content type for JSON APIs
             if (str_starts_with($request->path(), 'api/')) {
                 $contentType = $request->header('Content-Type');
-                
-                if (!str_contains($contentType, 'application/json') && 
-                    !str_contains($contentType, 'multipart/form-data')) {
-                    
+
+                if (! str_contains($contentType, 'application/json') &&
+                    ! str_contains($contentType, 'multipart/form-data')) {
+
                     return response()->json([
                         'status' => false,
-                        'message' => 'Content-Type must be application/json or multipart/form-data'
+                        'message' => 'Content-Type must be application/json or multipart/form-data',
                     ], 400);
                 }
             }
@@ -34,7 +35,7 @@ class RequestValidationMiddleware
         if ($request->server('CONTENT_LENGTH') > $maxSize) {
             return response()->json([
                 'status' => false,
-                'message' => 'Request payload too large'
+                'message' => 'Request payload too large',
             ], 413);
         }
 

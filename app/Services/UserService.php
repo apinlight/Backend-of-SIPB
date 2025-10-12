@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
 use Exception;
+use Illuminate\Support\Facades\Hash;
 
 class UserService
 {
@@ -15,7 +15,7 @@ class UserService
 
         $user = User::create($data);
 
-        $roles = $data['roles'] ?? ['user'];
+        $roles = $data['roles'] ?? [\App\Enums\Role::USER];
         $user->assignRole($roles);
 
         return $user;
@@ -23,7 +23,7 @@ class UserService
 
     public function update(User $user, array $data): User
     {
-        if (!empty($data['password'])) {
+        if (! empty($data['password'])) {
             $data['password'] = Hash::make($data['password']);
         } else {
             unset($data['password']);
@@ -61,7 +61,8 @@ class UserService
             throw new Exception('You cannot deactivate your own account.');
         }
 
-        $userToToggle->update(['is_active' => !$userToToggle->is_active]);
+        $userToToggle->update(['is_active' => ! $userToToggle->is_active]);
+
         return $userToToggle;
     }
 }

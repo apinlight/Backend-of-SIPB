@@ -4,8 +4,6 @@ namespace App\Services;
 
 use App\Models\BatasBarang;
 use App\Models\Gudang;
-use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Collection;
 
 class BatasBarangService
 {
@@ -17,6 +15,7 @@ class BatasBarangService
     public function update(BatasBarang $batasBarang, array $data): BatasBarang
     {
         $batasBarang->update($data);
+
         return $batasBarang->fresh();
     }
 
@@ -46,14 +45,14 @@ class BatasBarangService
             $newTotal = $currentStock + $requested;
 
             $results[] = [
-                'id_barang'     => $itemId,
+                'id_barang' => $itemId,
                 'current_stock' => $currentStock,
-                'batas_barang'  => $limit,
-                'requested'     => $requested,
-                'new_total'     => $newTotal,
-                'available'     => max(0, $limit - $currentStock),
-                'is_valid'      => $newTotal <= $limit,
-                'message'       => $newTotal > $limit ? "Melebihi batas ({$newTotal} > {$limit})" : 'Valid',
+                'batas_barang' => $limit,
+                'requested' => $requested,
+                'new_total' => $newTotal,
+                'available' => max(0, $limit - $currentStock),
+                'is_valid' => $newTotal <= $limit,
+                'message' => $newTotal > $limit ? "Melebihi batas ({$newTotal} > {$limit})" : 'Valid',
             ];
         }
 

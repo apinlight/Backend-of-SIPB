@@ -2,27 +2,29 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
-use App\Models\User;
 use App\Models\Barang;
 use App\Models\Gudang;
 use App\Models\Pengajuan;
-use Spatie\Permission\Models\Role;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
+use Spatie\Permission\Models\Role;
+use Tests\TestCase;
 
 class PengajuanTest extends TestCase
 {
     use RefreshDatabase;
 
     private User $admin;
+
     private User $user;
+
     private Barang $barang;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         Role::create(['name' => 'admin']);
         Role::create(['name' => 'user']);
 
@@ -31,7 +33,7 @@ class PengajuanTest extends TestCase
 
         $this->user = User::factory()->create();
         $this->user->assignRole('user');
-        
+
         $this->barang = Barang::factory()->create();
 
         Gudang::create([
@@ -54,7 +56,7 @@ class PengajuanTest extends TestCase
         ]);
 
         Sanctum::actingAs($this->admin);
-        
+
         $response = $this->putJson("/api/v1/pengajuan/{$pengajuan->id_pengajuan}", [
             'status_pengajuan' => Pengajuan::STATUS_APPROVED,
         ]);
@@ -67,7 +69,7 @@ class PengajuanTest extends TestCase
             'id_barang' => $this->barang->id_barang,
             'jumlah_barang' => 10,
         ]);
-        
+
         $this->assertDatabaseHas('tb_gudang', [
             'unique_id' => $this->admin->unique_id,
             'id_barang' => $this->barang->id_barang,
@@ -83,7 +85,7 @@ class PengajuanTest extends TestCase
         $response = $this->putJson("/api/v1/pengajuan/{$pengajuan->id_pengajuan}", [
             'status_pengajuan' => Pengajuan::STATUS_APPROVED,
         ]);
-        
+
         $response->assertStatus(403);
     }
 }

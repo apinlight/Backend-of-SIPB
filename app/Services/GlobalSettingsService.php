@@ -7,6 +7,7 @@ use App\Models\GlobalSetting;
 class GlobalSettingsService
 {
     const MONTHLY_LIMIT_KEY = 'monthly_pengajuan_limit';
+
     const DEFAULT_MONTHLY_LIMIT = 5;
 
     /**

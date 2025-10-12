@@ -11,11 +11,12 @@ class PenggunaanBarangPolicy
     /**
      * Admins can do anything.
      */
-    public function before(User $user, string $ability): bool|null
+    public function before(User $user, string $ability): ?bool
     {
         if ($user->hasRole('admin')) {
             return true;
         }
+
         return null; // let other methods decide
     }
 
@@ -30,6 +31,7 @@ class PenggunaanBarangPolicy
         if ($user->unique_id === $penggunaanBarang->unique_id) {
             return true;
         }
+
         return $user->hasRole('manager') && $user->branch_name === $penggunaanBarang->user->branch_name;
     }
 
@@ -43,6 +45,7 @@ class PenggunaanBarangPolicy
         if ($penggunaanBarang->status !== 'pending') {
             return Response::deny('Cannot update a request that has already been processed.');
         }
+
         return $user->unique_id === $penggunaanBarang->unique_id
             ? Response::allow()
             : Response::deny('You do not own this request.');
@@ -53,6 +56,7 @@ class PenggunaanBarangPolicy
         if ($penggunaanBarang->status === 'approved') {
             return Response::deny('Cannot delete an approved request.');
         }
+
         return $user->unique_id === $penggunaanBarang->unique_id
             ? Response::allow()
             : Response::deny('You do not own this request.');
@@ -60,12 +64,13 @@ class PenggunaanBarangPolicy
 
     public function approve(User $user, PenggunaanBarang $penggunaanBarang): Response
     {
-        if (!$user->hasRole('manager')) {
+        if (! $user->hasRole('manager')) {
             return Response::deny('You do not have permission to approve requests.');
         }
         if ($penggunaanBarang->status !== 'pending') {
             return Response::deny('This request has already been processed.');
         }
+
         return $user->branch_name === $penggunaanBarang->user->branch_name
             ? Response::allow()
             : Response::deny('You can only approve requests from your own branch.');

@@ -1,24 +1,22 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\BarangController;
-use App\Http\Controllers\Api\PengajuanBarangInfoController;
-use App\Http\Controllers\Api\PengajuanController;
-use App\Http\Controllers\Api\GudangController;
 use App\Http\Controllers\Api\BatasBarangController;
-use App\Http\Controllers\Api\GlobalSettingsController;
 use App\Http\Controllers\Api\DetailPengajuanController;
+use App\Http\Controllers\Api\GlobalSettingsController;
+use App\Http\Controllers\Api\GudangController;
 use App\Http\Controllers\Api\JenisBarangController;
 use App\Http\Controllers\Api\LaporanController;
+use App\Http\Controllers\Api\PengajuanBarangInfoController;
+use App\Http\Controllers\Api\PengajuanController;
 use App\Http\Controllers\Api\PenggunaanBarangController;
-use App\Http\Resources\UserResource;
+use App\Http\Controllers\Api\UserController;
+use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
     Route::middleware('api.public')->group(function () {
-        Route::get('online', fn() => response()->json(['message' => 'API is online']));
-        Route::get('health', fn() => response()->json(['status' => 'healthy', 'timestamp' => now()->toISOString()]));
+        Route::get('online', fn () => response()->json(['message' => 'API is online']));
+        Route::get('health', fn () => response()->json(['status' => 'healthy', 'timestamp' => now()->toISOString()]));
     });
 
     Route::middleware('api.protected')->group(function () {
@@ -33,18 +31,18 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('penggunaan-barang', PenggunaanBarangController::class);
         Route::apiResource('users', UserController::class);
         Route::apiResource('batas-barang', BatasBarangController::class);
-        
+
         Route::prefix('jenis-barang')->group(function () {
             Route::get('list/active', [JenisBarangController::class, 'active']);
             Route::post('{jenis_barang}/toggle-status', [JenisBarangController::class, 'toggleStatus']);
         });
 
-        Route::prefix('pengajuan')->group(function() {
+        Route::prefix('pengajuan')->group(function () {
             Route::get('info/barang', [PengajuanBarangInfoController::class, 'getBarangInfo']);
             Route::get('info/barang-history/{id_barang}', [PengajuanBarangInfoController::class, 'getBarangPengajuanHistory']);
         });
 
-        Route::prefix('gudang')->group(function() {
+        Route::prefix('gudang')->group(function () {
             Route::post('{unique_id}/{id_barang}/adjust-stock', [GudangController::class, 'adjustStock'])->middleware('role:admin');
         });
 
@@ -53,8 +51,8 @@ Route::prefix('v1')->group(function () {
             Route::post('{penggunaan_barang}/reject', [PenggunaanBarangController::class, 'reject'])->middleware('role:admin|manager');
             Route::get('pending/approvals', [PenggunaanBarangController::class, 'pendingApprovals'])->middleware('role:admin|manager');
         });
-        
-        Route::prefix('stok')->group(function() {
+
+        Route::prefix('stok')->group(function () {
             Route::get('tersedia', [PenggunaanBarangController::class, 'getAvailableStock']);
             Route::get('tersedia/{id_barang}', [PenggunaanBarangController::class, 'getStockForItem']);
         });
@@ -63,7 +61,7 @@ Route::prefix('v1')->group(function () {
             Route::post('{user}/toggle-status', [UserController::class, 'toggleStatus'])->middleware('role:admin');
             Route::post('{user}/reset-password', [UserController::class, 'resetPassword'])->middleware('role:admin');
         });
-        
+
         Route::post('batas-barang/check-allocation', [BatasBarangController::class, 'checkAllocation']);
 
         Route::prefix('global-settings')->middleware('role:admin')->group(function () {
@@ -76,14 +74,14 @@ Route::prefix('v1')->group(function () {
             Route::get('summary', [LaporanController::class, 'summary']);
             Route::get('barang', [LaporanController::class, 'barang']);
             Route::get('pengajuan', [LaporanController::class, 'pengajuan']);
-            
+
             Route::middleware('role:admin|manager')->group(function () {
                 Route::get('cabang', [LaporanController::class, 'cabang']);
                 Route::get('penggunaan', [LaporanController::class, 'penggunaan']);
                 Route::get('stok', [LaporanController::class, 'stok']);
                 Route::get('stok-summary', [LaporanController::class, 'stockSummary']);
             });
-            
+
             Route::prefix('export')->name('export.')->middleware('role:admin|manager')->group(function () {
                 Route::get('summary', [LaporanController::class, 'exportSummary']);
                 Route::get('barang', [LaporanController::class, 'exportBarang']);
@@ -94,4 +92,9 @@ Route::prefix('v1')->group(function () {
             });
         });
     });
+
+    // ✅ Catch-all OPTIONS route for CORS preflight - must be last and explicitly use CORS middleware
+    Route::options('{any}', function () {
+        return response('', 200);
+    })->where('any', '.*')->middleware('cors.custom');
 });

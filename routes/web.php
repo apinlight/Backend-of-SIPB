@@ -1,12 +1,13 @@
 <?php
+
 // routes/web.php
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DocsController;
+use Illuminate\Support\Facades\Route;
 
 // ✅ Add security headers to web routes
 Route::middleware(['web'])->group(function () {
-    
-    Route::get('/', function() {
+
+    Route::get('/', function () {
         return view('welcome');
     });
 
@@ -16,4 +17,4 @@ Route::middleware(['web'])->group(function () {
 });
 
 // ✅ Include auth routes
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

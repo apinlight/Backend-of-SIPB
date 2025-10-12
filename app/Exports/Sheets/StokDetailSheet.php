@@ -6,10 +6,10 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class StokDetailSheet implements FromCollection, WithHeadings, WithStyles, WithTitle
 {
@@ -22,7 +22,7 @@ class StokDetailSheet implements FromCollection, WithHeadings, WithStyles, WithT
 
     public function collection()
     {
-        return collect($this->data)->map(function($item) {
+        return collect($this->data)->map(function ($item) {
             return [
                 'User ID' => $item->user->unique_id,
                 'Username' => $item->user->username,
@@ -51,7 +51,7 @@ class StokDetailSheet implements FromCollection, WithHeadings, WithStyles, WithT
             1 => [
                 'font' => ['bold' => true, 'size' => 12, 'color' => ['rgb' => 'FFFFFF']],
                 'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
-                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
             ],
             'G' => ['numberFormat' => ['formatCode' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1]],
             'I' => ['numberFormat' => ['formatCode' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1]],
@@ -67,8 +67,13 @@ class StokDetailSheet implements FromCollection, WithHeadings, WithStyles, WithT
     private function getStockStatusText($stockItem)
     {
         $batasMinimum = $stockItem->barang->batas_minimum ?? 5;
-        if ($stockItem->jumlah_barang == 0) return 'Habis';
-        if ($stockItem->jumlah_barang <= $batasMinimum) return 'Rendah';
+        if ($stockItem->jumlah_barang == 0) {
+            return 'Habis';
+        }
+        if ($stockItem->jumlah_barang <= $batasMinimum) {
+            return 'Rendah';
+        }
+
         return 'Normal';
     }
 }

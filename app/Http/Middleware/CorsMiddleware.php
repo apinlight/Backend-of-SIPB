@@ -1,5 +1,7 @@
 <?php
+
 // app/Http/Middleware/CorsMiddleware.php
+
 namespace App\Http\Middleware;
 
 use Closure;
@@ -19,41 +21,48 @@ class CorsMiddleware
             ]);
         }
 
-        // Handle preflight requests
-        if ($request->isMethod('OPTIONS')) {
-            $response = response('', 200);
-        } else {
-            $response = $next($request);
-        }
-
-        // Get origin
+        // Get origin and allowed origins from config
         $origin = $request->header('Origin');
-        $allowedOrigins = [
-            'https://fe-sipb.crulxproject.com',
-            'https://sipb.crulxproject.com',
-            'http://127.0.0.2:5173', // ✅ FIX: Standard Vite port
-            'http://localhost:5173',
-            'http://127.0.0.1:80',
-            'http://localhost:3000', // ✅ ADD: React dev server
+        $allowedOrigins = config('cors.allowed_origins', []);
+
+        // Prepare CORS headers
+        $isAllowed = in_array($origin, $allowedOrigins);
+        $headers = [
+            'Access-Control-Allow-Methods' => 'GET, POST, PUT, DELETE, OPTIONS, PATCH',
+            'Access-Control-Allow-Headers' => 'Accept, Authorization, Content-Type, X-Requested-With, X-CSRF-TOKEN, X-XSRF-TOKEN, Origin, Cache-Control, Pragma',
+            'Access-Control-Expose-Headers' => 'Set-Cookie',
+            'Access-Control-Max-Age' => '86400',
         ];
 
-        // ✅ FIX: Proper CORS logic
-        if (in_array($origin, $allowedOrigins)) {
-            $response->headers->set('Access-Control-Allow-Origin', $origin);
-            $response->headers->set('Access-Control-Allow-Credentials', 'true');
+        // Set origin header - either specific origin if allowed, or * for any origin
+        if ($isAllowed && $origin) {
+            $headers['Access-Control-Allow-Origin'] = $origin;
+            $headers['Access-Control-Allow-Credentials'] = 'true';
         } else {
-            // ✅ FIX: For non-allowed origins, don't set credentials
-            $response->headers->set('Access-Control-Allow-Origin', '*');
-            $response->headers->set('Access-Control-Allow-Credentials', 'false');
+            $headers['Access-Control-Allow-Origin'] = '*';
+            // NEVER set credentials header for wildcard origin per CORS spec
         }
 
-        // ✅ FIX: Don't set credentials twice - removed duplicate line
-        $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-        $response->headers->set('Access-Control-Allow-Headers', 
-            'Accept, Authorization, Content-Type, X-Requested-With, X-CSRF-TOKEN, X-XSRF-TOKEN, Origin, Cache-Control, Pragma'
-        );
-        $response->headers->set('Access-Control-Expose-Headers', 'Set-Cookie');
-        $response->headers->set('Access-Control-Max-Age', '86400');
+        // Handle preflight requests
+        if ($request->isMethod('OPTIONS')) {
+            return response('', 200, $headers);
+        }
+
+        // Continue with the request
+        $response = $next($request);
+
+        // Remove any existing CORS headers to avoid conflicts
+        $response->headers->remove('Access-Control-Allow-Origin');
+        $response->headers->remove('Access-Control-Allow-Credentials');
+        $response->headers->remove('Access-Control-Allow-Methods');
+        $response->headers->remove('Access-Control-Allow-Headers');
+        $response->headers->remove('Access-Control-Expose-Headers');
+        $response->headers->remove('Access-Control-Max-Age');
+
+        // Apply our CORS headers to the response
+        foreach ($headers as $key => $value) {
+            $response->headers->set($key, $value);
+        }
 
         // ✅ FIX: Only log in development
         if (config('app.debug')) {

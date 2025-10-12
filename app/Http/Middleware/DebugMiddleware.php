@@ -13,7 +13,7 @@ class DebugMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         // ✅ FIX: Only run in development environment
-        if (!config('app.debug')) {
+        if (! config('app.debug')) {
             return $next($request);
         }
 
@@ -53,7 +53,7 @@ class DebugMiddleware
     private function filterSensitiveData(array $data): array
     {
         $sensitiveKeys = ['password', 'password_confirmation', 'token', 'secret', 'key'];
-        
+
         foreach ($sensitiveKeys as $key) {
             if (isset($data[$key])) {
                 $data[$key] = '[FILTERED]';

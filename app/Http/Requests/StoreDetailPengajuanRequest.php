@@ -11,7 +11,7 @@ class StoreDetailPengajuanRequest extends FormRequest
     {
         $pengajuan = Pengajuan::find($this->input('id_pengajuan'));
 
-        if (!$pengajuan) {
+        if (! $pengajuan) {
             return false;
         }
 
@@ -23,9 +23,9 @@ class StoreDetailPengajuanRequest extends FormRequest
     {
         return [
             'id_pengajuan' => 'required|string|exists:tb_pengajuan,id_pengajuan',
-            'id_barang'    => 'required|string|exists:tb_barang,id_barang',
-            'jumlah'       => 'required|integer|min:1',
-            'keterangan'   => 'nullable|string|max:500',
+            'id_barang' => 'required|string|exists:tb_barang,id_barang',
+            'jumlah' => 'required|integer|min:1',
+            'keterangan' => 'nullable|string|max:500',
         ];
     }
 }

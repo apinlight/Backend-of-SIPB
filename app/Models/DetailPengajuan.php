@@ -1,4 +1,5 @@
 <?php
+
 // app/Models/DetailPengajuan.php
 
 namespace App\Models;
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Barang $barang
  * @property-read \App\Models\Pengajuan $pengajuan
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DetailPengajuan newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DetailPengajuan newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DetailPengajuan query()
@@ -23,14 +25,17 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DetailPengajuan whereJumlah($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DetailPengajuan whereKeterangan($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DetailPengajuan whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class DetailPengajuan extends Model
 {
     protected $table = 'tb_detail_pengajuan';
+
     protected $primaryKey = null;
+
     public $incrementing = false;
-    
+
     // ✅ ADD keterangan to fillable
     protected $fillable = ['id_pengajuan', 'id_barang', 'jumlah', 'keterangan'];
 
@@ -49,7 +54,8 @@ class DetailPengajuan extends Model
     public function setKeysForSaveQuery($query)
     {
         $query->where('id_pengajuan', '=', $this->getAttribute('id_pengajuan'))
-              ->where('id_barang', '=', $this->getAttribute('id_barang'));
+            ->where('id_barang', '=', $this->getAttribute('id_barang'));
+
         return $query;
     }
 }

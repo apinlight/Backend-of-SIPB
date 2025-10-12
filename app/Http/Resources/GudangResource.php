@@ -15,13 +15,13 @@ class GudangResource extends JsonResource
             'jumlah_barang' => (int) $this->jumlah_barang,
             'keterangan' => $this->keterangan,
             'tipe' => $this->tipe,
-            
+
             // Relationships
             'user' => UserResource::make($this->whenLoaded('user')),
             'barang' => BarangResource::make($this->whenLoaded('barang')),
-            
-            'total_nilai' => $this->whenLoaded('barang', fn() => ($this->barang->harga_barang ?? 0) * $this->jumlah_barang),
-            
+
+            'total_nilai' => $this->whenLoaded('barang', fn () => ($this->barang->harga_barang ?? 0) * $this->jumlah_barang),
+
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];

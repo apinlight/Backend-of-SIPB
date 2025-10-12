@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Builder;
 
 class PenggunaanBarang extends Model
 {
     protected $table = 'tb_penggunaan_barang';
+
     protected $primaryKey = 'id_penggunaan';
 
     protected $fillable = [
@@ -20,13 +21,13 @@ class PenggunaanBarang extends Model
         'keterangan',
         'approved_by',
         'approved_at',
-        'status'
+        'status',
     ];
 
     protected $casts = [
         'tanggal_penggunaan' => 'date',
         'approved_at' => 'datetime',
-        'jumlah_digunakan' => 'integer'
+        'jumlah_digunakan' => 'integer',
     ];
 
     // ✅ Relationships
@@ -61,13 +62,13 @@ class PenggunaanBarang extends Model
         if ($user->hasRole('admin')) {
             return $query; // Admin can see all
         }
-        
+
         if ($user->hasRole('manager')) {
-            return $query->whereHas('user', function($q) use ($user) {
+            return $query->whereHas('user', function ($q) use ($user) {
                 $q->where('branch_name', $user->branch_name);
             });
         }
-        
+
         // Regular user can only see their own
         return $query->where('unique_id', $user->unique_id);
     }

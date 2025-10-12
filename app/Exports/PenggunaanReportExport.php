@@ -12,7 +12,9 @@ use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 class PenggunaanReportExport implements WithMultipleSheets
 {
     protected $data;
+
     protected $filters;
+
     protected $user;
 
     public function __construct(array $data, array $filters, $user)
@@ -33,4 +35,3 @@ class PenggunaanReportExport implements WithMultipleSheets
         ];
     }
 }
-

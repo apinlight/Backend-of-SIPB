@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class Gudang extends Pivot
 {
@@ -16,6 +16,7 @@ class Gudang extends Pivot
      * of its foreign keys.
      */
     public $incrementing = false;
+
     protected $primaryKey = null; // Menegaskan bahwa tidak ada satu pun primary key
 
     protected $fillable = [

@@ -1,4 +1,5 @@
 <?php
+
 // database/migrations/2025_06_17_152707_drop_wrong_batas_pengajuan_table.php
 
 use Illuminate\Database\Migrations\Migration;

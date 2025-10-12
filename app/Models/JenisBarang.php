@@ -1,11 +1,12 @@
 <?php
+
 // app/Models/JenisBarang.php
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id_jenis_barang
@@ -15,6 +16,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property string|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Barang> $barang
  * @property-read int|null $barang_count
+ *
  * @method static \Database\Factories\JenisBarangFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|JenisBarang newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|JenisBarang newQuery()
@@ -24,21 +26,26 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|JenisBarang whereIsActive($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|JenisBarang whereNamaJenisBarang($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|JenisBarang whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class JenisBarang extends Model
 {
-    use HasUlids, HasFactory;
+    use HasFactory, HasUlids;
 
     protected $table = 'tb_jenis_barang';
+
     protected $primaryKey = 'id_jenis_barang';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     public $timestamps = false;
-    
+
     // ✅ ADD is_active to fillable
     protected $fillable = ['id_jenis_barang', 'nama_jenis_barang', 'is_active'];
-    
+
     // ✅ ADD casts for boolean
     protected $casts = [
         'is_active' => 'boolean',
@@ -57,7 +64,7 @@ class JenisBarang extends Model
                 $model->id_jenis_barang = (string) \Illuminate\Support\Str::ulid();
             }
             // ✅ Set default is_active
-            if (!isset($model->is_active)) {
+            if (! isset($model->is_active)) {
                 $model->is_active = true;
             }
         });

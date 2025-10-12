@@ -15,10 +15,10 @@ class StoreJenisBarangRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'id_jenis_barang'   => 'required|string|unique:tb_jenis_barang,id_jenis_barang',
+            'id_jenis_barang' => 'required|string|unique:tb_jenis_barang,id_jenis_barang',
             'nama_jenis_barang' => 'required|string|max:255|unique:tb_jenis_barang,nama_jenis_barang',
-            'deskripsi'         => 'nullable|string|max:1000',
-            'is_active'         => 'sometimes|boolean',
+            'deskripsi' => 'nullable|string|max:1000',
+            'is_active' => 'sometimes|boolean',
         ];
     }
 }

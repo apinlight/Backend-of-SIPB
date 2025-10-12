@@ -1,4 +1,5 @@
 <?php
+
 // database/migrations/2025_06_22_230959_add_is_active_to_jenis_barang_table.php
 
 use Illuminate\Database\Migrations\Migration;

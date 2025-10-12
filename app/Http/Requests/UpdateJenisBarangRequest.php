@@ -22,10 +22,10 @@ class UpdateJenisBarangRequest extends FormRequest
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('tb_jenis_barang', 'nama_jenis_barang')->ignore($jenisBarangId, 'id_jenis_barang')
+                Rule::unique('tb_jenis_barang', 'nama_jenis_barang')->ignore($jenisBarangId, 'id_jenis_barang'),
             ],
-            'deskripsi'         => 'nullable|string|max:1000',
-            'is_active'         => 'sometimes|boolean',
+            'deskripsi' => 'nullable|string|max:1000',
+            'is_active' => 'sometimes|boolean',
         ];
     }
 }

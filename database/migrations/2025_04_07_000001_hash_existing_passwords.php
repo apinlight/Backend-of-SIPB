@@ -13,7 +13,7 @@ class HashExistingPasswords extends Migration
 
         foreach ($users as $user) {
             // Check if the password is not already hashed
-            if (!Hash::check($user->password, $user->password)) {
+            if (! Hash::check($user->password, $user->password)) {
                 // Hash the password and update the user record
                 DB::table('tb_users')
                     ->where('unique_id', $user->unique_id)

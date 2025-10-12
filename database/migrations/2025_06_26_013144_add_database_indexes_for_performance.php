@@ -1,4 +1,5 @@
 <?php
+
 // database/migrations/2025_06_26_013144_add_database_indexes_for_performance.php
 
 use Illuminate\Database\Migrations\Migration;

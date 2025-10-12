@@ -1,4 +1,5 @@
 <?php
+
 // database/migrations/2025_06_24_213356_create_tb_penggunaan_barang_table.php
 
 use Illuminate\Database\Migrations\Migration;
@@ -24,7 +25,7 @@ return new class extends Migration
 
             $table->foreign('unique_id')->references('unique_id')->on('tb_users')->onDelete('cascade');
             $table->foreign('id_barang')->references('id_barang')->on('tb_barang')->onDelete('cascade');
-            
+
             $table->index(['unique_id', 'id_barang']);
             $table->index('tanggal_penggunaan');
         });

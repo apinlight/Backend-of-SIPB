@@ -15,7 +15,7 @@ class ForceHttpsInProduction
             $request->server->set('SERVER_PORT', 443);
             $request->server->set('REQUEST_SCHEME', 'https');
         }
-        
+
         // ✅ Trust X-Forwarded-Proto from Cloudflare
         if ($request->header('X-Forwarded-Proto') === 'https') {
             $request->server->set('HTTPS', 'on');

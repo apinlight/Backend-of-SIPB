@@ -1,4 +1,5 @@
 <?php
+
 // bootstrap/app.php
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -16,17 +17,15 @@ return Application::configure(basePath: dirname(__DIR__))
         }
     )
     ->withMiddleware(function (Middleware $middleware) {
-        
-        // ✅ Global middleware stack
-        $middleware->api(prepend: [
 
-            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+        // ✅ Global middleware stack - CORS first to ensure it always runs
+        $middleware->api(prepend: [
+            \App\Http\Middleware\CorsMiddleware::class,
+            // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             \App\Http\Middleware\TrustProxies::class,
             \App\Http\Middleware\ForceHttpsInProduction::class,
             \App\Http\Middleware\SecurityHeadersMiddleware::class,
-            \Illuminate\Http\Middleware\HandleCors::class,
-            // ✅ Uncomment if you need custom CORS behavior
-            // \App\Http\Middleware\CorsMiddleware::class,
+            // \Illuminate\Http\Middleware\HandleCors::class,
         ]);
 
         // ✅ Route-specific middleware aliases
@@ -35,13 +34,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
-            
+
             // ✅ NEW middleware aliases
             'api.version' => \App\Http\Middleware\ApiVersionMiddleware::class,
             'api.validate' => \App\Http\Middleware\RequestValidationMiddleware::class,
             'api.rate_limit' => \App\Http\Middleware\ApiRateLimitMiddleware::class,
             'cors.custom' => \App\Http\Middleware\CorsMiddleware::class,
-            
+
             // ✅ Development middleware
             'debug' => \App\Http\Middleware\DebugMiddleware::class,
         ]);
@@ -88,7 +87,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        
+
         // ✅ API Exception Handling
         $exceptions->renderable(function (\Illuminate\Validation\ValidationException $e, $request) {
             if ($request->is('api/*')) {

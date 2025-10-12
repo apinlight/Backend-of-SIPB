@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Exports;
 
 use App\Exports\Sheets\BarangDetailSheet;
@@ -8,11 +9,21 @@ use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
 class BarangReportExport implements WithMultipleSheets
 {
-    protected $data; protected $filters; protected $user;
-    public function __construct(array $data, array $filters, $user) {
-        $this->data = $data; $this->filters = $filters; $this->user = $user;
+    protected $data;
+
+    protected $filters;
+
+    protected $user;
+
+    public function __construct(array $data, array $filters, $user)
+    {
+        $this->data = $data;
+        $this->filters = $filters;
+        $this->user = $user;
     }
-    public function sheets(): array {
+
+    public function sheets(): array
+    {
         return [
             new BarangSummarySheet($this->data['summary']),
             new BarangDetailSheet($this->data['details']),

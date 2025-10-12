@@ -6,13 +6,14 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class FiltersSheet implements FromCollection, WithHeadings, WithStyles, WithTitle
 {
     protected $filters;
+
     protected $user;
 
     public function __construct($filters = [], $user = null)
@@ -49,12 +50,13 @@ class FiltersSheet implements FromCollection, WithHeadings, WithStyles, WithTitl
     public function styles(Worksheet $sheet)
     {
         $sheet->removeRow(1); // Remove the default header row
+
         return [
             1 => [
                 'font' => ['bold' => true, 'size' => 12, 'color' => ['rgb' => 'FFFFFF']],
                 'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '70AD47']],
-                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
-            ]
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+            ],
         ];
     }
 

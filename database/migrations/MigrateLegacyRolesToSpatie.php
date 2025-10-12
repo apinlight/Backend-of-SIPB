@@ -1,7 +1,7 @@
 <?php
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\DB;
+
 use App\Models\User;
+use Illuminate\Database\Migrations\Migration;
 use Spatie\Permission\Models\Role;
 
 class MigrateLegacyRolesToSpatie extends Migration
@@ -18,7 +18,7 @@ class MigrateLegacyRolesToSpatie extends Migration
         // Create roles if they don't exist
         foreach ($roleMapping as $legacyId => $roleName) {
             Role::firstOrCreate([
-                'name'       => $roleName,
+                'name' => $roleName,
                 'guard_name' => config('auth.defaults.guard'), // Adjust if using a different guard
             ]);
         }

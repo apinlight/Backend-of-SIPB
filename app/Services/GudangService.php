@@ -58,15 +58,15 @@ class GudangService
             $gudang->save();
 
             Log::info('Stock adjustment made by admin', [
-                'admin_id'            => $admin->unique_id,
-                'gudang_id'           => $gudang->id, // Assuming 'id' is the primary key of the pivot table
-                'target_user_id'      => $gudang->unique_id,
-                'barang_id'           => $gudang->id_barang,
-                'old_stock'           => $oldStock,
-                'new_stock'           => $newStock,
-                'adjustment_type'     => $data['adjustment_type'],
-                'adjustment_amount'   => $amount,
-                'reason'              => $data['reason']
+                'admin_id' => $admin->unique_id,
+                'gudang_id' => $gudang->id, // Assuming 'id' is the primary key of the pivot table
+                'target_user_id' => $gudang->unique_id,
+                'barang_id' => $gudang->id_barang,
+                'old_stock' => $oldStock,
+                'new_stock' => $newStock,
+                'adjustment_type' => $data['adjustment_type'],
+                'adjustment_amount' => $amount,
+                'reason' => $data['reason'],
             ]);
 
             return $gudang->fresh();

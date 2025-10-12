@@ -123,13 +123,12 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
-
     // CUSTOM AUTH SETTINGS
     'allow_registration' => env('ALLOW_REGISTRATION', false),
     'single_session' => env('SINGLE_SESSION_PER_USER', false),
     'max_login_attempts' => env('MAX_LOGIN_ATTEMPTS', 5),
     'lockout_duration' => env('LOCKOUT_DURATION_MINUTES', 15),
-    
+
     // TOKEN SETTINGS
     'token_expiry_hours' => env('TOKEN_EXPIRY_HOURS', 24),
     'refresh_token_before_minutes' => env('REFRESH_TOKEN_BEFORE_MINUTES', 60),

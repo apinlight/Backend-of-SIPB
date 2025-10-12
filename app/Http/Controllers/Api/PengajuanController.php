@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\PengajuanResource;
 use App\Http\Requests\StorePengajuanRequest;
+use App\Http\Resources\PengajuanResource;
 use App\Models\Pengajuan;
 use App\Services\PengajuanService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class PengajuanController extends Controller
@@ -30,12 +30,13 @@ class PengajuanController extends Controller
         $query = Pengajuan::with(['user', 'details.barang'])
             ->forUser($request->user()); // Assumes forUser scope exists
 
-        $query->when($request->filled('status'), fn($q) => $q->where('status_pengajuan', $request->status));
+        $query->when($request->filled('status'), fn ($q) => $q->where('status_pengajuan', $request->status));
         $query->when($request->user()->hasRole('admin') && $request->filled('branch'), function ($q) use ($request) {
-            $q->whereHas('user', fn($sq) => $sq->where('branch_name', $request->branch));
+            $q->whereHas('user', fn ($sq) => $sq->where('branch_name', $request->branch));
         });
 
         $pengajuan = $query->paginate(20);
+
         return PengajuanResource::collection($pengajuan)->response();
     }
 
@@ -47,6 +48,7 @@ class PengajuanController extends Controller
                 $request->validated(),
                 $request->hasFile('bukti_file') ? $request->file('bukti_file') : null
             );
+
             return (new PengajuanResource($pengajuan))->response()->setStatusCode(HttpResponse::HTTP_CREATED);
         } catch (\Exception $e) {
             return response()->json(['status' => false, 'message' => 'Validation failed', 'errors' => json_decode($e->getMessage())], 422);
@@ -57,7 +59,7 @@ class PengajuanController extends Controller
     {
         // ✅ ADD manual authorization
         $this->authorize('view', $pengajuan);
-        
+
         return (new PengajuanResource($pengajuan->load(['user', 'details.barang', 'approver', 'rejector'])))->response();
     }
 
@@ -69,11 +71,12 @@ class PengajuanController extends Controller
         $data = $request->validate([
             'status_pengajuan' => 'sometimes|required|in:Menunggu Persetujuan,Disetujui,Ditolak',
             'rejection_reason' => 'required_if:status_pengajuan,Ditolak|string|max:500',
-            'approval_notes'   => 'nullable|string|max:500',
+            'approval_notes' => 'nullable|string|max:500',
         ]);
 
         try {
             $updatedPengajuan = $this->pengajuanService->updateStatus($pengajuan, $request->user(), $data);
+
             return (new PengajuanResource($updatedPengajuan))->response();
         } catch (\Exception $e) {
             return response()->json(['status' => false, 'message' => 'Stock validation failed', 'errors' => json_decode($e->getMessage())], 422);
@@ -84,9 +87,10 @@ class PengajuanController extends Controller
     {
         // ✅ ADD manual authorization
         $this->authorize('delete', $pengajuan);
-        
+
         try {
             $this->pengajuanService->delete($pengajuan);
+
             return response()->json(null, HttpResponse::HTTP_NO_CONTENT);
         } catch (\Exception $e) {
             return response()->json(['status' => false, 'message' => $e->getMessage()], 422);

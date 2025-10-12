@@ -2,15 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Spatie\Permission\Traits\HasRoles;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 /**
  * @property-read \Illuminate\Database\Eloquent\Collection|\Laravel\Sanctum\PersonalAccessToken[] $tokens
@@ -27,13 +27,18 @@ use Laravel\Sanctum\HasApiTokens;
  */
 class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasApiTokens, HasRoles, HasFactory, Notifiable, HasUlids;
-    
+    use HasApiTokens, HasFactory, HasRoles, HasUlids, Notifiable;
+
     protected $table = 'tb_users';
+
     protected $primaryKey = 'unique_id';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     protected $hidden = ['password'];
+
     public $timestamps = true;
 
     // ✅ FIX: Add the new columns to the fillable array
@@ -63,10 +68,10 @@ class User extends Authenticatable implements MustVerifyEmail
     public function gudangBarang()
     {
         return $this->belongsToMany(Barang::class, 'tb_gudang', 'unique_id', 'id_barang')
-                       ->using(Gudang::class)
-                       ->withPivot('jumlah_barang');
+            ->using(Gudang::class)
+            ->withPivot('jumlah_barang');
     }
-    
+
     public function setPasswordAttribute($value)
     {
         if (Hash::needsRehash($value)) {
@@ -85,7 +90,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(PenggunaanBarang::class, 'unique_id', 'unique_id');
     }
-    
+
     protected static function booted()
     {
         static::creating(function ($user) {

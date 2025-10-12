@@ -14,7 +14,7 @@ class PermissionSeeder extends Seeder
             // ✅ BARANG - All can view, only admin can modify
             'view barang',
             'manage barang', // Admin only
-            
+
             // ✅ PENGAJUAN - Scoped permissions
             'create pengajuan', // User only
             'edit own pengajuan', // User only (before approval)
@@ -23,25 +23,25 @@ class PermissionSeeder extends Seeder
             'view all pengajuan', // Admin - all pengajuan
             'approve pengajuan', // Admin only
             'delete own pengajuan', // User only (before approval)
-            
-            // ✅ LAPORAN/EXPORT - Scoped permissions  
+
+            // ✅ LAPORAN/EXPORT - Scoped permissions
             'export individual', // User - own data only
             'export branch', // Manager - same branch only
             'export global', // Admin - all data
             'view own laporan', // User scope
-            'view branch laporan', // Manager scope  
+            'view branch laporan', // Manager scope
             'view all laporan', // Admin scope
-            
+
             // ✅ USER MANAGEMENT
             'manage users', // Admin only
             'view branch users', // Manager - same branch
-            
+
             // ✅ GUDANG
             'view own gudang', // User
-            'view branch gudang', // Manager  
+            'view branch gudang', // Manager
             'view all gudang', // Admin
             'manage gudang', // Admin only
-            
+
             // ✅ SYSTEM MANAGEMENT
             'manage jenis barang', // Admin only
             'manage batas', // Admin only

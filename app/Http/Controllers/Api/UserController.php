@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\UserResource;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class UserController extends Controller
@@ -39,6 +39,7 @@ class UserController extends Controller
         // Namun, karena manajer sekarang adalah peran pusat, mereka bisa melihat semua.
 
         $users = $query->paginate(20);
+
         return UserResource::collection($users)->response();
     }
 
@@ -46,12 +47,14 @@ class UserController extends Controller
     {
         $this->authorize('create', User::class); // Otorisasi eksplisit
         $user = $this->userService->create($request->validated());
+
         return (new UserResource($user->load('roles')))->response()->setStatusCode(HttpResponse::HTTP_CREATED);
     }
 
     public function show(User $user): JsonResponse
     {
         $this->authorize('view', $user); // Otorisasi eksplisit
+
         return (new UserResource($user->load('roles')))->response();
     }
 
@@ -59,6 +62,7 @@ class UserController extends Controller
     {
         $this->authorize('update', $user); // Otorisasi eksplisit
         $updatedUser = $this->userService->update($user, $request->validated());
+
         return (new UserResource($updatedUser->load('roles')))->response();
     }
 
@@ -66,22 +70,25 @@ class UserController extends Controller
     {
         $this->authorize('delete', $user); // Otorisasi eksplisit
         $this->userService->delete($user, $request->user());
+
         return response()->json(null, HttpResponse::HTTP_NO_CONTENT);
     }
-    
+
     public function toggleStatus(Request $request, User $user): JsonResponse
     {
         // ✅ PERUBAHAN: Menggunakan 'update' karena kebijakan kita sekarang sudah benar.
         // Policy akan menolak manajer secara otomatis.
         $this->authorize('update', $user);
         $updatedUser = $this->userService->toggleStatus($user, $request->user());
+
         return (new UserResource($updatedUser->load('roles')))->response();
     }
-    
+
     public function resetPassword(Request $request, User $user): JsonResponse
     {
-         $this->authorize('update', $user); // Menggunakan izin 'update' yang sama
-         // ... (implementasi pemanggilan service untuk reset password)
-         return response()->json(['message' => 'Password reset endpoint needs implementation in service.']);
+        $this->authorize('update', $user); // Menggunakan izin 'update' yang sama
+
+        // ... (implementasi pemanggilan service untuk reset password)
+        return response()->json(['message' => 'Password reset endpoint needs implementation in service.']);
     }
 }

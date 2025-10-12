@@ -11,7 +11,9 @@ use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 class PengajuanReportExport implements WithMultipleSheets
 {
     protected $reportData;
+
     protected $filters;
+
     protected $user;
 
     public function __construct(array $reportData, array $filters, $user)

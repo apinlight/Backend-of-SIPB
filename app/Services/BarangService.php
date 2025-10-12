@@ -10,12 +10,14 @@ class BarangService
     public function create(array $data): Barang
     {
         $data['batas_minimum'] = $data['batas_minimum'] ?? 5;
+
         return Barang::create($data);
     }
 
     public function update(Barang $barang, array $data): Barang
     {
         $barang->update($data);
+
         return $barang->fresh(['jenisBarang']);
     }
 
@@ -26,7 +28,7 @@ class BarangService
             ->whereHas('pengajuan', function ($q) {
                 $q->whereIn('status_pengajuan', [
                     \App\Models\Pengajuan::STATUS_PENDING,
-                    \App\Models\Pengajuan::STATUS_APPROVED
+                    \App\Models\Pengajuan::STATUS_APPROVED,
                 ]);
             })->exists();
 
@@ -36,7 +38,7 @@ class BarangService
 
         // Check if the barang has any stock in any gudang.
         if ($barang->gudangEntries()->exists()) {
-             throw new Exception('Cannot delete barang that still has stock in a gudang.');
+            throw new Exception('Cannot delete barang that still has stock in a gudang.');
         }
 
         $barang->delete();

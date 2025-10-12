@@ -1,4 +1,5 @@
 <?php
+
 // database/migrations/2025_06_17_152705_add_audit_fields_to_pengajuan.php
 
 use Illuminate\Database\Migrations\Migration;
@@ -25,9 +26,9 @@ return new class extends Migration
     {
         Schema::table('tb_pengajuan', function (Blueprint $table) {
             $table->dropColumn([
-                'bukti_file', 'approved_by', 'approved_at', 
-                'rejected_by', 'rejected_at', 'rejection_reason', 
-                'approval_notes', 'keterangan'
+                'bukti_file', 'approved_by', 'approved_at',
+                'rejected_by', 'rejected_at', 'rejection_reason',
+                'approval_notes', 'keterangan',
             ]);
         });
     }

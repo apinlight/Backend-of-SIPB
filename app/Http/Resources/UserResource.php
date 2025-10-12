@@ -10,16 +10,16 @@ class UserResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'unique_id'         => $this->unique_id,
-            'username'          => $this->username,
-            'email'             => $this->email,
-            'branch_name'       => $this->branch_name,
-            'is_active'         => $this->is_active,
+            'unique_id' => $this->unique_id,
+            'username' => $this->username,
+            'email' => $this->email,
+            'branch_name' => $this->branch_name,
+            'is_active' => $this->is_active,
             // Conditionally include roles, mapped to a simple array of names
-            'roles'             => $this->whenLoaded('roles', fn() => $this->roles->pluck('name')),
+            'roles' => $this->whenLoaded('roles', fn () => $this->roles->pluck('name')),
             'email_verified_at' => $this->email_verified_at?->toISOString(),
-            'created_at'        => $this->created_at?->toISOString(),
-            'updated_at'        => $this->updated_at?->toISOString(),
+            'created_at' => $this->created_at?->toISOString(),
+            'updated_at' => $this->updated_at?->toISOString(),
         ];
     }
 }

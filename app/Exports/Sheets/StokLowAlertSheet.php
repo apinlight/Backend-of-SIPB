@@ -6,9 +6,9 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class StokLowAlertSheet implements FromCollection, WithHeadings, WithStyles, WithTitle
 {
@@ -22,8 +22,8 @@ class StokLowAlertSheet implements FromCollection, WithHeadings, WithStyles, Wit
     public function collection()
     {
         return collect($this->data)
-            ->filter(fn($item) => $this->isLowOrEmpty($item))
-            ->map(fn($item) => [
+            ->filter(fn ($item) => $this->isLowOrEmpty($item))
+            ->map(fn ($item) => [
                 'Priority' => $item->jumlah_barang == 0 ? 'URGENT' : 'Warning',
                 'Username' => $item->user->username,
                 'Branch' => $item->user->branch_name,
@@ -32,10 +32,10 @@ class StokLowAlertSheet implements FromCollection, WithHeadings, WithStyles, Wit
                 'Batas Minimum' => $item->barang->batas_minimum ?? 5,
                 'Action Required' => $item->jumlah_barang == 0 ? 'Segera Restock' : 'Monitoring',
             ])
-            ->sortBy(fn($item) => $item['Priority'] === 'URGENT' ? 0 : 1)
+            ->sortBy(fn ($item) => $item['Priority'] === 'URGENT' ? 0 : 1)
             ->values();
     }
-    
+
     public function headings(): array
     {
         return ['Priority', 'Username', 'Branch', 'Nama Barang', 'Stok Saat Ini', 'Batas Minimum', 'Action Required'];
@@ -47,7 +47,7 @@ class StokLowAlertSheet implements FromCollection, WithHeadings, WithStyles, Wit
             1 => [
                 'font' => ['bold' => true, 'size' => 12, 'color' => ['rgb' => 'FFFFFF']],
                 'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'FF0000']],
-                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
             ],
         ];
     }
@@ -60,6 +60,7 @@ class StokLowAlertSheet implements FromCollection, WithHeadings, WithStyles, Wit
     private function isLowOrEmpty($item): bool
     {
         $batasMinimum = $item->barang->batas_minimum ?? 5;
+
         return $item->jumlah_barang <= $batasMinimum;
     }
 }

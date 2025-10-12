@@ -15,9 +15,9 @@ class AdjustStockRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'adjustment_type'   => 'required|in:add,subtract,set',
+            'adjustment_type' => 'required|in:add,subtract,set',
             'adjustment_amount' => 'required|integer|min:0',
-            'reason'            => 'required|string|max:500',
+            'reason' => 'required|string|max:500',
         ];
     }
 }

@@ -16,10 +16,10 @@ class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'unique_id'   => 'required|string|unique:tb_users,unique_id',
-            'username'    => 'required|string|max:255|unique:tb_users,username|regex:/^[a-zA-Z0-9_]+$/',
-            'email'       => 'required|string|email|max:255|unique:tb_users,email',
-            'password'    => ['required', 'confirmed', Password::min(8)],
+            'unique_id' => 'required|string|unique:tb_users,unique_id',
+            'username' => 'required|string|max:255|unique:tb_users,username|regex:/^[a-zA-Z0-9_]+$/',
+            'email' => 'required|string|email|max:255|unique:tb_users,email',
+            'password' => ['required', 'confirmed', Password::min(8)],
             'branch_name' => 'required|string|max:255',
         ];
     }

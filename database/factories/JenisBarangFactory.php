@@ -19,9 +19,9 @@ class JenisBarangFactory extends Factory
     {
         return [
             // ✅ FIX: This factory now perfectly matches your JenisBarang model and schema.
-            'id_jenis_barang'   => 'JB' . Str::ulid(),
+            'id_jenis_barang' => 'JB'.Str::ulid(),
             'nama_jenis_barang' => $this->faker->unique()->word(),
-            'is_active'         => true,
+            'is_active' => true,
         ];
     }
 }

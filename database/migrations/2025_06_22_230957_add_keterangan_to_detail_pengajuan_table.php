@@ -1,4 +1,5 @@
 <?php
+
 // database/migrations/2025_06_22_230957_add_keterangan_to_detail_pengajuan_table.php
 
 use Illuminate\Database\Migrations\Migration;

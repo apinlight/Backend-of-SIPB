@@ -14,10 +14,10 @@ class CheckAllocationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'unique_id'         => 'required|string|exists:tb_users,unique_id',
-            'items'             => 'required|array|min:1',
+            'unique_id' => 'required|string|exists:tb_users,unique_id',
+            'items' => 'required|array|min:1',
             'items.*.id_barang' => 'required|string|exists:tb_barang,id_barang',
-            'items.*.jumlah'    => 'required|integer|min:1',
+            'items.*.jumlah' => 'required|integer|min:1',
         ];
     }
 }

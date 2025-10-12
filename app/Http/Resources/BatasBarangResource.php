@@ -12,10 +12,10 @@ class BatasBarangResource extends JsonResource
         return [
             'id_barang' => $this->id_barang,
             'batas_barang' => (int) $this->batas_barang,
-            
+
             // Relationships
             'barang' => BarangResource::make($this->whenLoaded('barang')),
-            
+
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];

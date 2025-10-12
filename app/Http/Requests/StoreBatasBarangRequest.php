@@ -14,7 +14,7 @@ class StoreBatasBarangRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'id_barang'    => 'required|string|exists:tb_barang,id_barang|unique:tb_batas_barang,id_barang',
+            'id_barang' => 'required|string|exists:tb_barang,id_barang|unique:tb_batas_barang,id_barang',
             'batas_barang' => 'required|integer|min:0',
         ];
     }

@@ -6,10 +6,10 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class PenggunaanByBarangSheet implements FromCollection, WithHeadings, WithStyles, WithTitle
 {
@@ -23,7 +23,7 @@ class PenggunaanByBarangSheet implements FromCollection, WithHeadings, WithStyle
     public function collection()
     {
         // Data sudah matang dari service, kita hanya memetakannya ke kolom.
-        return collect($this->data)->map(function($item) {
+        return collect($this->data)->map(function ($item) {
             return [
                 'ID Barang' => $item['id_barang'],
                 'Nama Barang' => $item['nama_barang'],
@@ -47,7 +47,7 @@ class PenggunaanByBarangSheet implements FromCollection, WithHeadings, WithStyle
             'Total Nilai (Rp)',
             'Frekuensi Penggunaan',
             'Approved',
-            'Pending'
+            'Pending',
         ];
     }
 
@@ -58,9 +58,9 @@ class PenggunaanByBarangSheet implements FromCollection, WithHeadings, WithStyle
                 'font' => ['bold' => true, 'size' => 12],
                 'fill' => [
                     'fillType' => Fill::FILL_SOLID,
-                    'startColor' => ['rgb' => 'E7E6E6']
+                    'startColor' => ['rgb' => 'E7E6E6'],
                 ],
-                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
             ],
             'E' => ['numberFormat' => ['formatCode' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1]],
         ];

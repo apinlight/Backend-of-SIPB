@@ -26,11 +26,11 @@ return new class extends Migration
 
         // tb_jenis_barang Table (for JenisBarang Model)
         Schema::create('tb_jenis_barang', function (Blueprint $table) {
-            $table->string('id_jenis_barang')->primary(); //ULID
+            $table->string('id_jenis_barang')->primary(); // ULID
             $table->string('nama_jenis_barang');
             $table->timestamps();
         });
-        
+
         // tb_barang Table (for Barang Model)
         Schema::create('tb_barang', function (Blueprint $table) {
             $table->string('id_barang')->primary();
@@ -101,14 +101,14 @@ return new class extends Migration
      * @return void
      */
     public function down()
-{
-    Schema::dropIfExists('tb_detail_pengajuan');
-    Schema::dropIfExists('tb_gudang');
-    Schema::dropIfExists('tb_pengajuan');
-    Schema::dropIfExists('tb_batas_pengajuan');
-    Schema::dropIfExists('tb_batas_barang');
-    Schema::dropIfExists('tb_users');
-    Schema::dropIfExists('tb_jenis_barang');
-    Schema::dropIfExists('tb_barang');
-}
+    {
+        Schema::dropIfExists('tb_detail_pengajuan');
+        Schema::dropIfExists('tb_gudang');
+        Schema::dropIfExists('tb_pengajuan');
+        Schema::dropIfExists('tb_batas_pengajuan');
+        Schema::dropIfExists('tb_batas_barang');
+        Schema::dropIfExists('tb_users');
+        Schema::dropIfExists('tb_jenis_barang');
+        Schema::dropIfExists('tb_barang');
+    }
 };

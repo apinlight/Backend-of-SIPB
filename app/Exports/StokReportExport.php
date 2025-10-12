@@ -12,7 +12,9 @@ use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 class StokReportExport implements WithMultipleSheets
 {
     protected $data;
+
     protected $filters;
+
     protected $user;
 
     public function __construct(array $data, array $filters, $user)
@@ -33,4 +35,3 @@ class StokReportExport implements WithMultipleSheets
         ];
     }
 }
-

@@ -16,8 +16,8 @@ class DetailPengajuanResource extends JsonResource
             'keterangan' => $this->keterangan,
 
             // Simple calculation is acceptable here
-            'total_harga' => $this->whenLoaded('barang', fn() => ($this->barang->harga_barang ?? 0) * $this->jumlah),
-            
+            'total_harga' => $this->whenLoaded('barang', fn () => ($this->barang->harga_barang ?? 0) * $this->jumlah),
+
             // Relationships
             'barang' => BarangResource::make($this->whenLoaded('barang')),
             // Avoid circular dependency by not including the full PengajuanResource here unless necessary
@@ -25,7 +25,7 @@ class DetailPengajuanResource extends JsonResource
                 'id_pengajuan' => $this->pengajuan->id_pengajuan,
                 'status_pengajuan' => $this->pengajuan->status_pengajuan,
             ]),
-            
+
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];

@@ -19,7 +19,7 @@ class RoleSeeder extends Seeder
         // Create each role if it does not already exist.
         foreach ($roles as $role) {
             Role::firstOrCreate([
-                'name'       => $role,
+                'name' => $role,
                 'guard_name' => config('auth.defaults.guard'),
             ]);
         }

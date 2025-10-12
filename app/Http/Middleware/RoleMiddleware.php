@@ -11,24 +11,24 @@ class RoleMiddleware
 {
     public function handle(Request $request, Closure $next, ...$roles): Response
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return response()->json([
                 'status' => false,
-                'message' => 'Unauthenticated'
+                'message' => 'Unauthenticated',
             ], 401);
         }
 
         $user = Auth::user();
-        
+
         // Check if user has any of the required roles
         $hasRole = collect($roles)->some(function ($role) use ($user) {
             return $user->hasRole($role);
         });
 
-        if (!$hasRole) {
+        if (! $hasRole) {
             return response()->json([
                 'status' => false,
-                'message' => 'Access denied. Required roles: ' . implode(', ', $roles)
+                'message' => 'Access denied. Required roles: '.implode(', ', $roles),
             ], 403);
         }
 

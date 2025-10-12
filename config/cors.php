@@ -15,19 +15,19 @@ return [
     |
     */
 
-
     'paths' => [
-        'api/*',
+        // ✅ DISABLED: Let our custom middleware handle all CORS for API routes
+        // 'api/*',
         'sanctum/csrf-cookie',
-        'login',
-        'logout', 
-        'register',
-        'forgot-password',
-        'reset-password',
-        'email/verification-notification',
-        'verify-email/*',
-        'api/v1/logout',
-        'profile',
+        // 'login',
+        // 'logout',
+        // 'register',
+        // 'forgot-password',
+        // 'reset-password',
+        // 'email/verification-notification',
+        // 'verify-email/*',
+        // 'api/v1/logout',
+        // 'profile',
     ],
 
     'allowed_methods' => ['*'],
@@ -94,9 +94,8 @@ return [
         'X-Request-ID',
     ],
 
-
     'max_age' => 86400, // 24 hours
 
-    'supports_credentials' => true,
+    'supports_credentials' => false, // ✅ Let our custom middleware handle this
 
 ];

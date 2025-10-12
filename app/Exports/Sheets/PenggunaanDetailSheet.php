@@ -6,10 +6,10 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class PenggunaanDetailSheet implements FromCollection, WithHeadings, WithStyles, WithTitle
 {
@@ -22,7 +22,7 @@ class PenggunaanDetailSheet implements FromCollection, WithHeadings, WithStyles,
 
     public function collection()
     {
-        return collect($this->data)->map(function($item) {
+        return collect($this->data)->map(function ($item) {
             return [
                 'ID Penggunaan' => $item->id_penggunaan,
                 'Tanggal' => $item->tanggal_penggunaan->format('Y-m-d'),
@@ -52,7 +52,7 @@ class PenggunaanDetailSheet implements FromCollection, WithHeadings, WithStyles,
             1 => [
                 'font' => ['bold' => true, 'size' => 12, 'color' => ['rgb' => 'FFFFFF']],
                 'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
-                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
             ],
             'G' => ['numberFormat' => ['formatCode' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1]],
             'I' => ['numberFormat' => ['formatCode' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1]],
