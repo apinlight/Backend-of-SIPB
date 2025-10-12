@@ -2,14 +2,13 @@
 
 namespace App\Services;
 
-use App\Models\BatasBarang;
 use App\Models\Gudang;
 use App\Models\Pengajuan;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Exception;
 
 class PengajuanService
 {
@@ -31,6 +30,7 @@ class PengajuanService
         if (isset($data['items'])) {
             $pengajuan->details()->createMany($data['items']);
         }
+
         return $pengajuan;
     }
 
@@ -40,30 +40,37 @@ class PengajuanService
 
         if ($newStatus === Pengajuan::STATUS_APPROVED) {
             $stockErrors = $this->validateStockLimitsOnApproval($pengajuan, $approver);
-            if (!empty($stockErrors)) {
+            if (! empty($stockErrors)) {
                 throw new Exception(json_encode($stockErrors));
             }
         }
-        
+
         $this->updateStatusAndAudit($pengajuan, $approver, $newStatus, $data);
 
         if ($newStatus === Pengajuan::STATUS_APPROVED && in_array($pengajuan->tipe_pengajuan, ['biasa', 'manual'])) {
             $this->transferStock($pengajuan, $approver);
         }
+
         return $pengajuan->fresh(['user', 'details.barang', 'approver', 'rejector']);
     }
 
     public function delete(Pengajuan $pengajuan): void
     {
-        if (!$pengajuan->canBeDeleted()) { throw new Exception('Cannot delete an approved or completed pengajuan.'); }
-        if ($pengajuan->bukti_file && Storage::disk('public')->exists($pengajuan->bukti_file)) { Storage::disk('public')->delete($pengajuan->bukti_file); }
+        if (! $pengajuan->canBeDeleted()) {
+            throw new Exception('Cannot delete an approved or completed pengajuan.');
+        }
+        if ($pengajuan->bukti_file && Storage::disk('public')->exists($pengajuan->bukti_file)) {
+            Storage::disk('public')->delete($pengajuan->bukti_file);
+        }
         $pengajuan->delete();
     }
-    
+
     private function validateMonthlyLimit(string $userId): void
     {
         $user = User::find($userId);
-        if (!$user || $user->hasRole('admin')) return;
+        if (! $user || $user->hasRole(\App\Enums\Role::ADMIN)) {
+            return;
+        }
         $monthlyLimit = $this->settingsService->getMonthlyLimit();
         $currentMonthCount = Pengajuan::where('unique_id', $userId)
             ->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)
@@ -72,7 +79,7 @@ class PengajuanService
             throw new Exception(json_encode(['monthly_limit' => "Monthly submission limit of {$monthlyLimit} has been reached."]));
         }
     }
-    
+
     private function validateStockLimitsOnApproval(Pengajuan $pengajuan, User $approver): array
     {
         $errors = [];
@@ -83,6 +90,7 @@ class PengajuanService
                 $errors[] = "Insufficient central stock for item {$detail->barang->nama_barang}. Available: {$sourceStock}, Requested: {$detail->jumlah}";
             }
         }
+
         return $errors;
     }
 
@@ -100,7 +108,7 @@ class PengajuanService
         }
         $pengajuan->update($updateData);
     }
-    
+
     protected function transferStock(Pengajuan $pengajuan, User $approver): void
     {
         DB::transaction(function () use ($pengajuan, $approver) {
@@ -116,11 +124,25 @@ class PengajuanService
                     throw new Exception("Gagal mengurangi stok untuk item {$detail->id_barang}. Stok sumber mungkin tidak ada atau tidak mencukupi.");
                 }
 
-                // ✅ PERBAIKAN: Gunakan updateOrCreate dengan DB::raw untuk keamanan dan konsistensi.
-                Gudang::updateOrCreate(
-                    ['unique_id' => $pengajuan->unique_id, 'id_barang' => $detail->id_barang],
-                    ['jumlah_barang' => DB::raw("jumlah_barang + {$detail->jumlah}")]
-                );
+                // ✅ PERBAIKAN KEAMANAN: Hindari SQL injection dengan validasi input dan parameter binding
+                $jumlahToAdd = (int) $detail->jumlah; // Cast to integer untuk keamanan
+
+                // Cek apakah record sudah ada
+                $existingRecord = Gudang::where('unique_id', $pengajuan->unique_id)
+                    ->where('id_barang', $detail->id_barang)
+                    ->first();
+
+                if ($existingRecord) {
+                    // Jika ada, gunakan increment yang aman
+                    $existingRecord->increment('jumlah_barang', $jumlahToAdd);
+                } else {
+                    // Jika belum ada, buat baru dengan jumlah yang divalidasi
+                    Gudang::create([
+                        'unique_id' => $pengajuan->unique_id,
+                        'id_barang' => $detail->id_barang,
+                        'jumlah_barang' => $jumlahToAdd,
+                    ]);
+                }
             }
         });
     }
