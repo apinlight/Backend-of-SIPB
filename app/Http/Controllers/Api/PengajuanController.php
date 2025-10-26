@@ -79,7 +79,12 @@ class PengajuanController extends Controller
 
             return (new PengajuanResource($updatedPengajuan))->response();
         } catch (\Exception $e) {
-            return response()->json(['status' => false, 'message' => 'Stock validation failed', 'errors' => json_decode($e->getMessage())], 422);
+            return response()->json([
+                'status' => false, 
+                'message' => 'Stock validation failed', 
+                'errors' => json_decode($e->getMessage(), true) ?: [$e->getMessage()],
+                'details' => 'Stok di gudang pusat tidak mencukupi untuk menyetujui pengajuan ini.'
+            ], 422);
         }
     }
 

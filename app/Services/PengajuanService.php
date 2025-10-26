@@ -109,6 +109,38 @@ class PengajuanService
         $pengajuan->update($updateData);
     }
 
+    public function checkStockAvailability(Pengajuan $pengajuan, User $approver): array
+    {
+        $stockStatus = [
+            'available' => true,
+            'details' => [],
+            'total_items' => $pengajuan->details->count()
+        ];
+
+        foreach ($pengajuan->details as $detail) {
+            $sourceStock = Gudang::where('unique_id', $approver->unique_id)
+                ->where('id_barang', $detail->id_barang)
+                ->value('jumlah_barang') ?? 0;
+
+            $itemStatus = [
+                'id_barang' => $detail->id_barang,
+                'nama_barang' => $detail->barang->nama_barang,
+                'requested' => $detail->jumlah,
+                'available' => $sourceStock,
+                'sufficient' => $sourceStock >= $detail->jumlah,
+                'shortage' => max(0, $detail->jumlah - $sourceStock)
+            ];
+
+            if (!$itemStatus['sufficient']) {
+                $stockStatus['available'] = false;
+            }
+
+            $stockStatus['details'][] = $itemStatus;
+        }
+
+        return $stockStatus;
+    }
+
     protected function transferStock(Pengajuan $pengajuan, User $approver): void
     {
         DB::transaction(function () use ($pengajuan, $approver) {
