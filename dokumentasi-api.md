@@ -16,8 +16,17 @@ Semua endpoint, kecuali yang ditandai publik, memerlukan header `Authorization: 
 ### Endpoint Autentikasi Publik
 - `POST /register`: Registrasi pengguna baru.
 - `POST /login`: Login untuk mendapatkan token.
-- `POST /forgot-password`: Mengirim link reset password.
-- `POST /reset-password`: Mereset password dengan token.
+
+### Endpoint Autentikasi Terproteksi (tambahan)
+- `POST /logout`: Logout dari sesi saat ini.
+- `POST /logout-all`: Logout semua sesi.
+- `GET /me`: Profil singkat user (token).
+- `POST /refresh-token`: Refresh token akses.
+- `POST /validate-token`: Validasi token aktif.
+- `GET /sessions`: Daftar sesi aktif.
+- `DELETE /sessions/{tokenId}`: Revoke satu sesi.
+- `DELETE /sessions/expired`: Bersihkan sesi kadaluarsa.
+- `POST /change-password`: Ganti password akun sendiri.
 
 ---
 
@@ -67,9 +76,9 @@ Semua endpoint, kecuali yang ditandai publik, memerlukan header `Authorization: 
 ### Gudang (Stock)
 - `GET /gudang`: Melihat daftar stok (sesuai hak akses).
 - `POST /gudang`: **(Admin)** Menambahkan stok baru.
-- `GET /gudang/{unique_id}/{id_barang}`: Melihat detail stok spesifik.
-- `PUT /gudang/{unique_id}/{id_barang}`: **(Admin)** Memperbarui catatan stok.
-- `DELETE /gudang/{unique_id}/{id_barang}`: **(Admin)** Menghapus catatan stok.
+- `GET /gudang/{gudang}`: Melihat detail stok spesifik.
+- `PUT /gudang/{gudang}`: **(Admin)** Memperbarui catatan stok.
+- `DELETE /gudang/{gudang}`: **(Admin)** Menghapus catatan stok.
 
 **Aksi Tambahan:**
 - `POST /gudang/{unique_id}/{id_barang}/adjust-stock`: (Admin) Melakukan penyesuaian manual pada jumlah stok.
@@ -98,11 +107,17 @@ Semua endpoint, kecuali yang ditandai publik, memerlukan header `Authorization: 
 - `DELETE /penggunaan-barang/{penggunaan_barang}`: Menghapus catatan penggunaan.
 
 **Aksi Tambahan:**
-- `POST /penggunaan-barang/{penggunaan_barang}/approve`: **(Admin)** Menyetujui permintaan penggunaan.
-- `POST /penggunaan-barang/{penggunaan_barang}/reject`: **(Admin)** Menolak permintaan penggunaan.
+- `POST /penggunaan-barang/{penggunaan_barang}/approve`: **(Admin/Manager)** Menyetujui permintaan penggunaan.
+- `POST /penggunaan-barang/{penggunaan_barang}/reject`: **(Admin/Manager)** Menolak permintaan penggunaan.
 - `GET /penggunaan-barang/pending/approvals`: (Admin/Manager) Melihat daftar permintaan yang menunggu persetujuan.
+
+### Stok (ketersediaan)
 - `GET /stok/tersedia`: Mendapatkan daftar stok yang tersedia untuk pengguna saat ini.
 - `GET /stok/tersedia/{id_barang}`: Mendapatkan jumlah stok spesifik yang tersedia.
+
+### Utilitas Publik
+- `GET /health`: Cek status API.
+- `GET /online`: Ping API sederhana.
 
 ### Laporan (Reports)
 - `GET /laporan/summary`: (Admin/Manager) Laporan ringkasan umum.
@@ -114,7 +129,12 @@ Semua endpoint, kecuali yang ditandai publik, memerlukan header `Authorization: 
 - `GET /laporan/stok-summary`: (Admin/Manager) Laporan ringkasan stok per barang.
 
 **Ekspor Laporan:**
-- `GET /laporan/export/{type}`: (Admin/Manager) Mengekspor laporan tertentu ke Excel. (`type` bisa berupa: `summary`, `barang`, `pengajuan`, `penggunaan`, `stok`).
+- `GET /laporan/export/summary`: (Admin/Manager) Export laporan ringkasan ke Excel.
+- `GET /laporan/export/barang`: (Admin/Manager) Export laporan barang ke Excel.
+- `GET /laporan/export/pengajuan`: (Admin/Manager) Export laporan pengajuan ke Excel.
+- `GET /laporan/export/penggunaan`: (Admin/Manager) Export laporan penggunaan ke Excel.
+- `GET /laporan/export/stok`: (Admin/Manager) Export laporan stok ke Excel.
+- `GET /laporan/export/all`: (Admin/Manager) Export semua laporan dalam satu file Excel.
 
 ### Global Settings
 - `GET /global-settings`: (Admin) Melihat semua pengaturan global.
