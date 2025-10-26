@@ -104,7 +104,89 @@ php artisan route:clear
 
 # Restart services if using queue workers
 php artisan queue:restart  # if applicable
+
+# Restart PHP-FPM (adjust service name as needed)
+sudo systemctl restart php8.3-fpm  # or php8.2-fpm, php-fpm, etc.
+
+# Restart web server
+sudo systemctl restart nginx  # or apache2
 ```
+
+## CORS Troubleshooting
+
+If you encounter CORS errors like:
+```
+Access to XMLHttpRequest at 'https://sipb.crulxproject.com/api/v1/...' from origin 'https://fe-sipb.crulxproject.com' has been blocked by CORS policy
+```
+
+### Check Backend Server Status
+
+```bash
+# Check if Laravel is running
+curl -I https://sipb.crulxproject.com/api/v1/online
+
+# Expected response should include:
+# HTTP/2 200
+# Access-Control-Allow-Origin: https://fe-sipb.crulxproject.com (or *)
+```
+
+### Verify CORS Headers
+
+```bash
+# Test preflight request
+curl -X OPTIONS https://sipb.crulxproject.com/api/v1/profile \
+  -H "Origin: https://fe-sipb.crulxproject.com" \
+  -H "Access-Control-Request-Method: GET" \
+  -H "Access-Control-Request-Headers: Authorization" \
+  -v
+
+# Expected response headers:
+# Access-Control-Allow-Origin: https://fe-sipb.crulxproject.com
+# Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS, PATCH
+# Access-Control-Allow-Headers: Accept, Authorization, Content-Type, ...
+# Access-Control-Allow-Credentials: true
+```
+
+### Common Issues
+
+1. **502 Bad Gateway**: Backend PHP-FPM is down
+   ```bash
+   sudo systemctl status php8.3-fpm
+   sudo systemctl restart php8.3-fpm
+   ```
+
+2. **Nginx not forwarding CORS headers**: Check nginx config
+   ```nginx
+   # /etc/nginx/sites-available/sipb-backend
+   location /api/ {
+       # Don't add CORS headers here - let Laravel handle it
+       proxy_pass http://127.0.0.1:9000;  # or unix socket
+       proxy_set_header Host $host;
+       proxy_set_header X-Real-IP $remote_addr;
+       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+       proxy_set_header X-Forwarded-Proto $scheme;
+   }
+   ```
+
+3. **Multiple CORS headers**: Remove duplicate CORS config from nginx/Apache
+   - Backend code already handles CORS via `CorsMiddleware`
+   - Don't add `add_header Access-Control-*` in nginx
+   - Let Laravel's middleware handle all CORS headers
+
+4. **Check Laravel logs**:
+   ```bash
+   tail -f storage/logs/laravel.log
+   ```
+
+5. **Verify allowed origins** in `.env`:
+   ```bash
+   # Production .env should have:
+   APP_ENV=production
+   APP_DEBUG=false
+   
+   # CORS is configured in config/cors.php
+   # Allowed origins: fe-sipb.crulxproject.com, sipb.crulxproject.com
+   ```
 
 ## Rollback Plan
 
