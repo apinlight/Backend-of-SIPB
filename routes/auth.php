@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 // ✅ PUBLIC AUTH ROUTES - No authentication required (STATELESS)
 Route::prefix('api/v1')
-    ->middleware(['api.public', 'api.rate_limit:5,1']) // ✅ 5 attempts per minute for auth
+    ->middleware(['cors.custom', 'api.public', 'api.rate_limit:5,1']) // ✅ 5 attempts per minute for auth
     ->group(function () {
 
         // ✅ Guest routes (no auth required)
@@ -18,7 +18,7 @@ Route::prefix('api/v1')
 
 // ✅ PROTECTED AUTH ROUTES - Authentication required (STATELESS)
 Route::prefix('api/v1')
-    ->middleware(['api.protected', 'api.rate_limit:30,1']) // ✅ 30 requests per minute for authenticated
+    ->middleware(['cors.custom', 'api.protected', 'api.rate_limit:30,1']) // ✅ 30 requests per minute for authenticated
     ->group(function () {
 
         // ✅ Token management
