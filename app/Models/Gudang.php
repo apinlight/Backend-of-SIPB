@@ -11,13 +11,19 @@ class Gudang extends Pivot
     protected $table = 'tb_gudang';
 
     /**
-     * ✅ FIX: A pivot model with a composite key MUST have incrementing set to false
-     * and should NOT have a primaryKey property defined, as its key is the combination
-     * of its foreign keys.
+     * ✅ FIX: For composite keys, we can't use primaryKey = null.
+     * Instead, we disable incrementing and don't define a single primaryKey.
+     * Laravel will handle composite keys properly in queries if we use
+     * where() clauses explicitly or override getKeyName() to return an array.
      */
     public $incrementing = false;
-
-    protected $primaryKey = null; // Menegaskan bahwa tidak ada satu pun primary key
+    
+    // Don't set primaryKey to null - it breaks firstOrNew and updates
+    // Leave it undefined or set to the first key column
+    protected $primaryKey = 'unique_id';
+    
+    // Since this is a composite key, we need to tell Laravel the key type
+    protected $keyType = 'string';
 
     protected $fillable = [
         'unique_id',
@@ -26,6 +32,18 @@ class Gudang extends Pivot
         'keterangan',
         'tipe',
     ];
+
+    /**
+     * Set the keys for a save/update query.
+     * Override to handle composite primary key properly.
+     */
+    protected function setKeysForSaveQuery($query)
+    {
+        $query->where('unique_id', $this->getAttribute('unique_id'))
+              ->where('id_barang', $this->getAttribute('id_barang'));
+        
+        return $query;
+    }
 
     // --- RELATIONSHIPS ---
     public function user(): BelongsTo
