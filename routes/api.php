@@ -90,6 +90,13 @@ Route::prefix('v1')->group(function () {
                 Route::get('stok', [LaporanController::class, 'exportStok']);
                 Route::get('all', [LaporanController::class, 'exportAll']);
             });
+
+            // ✅ DOCX (Word) export endpoints
+            Route::prefix('export-word')->name('export-word.')->middleware('role:admin|manager')->group(function () {
+                Route::get('summary', [LaporanController::class, 'exportSummaryDocx']);
+                Route::get('barang', [LaporanController::class, 'exportBarangDocx']);
+                // Additional types can be added similarly: pengajuan, penggunaan, stok, all
+            });
         });
     });
 

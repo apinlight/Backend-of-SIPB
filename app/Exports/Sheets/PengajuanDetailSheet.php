@@ -23,6 +23,20 @@ class PengajuanDetailSheet implements FromCollection, WithHeadings, WithStyles, 
     public function collection()
     {
         return collect($this->data)->map(function ($item) {
+            $createdAt = $item['created_at'] ?? null;
+            $updatedAt = $item['updated_at'] ?? null;
+            $formatDate = function ($val) {
+                if (! $val) return '-';
+                // Support Carbon instances or ISO/date strings
+                if (is_object($val) && method_exists($val, 'format')) {
+                    return $val->format('Y-m-d H:i');
+                }
+                try {
+                    return \Carbon\Carbon::parse($val)->format('Y-m-d H:i');
+                } catch (\Throwable $e) {
+                    return (string) $val;
+                }
+            };
             return [
                 'ID Pengajuan' => $item['id_pengajuan'],
                 'Username' => $item['user']['username'] ?? '-',
@@ -30,8 +44,8 @@ class PengajuanDetailSheet implements FromCollection, WithHeadings, WithStyles, 
                 'Status' => $item['status_pengajuan'],
                 'Total Items' => $item['total_items'],
                 'Total Nilai' => $item['total_nilai'],
-                'Tanggal Dibuat' => $item['created_at'] ? $item['created_at']->format('Y-m-d H:i') : '-',
-                'Tanggal Update' => $item['updated_at'] ? $item['updated_at']->format('Y-m-d H:i') : '-',
+                'Tanggal Dibuat' => $formatDate($createdAt),
+                'Tanggal Update' => $formatDate($updatedAt),
             ];
         });
     }

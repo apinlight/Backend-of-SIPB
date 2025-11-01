@@ -1,0 +1,1475 @@
+﻿{
+    "value":  [
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "/",
+                      "name":  null,
+                      "action":  "Closure",
+                      "middleware":  [
+                                         "web"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/barang",
+                      "name":  "barang.index",
+                      "action":  "App\\Http\\Controllers\\Api\\BarangController@index",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "api/v1/barang",
+                      "name":  "barang.store",
+                      "action":  "App\\Http\\Controllers\\Api\\BarangController@store",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/barang/{barang}",
+                      "name":  "barang.show",
+                      "action":  "App\\Http\\Controllers\\Api\\BarangController@show",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "PUT|PATCH",
+                      "uri":  "api/v1/barang/{barang}",
+                      "name":  "barang.update",
+                      "action":  "App\\Http\\Controllers\\Api\\BarangController@update",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "DELETE",
+                      "uri":  "api/v1/barang/{barang}",
+                      "name":  "barang.destroy",
+                      "action":  "App\\Http\\Controllers\\Api\\BarangController@destroy",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/batas-barang",
+                      "name":  "batas-barang.index",
+                      "action":  "App\\Http\\Controllers\\Api\\BatasBarangController@index",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "api/v1/batas-barang",
+                      "name":  "batas-barang.store",
+                      "action":  "App\\Http\\Controllers\\Api\\BatasBarangController@store",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "api/v1/batas-barang/check-allocation",
+                      "name":  null,
+                      "action":  "App\\Http\\Controllers\\Api\\BatasBarangController@checkAllocation",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/batas-barang/{batas_barang}",
+                      "name":  "batas-barang.show",
+                      "action":  "App\\Http\\Controllers\\Api\\BatasBarangController@show",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "PUT|PATCH",
+                      "uri":  "api/v1/batas-barang/{batas_barang}",
+                      "name":  "batas-barang.update",
+                      "action":  "App\\Http\\Controllers\\Api\\BatasBarangController@update",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "DELETE",
+                      "uri":  "api/v1/batas-barang/{batas_barang}",
+                      "name":  "batas-barang.destroy",
+                      "action":  "App\\Http\\Controllers\\Api\\BatasBarangController@destroy",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "api/v1/change-password",
+                      "name":  "password.change",
+                      "action":  "App\\Http\\Controllers\\Api\\Auth\\TokenAuthController@changePassword",
+                      "middleware":  [
+                                         "App\\Http\\Middleware\\CorsMiddleware",
+                                         "api.protected",
+                                         "App\\Http\\Middleware\\ApiRateLimitMiddleware:30,1",
+                                         "App\\Http\\Middleware\\ApiRateLimitMiddleware:3,5"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/detail-pengajuan",
+                      "name":  "detail-pengajuan.index",
+                      "action":  "App\\Http\\Controllers\\Api\\DetailPengajuanController@index",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "api/v1/detail-pengajuan",
+                      "name":  "detail-pengajuan.store",
+                      "action":  "App\\Http\\Controllers\\Api\\DetailPengajuanController@store",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/detail-pengajuan/{detail_pengajuan}",
+                      "name":  "detail-pengajuan.show",
+                      "action":  "App\\Http\\Controllers\\Api\\DetailPengajuanController@show",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "PUT|PATCH",
+                      "uri":  "api/v1/detail-pengajuan/{detail_pengajuan}",
+                      "name":  "detail-pengajuan.update",
+                      "action":  "App\\Http\\Controllers\\Api\\DetailPengajuanController@update",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "DELETE",
+                      "uri":  "api/v1/detail-pengajuan/{detail_pengajuan}",
+                      "name":  "detail-pengajuan.destroy",
+                      "action":  "App\\Http\\Controllers\\Api\\DetailPengajuanController@destroy",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/global-settings",
+                      "name":  null,
+                      "action":  "App\\Http\\Controllers\\Api\\GlobalSettingsController@index",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected",
+                                         "App\\Http\\Middleware\\RoleMiddleware:admin"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/global-settings/monthly-limit",
+                      "name":  null,
+                      "action":  "App\\Http\\Controllers\\Api\\GlobalSettingsController@getMonthlyLimit",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected",
+                                         "App\\Http\\Middleware\\RoleMiddleware:admin"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "PUT",
+                      "uri":  "api/v1/global-settings/monthly-limit",
+                      "name":  null,
+                      "action":  "App\\Http\\Controllers\\Api\\GlobalSettingsController@setMonthlyLimit",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected",
+                                         "App\\Http\\Middleware\\RoleMiddleware:admin"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/gudang",
+                      "name":  "gudang.index",
+                      "action":  "App\\Http\\Controllers\\Api\\GudangController@index",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "api/v1/gudang",
+                      "name":  "gudang.store",
+                      "action":  "App\\Http\\Controllers\\Api\\GudangController@store",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/gudang/{gudang}",
+                      "name":  "gudang.show",
+                      "action":  "App\\Http\\Controllers\\Api\\GudangController@show",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "PUT|PATCH",
+                      "uri":  "api/v1/gudang/{gudang}",
+                      "name":  "gudang.update",
+                      "action":  "App\\Http\\Controllers\\Api\\GudangController@update",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "DELETE",
+                      "uri":  "api/v1/gudang/{gudang}",
+                      "name":  "gudang.destroy",
+                      "action":  "App\\Http\\Controllers\\Api\\GudangController@destroy",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "api/v1/gudang/{unique_id}/{id_barang}/adjust-stock",
+                      "name":  null,
+                      "action":  "App\\Http\\Controllers\\Api\\GudangController@adjustStock",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected",
+                                         "App\\Http\\Middleware\\RoleMiddleware:admin"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/health",
+                      "name":  null,
+                      "action":  "Closure",
+                      "middleware":  [
+                                         "api",
+                                         "api.public"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/jenis-barang",
+                      "name":  "jenis-barang.index",
+                      "action":  "App\\Http\\Controllers\\Api\\JenisBarangController@index",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "api/v1/jenis-barang",
+                      "name":  "jenis-barang.store",
+                      "action":  "App\\Http\\Controllers\\Api\\JenisBarangController@store",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/jenis-barang/list/active",
+                      "name":  null,
+                      "action":  "App\\Http\\Controllers\\Api\\JenisBarangController@active",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/jenis-barang/{jenis_barang}",
+                      "name":  "jenis-barang.show",
+                      "action":  "App\\Http\\Controllers\\Api\\JenisBarangController@show",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "PUT|PATCH",
+                      "uri":  "api/v1/jenis-barang/{jenis_barang}",
+                      "name":  "jenis-barang.update",
+                      "action":  "App\\Http\\Controllers\\Api\\JenisBarangController@update",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "DELETE",
+                      "uri":  "api/v1/jenis-barang/{jenis_barang}",
+                      "name":  "jenis-barang.destroy",
+                      "action":  "App\\Http\\Controllers\\Api\\JenisBarangController@destroy",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "api/v1/jenis-barang/{jenis_barang}/toggle-status",
+                      "name":  null,
+                      "action":  "App\\Http\\Controllers\\Api\\JenisBarangController@toggleStatus",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/laporan/barang",
+                      "name":  "laporan.",
+                      "action":  "App\\Http\\Controllers\\Api\\LaporanController@barang",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/laporan/cabang",
+                      "name":  "laporan.",
+                      "action":  "App\\Http\\Controllers\\Api\\LaporanController@cabang",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected",
+                                         "App\\Http\\Middleware\\RoleMiddleware:admin|manager"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/laporan/export-word/barang",
+                      "name":  "laporan.export-word.",
+                      "action":  "App\\Http\\Controllers\\Api\\LaporanController@exportBarangDocx",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected",
+                                         "App\\Http\\Middleware\\RoleMiddleware:admin|manager"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/laporan/export-word/summary",
+                      "name":  "laporan.export-word.",
+                      "action":  "App\\Http\\Controllers\\Api\\LaporanController@exportSummaryDocx",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected",
+                                         "App\\Http\\Middleware\\RoleMiddleware:admin|manager"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/laporan/export/all",
+                      "name":  "laporan.export.",
+                      "action":  "App\\Http\\Controllers\\Api\\LaporanController@exportAll",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected",
+                                         "App\\Http\\Middleware\\RoleMiddleware:admin|manager"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/laporan/export/barang",
+                      "name":  "laporan.export.",
+                      "action":  "App\\Http\\Controllers\\Api\\LaporanController@exportBarang",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected",
+                                         "App\\Http\\Middleware\\RoleMiddleware:admin|manager"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/laporan/export/pengajuan",
+                      "name":  "laporan.export.",
+                      "action":  "App\\Http\\Controllers\\Api\\LaporanController@exportPengajuan",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected",
+                                         "App\\Http\\Middleware\\RoleMiddleware:admin|manager"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/laporan/export/penggunaan",
+                      "name":  "laporan.export.",
+                      "action":  "App\\Http\\Controllers\\Api\\LaporanController@exportPenggunaan",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected",
+                                         "App\\Http\\Middleware\\RoleMiddleware:admin|manager"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/laporan/export/stok",
+                      "name":  "laporan.export.",
+                      "action":  "App\\Http\\Controllers\\Api\\LaporanController@exportStok",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected",
+                                         "App\\Http\\Middleware\\RoleMiddleware:admin|manager"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/laporan/export/summary",
+                      "name":  "laporan.export.",
+                      "action":  "App\\Http\\Controllers\\Api\\LaporanController@exportSummary",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected",
+                                         "App\\Http\\Middleware\\RoleMiddleware:admin|manager"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/laporan/pengajuan",
+                      "name":  "laporan.",
+                      "action":  "App\\Http\\Controllers\\Api\\LaporanController@pengajuan",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/laporan/penggunaan",
+                      "name":  "laporan.",
+                      "action":  "App\\Http\\Controllers\\Api\\LaporanController@penggunaan",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected",
+                                         "App\\Http\\Middleware\\RoleMiddleware:admin|manager"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/laporan/stok",
+                      "name":  "laporan.",
+                      "action":  "App\\Http\\Controllers\\Api\\LaporanController@stok",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected",
+                                         "App\\Http\\Middleware\\RoleMiddleware:admin|manager"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/laporan/stok-summary",
+                      "name":  "laporan.",
+                      "action":  "App\\Http\\Controllers\\Api\\LaporanController@stockSummary",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected",
+                                         "App\\Http\\Middleware\\RoleMiddleware:admin|manager"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/laporan/summary",
+                      "name":  "laporan.",
+                      "action":  "App\\Http\\Controllers\\Api\\LaporanController@summary",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "api/v1/login",
+                      "name":  "login",
+                      "action":  "App\\Http\\Controllers\\Api\\Auth\\TokenAuthController@login",
+                      "middleware":  [
+                                         "App\\Http\\Middleware\\CorsMiddleware",
+                                         "api.public",
+                                         "App\\Http\\Middleware\\ApiRateLimitMiddleware:5,1"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "api/v1/logout",
+                      "name":  "logout",
+                      "action":  "App\\Http\\Controllers\\Api\\Auth\\TokenAuthController@logout",
+                      "middleware":  [
+                                         "App\\Http\\Middleware\\CorsMiddleware",
+                                         "api.protected",
+                                         "App\\Http\\Middleware\\ApiRateLimitMiddleware:30,1"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "api/v1/logout-all",
+                      "name":  "logout.all",
+                      "action":  "App\\Http\\Controllers\\Api\\Auth\\TokenAuthController@logoutAll",
+                      "middleware":  [
+                                         "App\\Http\\Middleware\\CorsMiddleware",
+                                         "api.protected",
+                                         "App\\Http\\Middleware\\ApiRateLimitMiddleware:30,1"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/me",
+                      "name":  "auth.me",
+                      "action":  "App\\Http\\Controllers\\Api\\Auth\\TokenAuthController@me",
+                      "middleware":  [
+                                         "App\\Http\\Middleware\\CorsMiddleware",
+                                         "api.protected",
+                                         "App\\Http\\Middleware\\ApiRateLimitMiddleware:30,1"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/online",
+                      "name":  null,
+                      "action":  "Closure",
+                      "middleware":  [
+                                         "api",
+                                         "api.public"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/pengajuan",
+                      "name":  "pengajuan.index",
+                      "action":  "App\\Http\\Controllers\\Api\\PengajuanController@index",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "api/v1/pengajuan",
+                      "name":  "pengajuan.store",
+                      "action":  "App\\Http\\Controllers\\Api\\PengajuanController@store",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/pengajuan/info/barang",
+                      "name":  null,
+                      "action":  "App\\Http\\Controllers\\Api\\PengajuanBarangInfoController@getBarangInfo",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/pengajuan/info/barang-history/{id_barang}",
+                      "name":  null,
+                      "action":  "App\\Http\\Controllers\\Api\\PengajuanBarangInfoController@getBarangPengajuanHistory",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/pengajuan/{pengajuan}",
+                      "name":  "pengajuan.show",
+                      "action":  "App\\Http\\Controllers\\Api\\PengajuanController@show",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "PUT|PATCH",
+                      "uri":  "api/v1/pengajuan/{pengajuan}",
+                      "name":  "pengajuan.update",
+                      "action":  "App\\Http\\Controllers\\Api\\PengajuanController@update",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "DELETE",
+                      "uri":  "api/v1/pengajuan/{pengajuan}",
+                      "name":  "pengajuan.destroy",
+                      "action":  "App\\Http\\Controllers\\Api\\PengajuanController@destroy",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/penggunaan-barang",
+                      "name":  "penggunaan-barang.index",
+                      "action":  "App\\Http\\Controllers\\Api\\PenggunaanBarangController@index",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "api/v1/penggunaan-barang",
+                      "name":  "penggunaan-barang.store",
+                      "action":  "App\\Http\\Controllers\\Api\\PenggunaanBarangController@store",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/penggunaan-barang/pending/approvals",
+                      "name":  null,
+                      "action":  "App\\Http\\Controllers\\Api\\PenggunaanBarangController@pendingApprovals",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected",
+                                         "App\\Http\\Middleware\\RoleMiddleware:admin|manager"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/penggunaan-barang/{penggunaan_barang}",
+                      "name":  "penggunaan-barang.show",
+                      "action":  "App\\Http\\Controllers\\Api\\PenggunaanBarangController@show",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "PUT|PATCH",
+                      "uri":  "api/v1/penggunaan-barang/{penggunaan_barang}",
+                      "name":  "penggunaan-barang.update",
+                      "action":  "App\\Http\\Controllers\\Api\\PenggunaanBarangController@update",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "DELETE",
+                      "uri":  "api/v1/penggunaan-barang/{penggunaan_barang}",
+                      "name":  "penggunaan-barang.destroy",
+                      "action":  "App\\Http\\Controllers\\Api\\PenggunaanBarangController@destroy",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "api/v1/penggunaan-barang/{penggunaan_barang}/approve",
+                      "name":  null,
+                      "action":  "App\\Http\\Controllers\\Api\\PenggunaanBarangController@approve",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected",
+                                         "App\\Http\\Middleware\\RoleMiddleware:admin|manager"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "api/v1/penggunaan-barang/{penggunaan_barang}/reject",
+                      "name":  null,
+                      "action":  "App\\Http\\Controllers\\Api\\PenggunaanBarangController@reject",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected",
+                                         "App\\Http\\Middleware\\RoleMiddleware:admin|manager"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/profile",
+                      "name":  null,
+                      "action":  "App\\Http\\Controllers\\Api\\UserController@profile",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "PUT",
+                      "uri":  "api/v1/profile",
+                      "name":  null,
+                      "action":  "App\\Http\\Controllers\\Api\\UserController@updateProfile",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "api/v1/refresh-token",
+                      "name":  "token.refresh",
+                      "action":  "App\\Http\\Controllers\\Api\\Auth\\TokenAuthController@refresh",
+                      "middleware":  [
+                                         "App\\Http\\Middleware\\CorsMiddleware",
+                                         "api.protected",
+                                         "App\\Http\\Middleware\\ApiRateLimitMiddleware:30,1"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "api/v1/register",
+                      "name":  "register",
+                      "action":  "App\\Http\\Controllers\\Api\\Auth\\TokenAuthController@register",
+                      "middleware":  [
+                                         "App\\Http\\Middleware\\CorsMiddleware",
+                                         "api.public",
+                                         "App\\Http\\Middleware\\ApiRateLimitMiddleware:5,1"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/sessions",
+                      "name":  "auth.sessions",
+                      "action":  "App\\Http\\Controllers\\Api\\Auth\\TokenAuthController@activeSessions",
+                      "middleware":  [
+                                         "App\\Http\\Middleware\\CorsMiddleware",
+                                         "api.protected",
+                                         "App\\Http\\Middleware\\ApiRateLimitMiddleware:30,1"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "DELETE",
+                      "uri":  "api/v1/sessions/expired",
+                      "name":  "auth.clean-expired",
+                      "action":  "App\\Http\\Controllers\\Api\\Auth\\TokenAuthController@cleanExpiredTokens",
+                      "middleware":  [
+                                         "App\\Http\\Middleware\\CorsMiddleware",
+                                         "api.protected",
+                                         "App\\Http\\Middleware\\ApiRateLimitMiddleware:30,1"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "DELETE",
+                      "uri":  "api/v1/sessions/{tokenId}",
+                      "name":  "auth.revoke-session",
+                      "action":  "App\\Http\\Controllers\\Api\\Auth\\TokenAuthController@revokeSession",
+                      "middleware":  [
+                                         "App\\Http\\Middleware\\CorsMiddleware",
+                                         "api.protected",
+                                         "App\\Http\\Middleware\\ApiRateLimitMiddleware:30,1"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/stok/tersedia",
+                      "name":  null,
+                      "action":  "App\\Http\\Controllers\\Api\\PenggunaanBarangController@getAvailableStock",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/stok/tersedia/{id_barang}",
+                      "name":  null,
+                      "action":  "App\\Http\\Controllers\\Api\\PenggunaanBarangController@getStockForItem",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/users",
+                      "name":  "users.index",
+                      "action":  "App\\Http\\Controllers\\Api\\UserController@index",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "api/v1/users",
+                      "name":  "users.store",
+                      "action":  "App\\Http\\Controllers\\Api\\UserController@store",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "api/v1/users/{user}",
+                      "name":  "users.show",
+                      "action":  "App\\Http\\Controllers\\Api\\UserController@show",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "PUT|PATCH",
+                      "uri":  "api/v1/users/{user}",
+                      "name":  "users.update",
+                      "action":  "App\\Http\\Controllers\\Api\\UserController@update",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "DELETE",
+                      "uri":  "api/v1/users/{user}",
+                      "name":  "users.destroy",
+                      "action":  "App\\Http\\Controllers\\Api\\UserController@destroy",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "api/v1/users/{user}/reset-password",
+                      "name":  null,
+                      "action":  "App\\Http\\Controllers\\Api\\UserController@resetPassword",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected",
+                                         "App\\Http\\Middleware\\RoleMiddleware:admin"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "api/v1/users/{user}/toggle-status",
+                      "name":  null,
+                      "action":  "App\\Http\\Controllers\\Api\\UserController@toggleStatus",
+                      "middleware":  [
+                                         "api",
+                                         "api.protected",
+                                         "App\\Http\\Middleware\\RoleMiddleware:admin"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "api/v1/validate-token",
+                      "name":  "token.validate",
+                      "action":  "App\\Http\\Controllers\\Api\\Auth\\TokenAuthController@validateToken",
+                      "middleware":  [
+                                         "App\\Http\\Middleware\\CorsMiddleware",
+                                         "api.protected",
+                                         "App\\Http\\Middleware\\ApiRateLimitMiddleware:30,1"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "OPTIONS",
+                      "uri":  "api/v1/{any}",
+                      "name":  null,
+                      "action":  "Closure",
+                      "middleware":  [
+                                         "api",
+                                         "App\\Http\\Middleware\\CorsMiddleware"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "sanctum/csrf-cookie",
+                      "name":  "sanctum.csrf-cookie",
+                      "action":  "Laravel\\Sanctum\\Http\\Controllers\\CsrfCookieController@show",
+                      "middleware":  [
+                                         "web"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "storage/{path}",
+                      "name":  "storage.local",
+                      "action":  "Closure",
+                      "middleware":  [
+
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "telescope/telescope-api/batches",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\QueueBatchesController@index",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "telescope/telescope-api/batches/{telescopeEntryId}",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\QueueBatchesController@show",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "telescope/telescope-api/cache",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\CacheController@index",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "telescope/telescope-api/cache/{telescopeEntryId}",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\CacheController@show",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "telescope/telescope-api/client-requests",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\ClientRequestController@index",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "telescope/telescope-api/client-requests/{telescopeEntryId}",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\ClientRequestController@show",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "telescope/telescope-api/commands",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\CommandsController@index",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "telescope/telescope-api/commands/{telescopeEntryId}",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\CommandsController@show",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "telescope/telescope-api/dumps",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\DumpController@index",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "DELETE",
+                      "uri":  "telescope/telescope-api/entries",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\EntriesController@destroy",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "telescope/telescope-api/events",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\EventsController@index",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "telescope/telescope-api/events/{telescopeEntryId}",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\EventsController@show",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "telescope/telescope-api/exceptions",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\ExceptionController@index",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "telescope/telescope-api/exceptions/{telescopeEntryId}",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\ExceptionController@show",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "PUT",
+                      "uri":  "telescope/telescope-api/exceptions/{telescopeEntryId}",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\ExceptionController@update",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "telescope/telescope-api/gates",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\GatesController@index",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "telescope/telescope-api/gates/{telescopeEntryId}",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\GatesController@show",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "telescope/telescope-api/jobs",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\QueueController@index",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "telescope/telescope-api/jobs/{telescopeEntryId}",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\QueueController@show",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "telescope/telescope-api/logs",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\LogController@index",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "telescope/telescope-api/logs/{telescopeEntryId}",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\LogController@show",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "telescope/telescope-api/mail",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\MailController@index",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "telescope/telescope-api/mail/{telescopeEntryId}",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\MailController@show",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "telescope/telescope-api/mail/{telescopeEntryId}/download",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\MailEmlController@show",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "telescope/telescope-api/mail/{telescopeEntryId}/preview",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\MailHtmlController@show",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "telescope/telescope-api/models",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\ModelsController@index",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "telescope/telescope-api/models/{telescopeEntryId}",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\ModelsController@show",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "telescope/telescope-api/monitored-tags",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\MonitoredTagController@index",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "telescope/telescope-api/monitored-tags",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\MonitoredTagController@store",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "telescope/telescope-api/monitored-tags/delete",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\MonitoredTagController@destroy",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "telescope/telescope-api/notifications",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\NotificationsController@index",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "telescope/telescope-api/notifications/{telescopeEntryId}",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\NotificationsController@show",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "telescope/telescope-api/queries",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\QueriesController@index",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "telescope/telescope-api/queries/{telescopeEntryId}",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\QueriesController@show",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "telescope/telescope-api/redis",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\RedisController@index",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "telescope/telescope-api/redis/{telescopeEntryId}",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\RedisController@show",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "telescope/telescope-api/requests",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\RequestsController@index",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "telescope/telescope-api/requests/{telescopeEntryId}",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\RequestsController@show",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "telescope/telescope-api/schedule",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\ScheduleController@index",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "telescope/telescope-api/schedule/{telescopeEntryId}",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\ScheduleController@show",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "telescope/telescope-api/toggle-recording",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\RecordingController@toggle",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "POST",
+                      "uri":  "telescope/telescope-api/views",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\ViewsController@index",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "telescope/telescope-api/views/{telescopeEntryId}",
+                      "name":  null,
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\ViewsController@show",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "telescope/{view?}",
+                      "name":  "telescope",
+                      "action":  "Laravel\\Telescope\\Http\\Controllers\\HomeController@index",
+                      "middleware":  [
+                                         "telescope"
+                                     ]
+                  },
+                  {
+                      "domain":  null,
+                      "method":  "GET|HEAD",
+                      "uri":  "up",
+                      "name":  null,
+                      "action":  "Closure",
+                      "middleware":  [
+
+                                     ]
+                  }
+              ],
+    "Count":  135
+}

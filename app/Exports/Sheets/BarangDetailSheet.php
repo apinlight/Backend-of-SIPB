@@ -22,14 +22,31 @@ class BarangDetailSheet implements FromCollection, WithHeadings, WithStyles, Wit
 
     public function collection()
     {
-        return collect($this->data)->map(fn ($item) => [
-            'ID Barang' => $item['id_barang'], 'Nama Barang' => $item['nama_barang'],
-            'Jenis Barang' => $item['jenis_barang'] ? $item['jenis_barang']->nama_jenis_barang : '-',
-            'Harga Satuan' => $item['harga_barang'], 'Total Pengadaan' => $item['total_pengadaan'],
-            'Nilai Pengadaan' => $item['nilai_pengadaan'], 'Stok Saat Ini' => $item['stok_saat_ini'],
-            'Nilai Stok' => $item['nilai_stok'], 'Status Stok' => $item['status_stok'],
-            'Batas Minimum' => $item['batas_minimum'],
-        ]);
+        return collect($this->data)->map(function ($item) {
+            $jenis = '-';
+            if (! empty($item['jenis_barang'])) {
+                // Support both object and array structures
+                $jenisObj = $item['jenis_barang'];
+                if (is_array($jenisObj)) {
+                    $jenis = $jenisObj['nama_jenis_barang'] ?? ($jenisObj['nama'] ?? '-');
+                } else {
+                    $jenis = $jenisObj->nama_jenis_barang ?? ($jenisObj->nama ?? '-');
+                }
+            }
+
+            return [
+                'ID Barang' => $item['id_barang'] ?? '-',
+                'Nama Barang' => $item['nama_barang'] ?? '-',
+                'Jenis Barang' => $jenis,
+                'Harga Satuan' => $item['harga_barang'] ?? 0,
+                'Total Pengadaan' => $item['total_pengadaan'] ?? 0,
+                'Nilai Pengadaan' => $item['nilai_pengadaan'] ?? 0,
+                'Stok Saat Ini' => $item['stok_saat_ini'] ?? 0,
+                'Nilai Stok' => $item['nilai_stok'] ?? 0,
+                'Status Stok' => $item['status_stok'] ?? '-',
+                'Batas Minimum' => $item['batas_minimum'] ?? 0,
+            ];
+        });
     }
 
     public function title(): string

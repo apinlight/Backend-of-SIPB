@@ -7,12 +7,15 @@ use App\Exports\PengajuanReportExport;
 use App\Exports\PenggunaanReportExport;
 use App\Exports\StokReportExport;
 use App\Exports\SummaryReportExport;
+use App\Exports\Word\BarangReportWord;
+use App\Exports\Word\SummaryReportWord;
 use App\Http\Controllers\Controller;
 use App\Services\LaporanService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Storage;
 
 class LaporanController extends Controller
 {
@@ -118,5 +121,37 @@ class LaporanController extends Controller
         $fileName = 'Stok_Report_'.now()->format('Y-m-d_H-i-s').'.xlsx';
 
         return Excel::download(new StokReportExport($reportData, $filters, $request->user()), $fileName);
+    }
+
+    // --- DOCX (Word) EXPORTS ---
+
+    public function exportSummaryDocx(Request $request)
+    {
+        $this->authorize('viewAny', \App\Models\Pengajuan::class);
+        $filters = $this->getFilters($request);
+        $data = $this->laporanService->getSummaryReport($request->user(), $filters);
+
+        $exporter = new SummaryReportWord($data, $filters, $request->user());
+        $filePath = $exporter->generate();
+        $fileName = $exporter->getFileName();
+
+        return response()->download($filePath, $fileName, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ])->deleteFileAfterSend(true);
+    }
+
+    public function exportBarangDocx(Request $request)
+    {
+        $this->authorize('viewAny', \App\Models\Barang::class);
+        $filters = $this->getFilters($request);
+        $reportData = $this->laporanService->getBarangReport($request->user(), $filters);
+
+        $exporter = new BarangReportWord($reportData, $filters, $request->user());
+        $filePath = $exporter->generate();
+        $fileName = $exporter->getFileName();
+
+        return response()->download($filePath, $fileName, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ])->deleteFileAfterSend(true);
     }
 }
