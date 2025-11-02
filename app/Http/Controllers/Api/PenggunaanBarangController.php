@@ -80,27 +80,58 @@ class PenggunaanBarangController extends Controller
         return response()->json(null, 204);
     }
 
-    public function approve(Request $request, PenggunaanBarang $penggunaan_barang): JsonResponse
+    /**
+     * ✅ NEW: Get available stock for all items (filtered by user role/scope)
+     */
+    public function getAvailableStock(Request $request): JsonResponse
     {
-        // This method already had the correct authorization check. Excellent.
-        $this->authorize('approve', $penggunaan_barang);
+        $user = $request->user();
 
-        $updatedPenggunaan = $this->penggunaanBarangService->approve($penggunaan_barang, $request->user());
+        // Query gudang with barang relation
+        $query = \App\Models\Gudang::with('barang.jenisBarang');
 
-        return (new PenggunaanBarangResource($updatedPenggunaan))->response();
+        // ✅ Scope by role: user sees only their area, admin/manager see all
+        if ($user->hasRole('user')) {
+            $query->where('unique_id', $user->unique_id);
+        }
+
+        $stok = $query->select('id_barang', 'unique_id', 'jumlah_barang')
+            ->get()
+            ->map(fn ($item) => [
+                'id_barang' => $item->id_barang,
+                'nama_barang' => $item->barang->nama ?? 'Unknown',
+                'jumlah_tersedia' => $item->jumlah_barang,
+                'unique_id' => $item->unique_id,
+            ]);
+
+        return response()->json($stok);
     }
 
-    public function reject(Request $request, PenggunaanBarang $penggunaan_barang): JsonResponse
+    /**
+     * ✅ NEW: Get available stock for a specific item (filtered by user role/scope)
+     */
+    public function getStockForItem(Request $request, string $id_barang): JsonResponse
     {
-        // This method already had the correct authorization check. Excellent.
-        $this->authorize('approve', $penggunaan_barang);
+        $user = $request->user();
 
-        $updatedPenggunaan = $this->penggunaanBarangService->reject(
-            $penggunaan_barang,
-            $request->user(),
-            $request->input('rejection_reason')
-        );
+        $query = \App\Models\Gudang::where('id_barang', $id_barang)->with('barang.jenisBarang');
 
-        return (new PenggunaanBarangResource($updatedPenggunaan))->response();
+        // ✅ Scope by role
+        if ($user->hasRole('user')) {
+            $query->where('unique_id', $user->unique_id);
+        }
+
+        $stok = $query->first();
+
+        if (! $stok) {
+            return response()->json(['message' => 'Stok tidak ditemukan'], 404);
+        }
+
+        return response()->json([
+            'id_barang' => $stok->id_barang,
+            'nama_barang' => $stok->barang->nama ?? 'Unknown',
+            'jumlah_tersedia' => $stok->jumlah_barang,
+            'unique_id' => $stok->unique_id,
+        ]);
     }
 }

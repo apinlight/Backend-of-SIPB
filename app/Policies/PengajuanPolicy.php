@@ -27,33 +27,31 @@ class PengajuanPolicy
 
     public function view(User $user, Pengajuan $pengajuan): bool
     {
+        // ✅ FIX: Manager dapat view semua pengajuan (global oversight)
         if ($user->hasRole('manager')) {
-            return $user->branch_name === $pengajuan->user->branch_name;
+            return true;
         }
 
+        // User hanya dapat view miliknya
         return $user->unique_id === $pengajuan->unique_id;
     }
 
     public function create(User $user): bool
     {
-        return true; // Any authenticated user can attempt to create a request.
+        // ✅ FIX: Manager tidak boleh create pengajuan (hanya view/oversight)
+        return $user->hasAnyRole(['admin', 'user']);
     }
 
     /**
-     * ✅ FIX: This is the corrected update logic.
-     * It only allows Managers to update requests from their own branch.
+     * ✅ FIX: Hanya admin yang dapat approve/update pengajuan.
+     * Manager tidak memiliki wewenang untuk approve pengajuan (read-only/oversight).
      * Admins are handled by the before() method.
-     * Regular users are now correctly forbidden from updating (approving/rejecting).
      */
     public function update(User $user, Pengajuan $pengajuan): Response
     {
-        if ($user->hasRole('manager')) {
-            return $user->branch_name === $pengajuan->user->branch_name
-                ? Response::allow()
-                : Response::deny('You can only update requests from your own branch.');
-        }
-
-        // Admins are handled by before(). All other users are denied.
+        // Manager tidak boleh update/approve
+        // Admins handled by before()
+        // Users tidak boleh update
         return Response::deny('You do not have permission to update this request.');
     }
 

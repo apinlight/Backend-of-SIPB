@@ -46,11 +46,12 @@ Route::prefix('v1')->group(function () {
             Route::post('{unique_id}/{id_barang}/adjust-stock', [GudangController::class, 'adjustStock'])->middleware('role:admin');
         });
 
-        Route::prefix('penggunaan-barang')->group(function () {
-            Route::post('{penggunaan_barang}/approve', [PenggunaanBarangController::class, 'approve'])->middleware('role:admin|manager');
-            Route::post('{penggunaan_barang}/reject', [PenggunaanBarangController::class, 'reject'])->middleware('role:admin|manager');
-            Route::get('pending/approvals', [PenggunaanBarangController::class, 'pendingApprovals'])->middleware('role:admin|manager');
-        });
+        // ❌ REMOVED: Penggunaan barang tidak perlu approval workflow
+        // Route::prefix('penggunaan-barang')->group(function () {
+        //     Route::post('{penggunaan_barang}/approve', ...);
+        //     Route::post('{penggunaan_barang}/reject', ...);
+        //     Route::get('pending/approvals', ...);
+        // });
 
         Route::prefix('stok')->group(function () {
             Route::get('tersedia', [PenggunaanBarangController::class, 'getAvailableStock']);

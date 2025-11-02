@@ -27,52 +27,34 @@ class PenggunaanBarangPolicy
 
     public function view(User $user, PenggunaanBarang $penggunaanBarang): bool
     {
-        // A user can view if it's theirs, or if they are a manager of that branch
-        if ($user->unique_id === $penggunaanBarang->unique_id) {
+        // ✅ FIX: Manager dapat view semua penggunaan barang (global oversight)
+        if ($user->hasRole('manager')) {
             return true;
         }
 
-        return $user->hasRole('manager') && $user->branch_name === $penggunaanBarang->user->branch_name;
+        // User hanya dapat view miliknya
+        return $user->unique_id === $penggunaanBarang->unique_id;
     }
 
     public function create(User $user): bool
     {
-        return true; // Any authenticated user can create a request
+        // ✅ FIX: Manager tidak boleh create penggunaan barang (hanya view/oversight)
+        return $user->hasAnyRole(['admin', 'user']);
     }
 
     public function update(User $user, PenggunaanBarang $penggunaanBarang): Response
     {
-        if ($penggunaanBarang->status !== 'pending') {
-            return Response::deny('Cannot update a request that has already been processed.');
-        }
-
+        // ✅ FIX: Admin selalu bisa (handled by before()); user hanya miliknya
+        // Tidak ada status check karena auto-approve (tidak ada pending state)
         return $user->unique_id === $penggunaanBarang->unique_id
             ? Response::allow()
-            : Response::deny('You do not own this request.');
+            : Response::deny('You do not own this record.');
     }
 
     public function delete(User $user, PenggunaanBarang $penggunaanBarang): Response
     {
-        if ($penggunaanBarang->status === 'approved') {
-            return Response::deny('Cannot delete an approved request.');
-        }
-
-        return $user->unique_id === $penggunaanBarang->unique_id
-            ? Response::allow()
-            : Response::deny('You do not own this request.');
-    }
-
-    public function approve(User $user, PenggunaanBarang $penggunaanBarang): Response
-    {
-        if (! $user->hasRole('manager')) {
-            return Response::deny('You do not have permission to approve requests.');
-        }
-        if ($penggunaanBarang->status !== 'pending') {
-            return Response::deny('This request has already been processed.');
-        }
-
-        return $user->branch_name === $penggunaanBarang->user->branch_name
-            ? Response::allow()
-            : Response::deny('You can only approve requests from your own branch.');
+        // ✅ FIX: Hanya admin yang dapat delete (handled by before())
+        // User tidak boleh delete even if owned
+        return Response::deny('You cannot delete usage records.');
     }
 }
