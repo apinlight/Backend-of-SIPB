@@ -11,6 +11,7 @@ class BarangResource extends JsonResource
     {
         return [
             'id_barang' => $this->id_barang,
+            'id_jenis_barang' => $this->id_jenis_barang,
             'nama_barang' => $this->nama_barang,
             'harga_barang' => (float) $this->harga_barang,
             'deskripsi' => $this->deskripsi,
