@@ -14,8 +14,8 @@ Laravel 12 API Backend
 5. [Development Guide](#development-guide)
 6. [Testing](#testing)
 7. [Deployment](#deployment)
+8. [UML Diagrams](#uml-diagrams)
 
----
 
 ## 🚀 Quick Start
 
@@ -479,11 +479,35 @@ MAIL_HOST=smtp.example.com
 
 ## 📚 Additional Documentation
 
-- **[BUSINESS_RULES.md](BUSINESS_RULES.md)** — Complete business rules reference
-- **[dokumentasi-api.md](dokumentasi-api.md)** — Full API documentation
-- **[TEST_REPORT.md](TEST_REPORT.md)** — Latest test results
-- **[AGENT.md](AGENT.md)** — Development agent guide
-- **[README.md](README.md)** — Project readme
+## 🎨 UML Diagrams
+
+**→ See [UML_DIAGRAMS.md](UML_DIAGRAMS.md) for complete UML documentation.**
+
+Visual documentation of system architecture, workflows, and relationships:
+
+### Available Diagrams
+
+1. **Class Diagram** — Service-Controller-Model-Policy architecture
+   - Shows dependency injection patterns
+   - Eloquent relationships
+   - Policy authorization flow
+
+2. **Sequence Diagrams** — Key workflow visualizations
+   - Login flow (Sanctum authentication)
+   - Penggunaan barang creation (auto-approve + stock decrement)
+   - Export Excel generation
+
+3. **Component Diagram** — Layered system architecture
+   - Frontend → API Gateway → Application Layer → Database
+   - Middleware stack
+   - External services integration
+
+All diagrams use **Mermaid** format for native rendering in:
+- ✅ GitHub markdown
+- ✅ VS Code with Markdown Preview Mermaid extension
+- ✅ GitLab and other Git platforms
+
+---
 
 ### Archived Documentation
 
