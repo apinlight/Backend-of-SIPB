@@ -379,7 +379,7 @@ sequenceDiagram
         
         Excel-->>Ctrl: Binary file stream
         Ctrl-->>API: 200 OK (application/vnd.ms-excel)
-        Note over API,FE: Content-Disposition: attachment; filename="..."
+        Note over API,FE: Content-Disposition attachment
         API-->>FE: Excel file download
         FE->>FE: Browser triggers download
         FE-->>User: File saved to Downloads
