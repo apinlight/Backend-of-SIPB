@@ -1,80 +1,182 @@
 # 📦 SIPB – Sistem Informasi dan Pencatatan Barang
 
-SIPB adalah sebuah API backend yang tangguh untuk aplikasi pencatatan, pengelolaan, dan pengawasan pergerakan barang dalam suatu organisasi. Dibangun dengan **Laravel 12** dan dirancang dengan **Service-Oriented Architecture**, sistem ini menyediakan endpoint yang aman, efisien, dan mudah dipelihara untuk diintegrasikan dengan berbagai frontend, seperti Vue.js.
+> **Backend API untuk Manajemen Inventaris & Pencatatan Barang**  
+> Laravel 12 | Service-Oriented Architecture | RESTful API
+
+SIPB adalah API backend yang tangguh untuk aplikasi pencatatan, pengelolaan, dan pengawasan pergerakan barang dalam suatu organisasi. Dibangun dengan **Laravel 12** dan dirancang dengan **Service-Oriented Architecture**, sistem ini menyediakan endpoint yang aman, efisien, dan mudah dipelihara untuk diintegrasikan dengan frontend Vue.js.
+
+---
+
+## 🚀 Quick Start
+
+```bash
+# Install dependencies
+composer install
+
+# Setup environment
+cp .env.example .env
+php artisan key:generate
+
+# Configure database in .env, then migrate
+php artisan migrate --seed
+
+# Start development server
+php artisan serve  # http://localhost:8000
+```
+
+**📚 Complete documentation: [docs/INDEX.md](docs/INDEX.md)**
 
 ---
 
 ## ✨ Fitur Utama
 
-- **Manajemen Inventaris Lengkap**: CRUD untuk Master Data (`Barang`, `Jenis Barang`, `Batas Barang`).
+- **Manajemen Inventaris Lengkap**: CRUD untuk Master Data (Barang, Jenis Barang, Batas Barang)
 - **Siklus Hidup Barang**:
-    - **Pengajuan (Procurement)**: Alur kerja untuk meminta barang baru.
-    - **Gudang (Stock Management)**: Pencatatan stok per pengguna.
-    - **Penggunaan Barang (Consumption)**: Alur kerja untuk mencatat pemakaian barang.
-- **Manajemen Pengguna & Peran**: Sistem autentikasi berbasis token (Laravel Sanctum).
-- **Pelaporan & Analitik**: Endpoint terdedikasi untuk menghasilkan laporan agregat.
-- **Ekspor ke Excel**: Kemampuan untuk mengekspor laporan ke format `.xlsx`.
-
-### Pemetaan Peran Pengguna
-
-Sistem ini dirancang untuk tiga tipe pengguna di dunia nyata, yang dipetakan ke peran teknis sebagai berikut:
-
-1.  **Admin Pusat (`admin`)**:
-    - **Operator Utama:** Bertanggung jawab atas pengelolaan stok pusat dan semua operasi sistem.
-    - **Pemberi Persetujuan Tunggal:** Merupakan satu-satunya peran yang dapat **menyetujui atau menolak** `Pengajuan` barang dari semua cabang.
-    - **Akses Penuh:** Memiliki akses penuh ke semua laporan dan manajemen pengguna.
-
-2.  **Manajer (`manager`)**:
-    - **Pemantau Pusat:** Berada di kantor pusat dan memiliki hak akses untuk **melihat dan memantau** data.
-    - **Akses Laporan Global:** Dapat melihat dan mengekspor laporan dari **seluruh cabang** untuk keperluan analisis.
-    - **Read-Only:** Tidak memiliki hak untuk melakukan operasi seperti membuat atau menyetujui pengajuan.
-
-3.  **Admin Cabang (`user`)**:
-    - **Operator Cabang:** Pengguna operasional harian di setiap kantor cabang.
-    - **Membuat Permintaan:** Membuat `Pengajuan` barang baru berdasarkan kebutuhan cabangnya.
-    - **Melaporkan Penggunaan:** Melaporkan `Penggunaan Barang` untuk memperbarui data stok di cabangnya.
+    - 📋 **Pengajuan**: Workflow permintaan barang baru
+    - 📦 **Gudang**: Pencatatan stok per pengguna
+    - 🔧 **Penggunaan Barang**: Auto-approve consumption tracking
+- **Autentikasi & Otorisasi**: Sanctum + Spatie Permission (admin/manager/user)
+- **Pelaporan & Analitik**: Endpoint laporan dengan ekspor Excel
+- **Testing**: 16 automated tests dengan 100% business rules compliance
 
 ---
 
-## 🏛️ Pola Arsitektur
+## 👥 Pemetaan Peran Pengguna
 
-Aplikasi ini telah direfaktor secara ekstensif untuk mengikuti praktik terbaik dalam pengembangan perangkat lunak modern:
+> **⚠️ Perhatian:** Business rules telah direvisi. Lihat [BUSINESS_RULES.md](BUSINESS_RULES.md) untuk dokumentasi lengkap.
 
-- **Service-Oriented Architecture**: Semua logika bisnis yang kompleks dienkapsulasi dalam **Service Class**.
-- **Thin Controllers**: Controller hanya bertanggung jawab untuk menangani request dan response HTTP.
-- **Form Requests**: Semua validasi dan otorisasi ditangani oleh kelas Form Request.
-- **Policies**: Semua aturan otorisasi terpusat di dalam kelas Policy.
-- **Lean Models**: Model Eloquent difokuskan pada representasi data, relasi, dan query scope.
+| Peran | Deskripsi | Hak Akses |
+|---|---|---|
+| **Admin** | Operator pusat, full access | CRUD all data, approve pengajuan, manage users |
+| **Manager** | Pengawas kantor pusat | **Read-only** global access (monitoring only) |
+| **User** | Admin cabang operasional | Create pengajuan/penggunaan, view own data |
 
----
+### Perubahan Penting
 
-## ⚙️ Teknologi & Konsep
+- ✅ **Manager sekarang read-only**: Tidak dapat create/update/delete/approve apapun
+- ✅ **Penggunaan barang auto-approve**: Tidak ada workflow persetujuan (admin/manager hanya monitoring)
+- ✅ **User dapat export laporan**: Laporan sendiri dapat diexport ke Excel
 
-- **Backend**: Laravel 12
-- **Autentikasi**: Laravel Sanctum (Stateless API)
-- **Otorisasi**: Spatie Laravel Permission & Laravel Policies
-- **Database**: MariaDB / MySQL
-- **Primary Keys**: ULID/UUID
-- **API Response**: Standarisasi menggunakan Laravel API Resources.
+**Detail lengkap:** [BUSINESS_RULES.md](BUSINESS_RULES.md)
 
 ---
 
-## ✍️ Panduan Instalasi
+## 🏛️ Arsitektur
 
-1.  **Clone repository:**
-    ```bash
-    git clone [https://github.com/apinlight/Backend-of-SIPB.git](https://github.com/apinlight/Backend-of-SIPB.git)
-    cd Backend-of-SIPB
-    ```
-2.  **Install dependencies:** `composer install`
-3.  **Setup file environment:** `cp .env.example .env`
-4.  **Generate key aplikasi:** `php artisan key:generate`
-5.  **Konfigurasi `.env`:** Atur koneksi database dan `FRONTEND_URL`.
-6.  **Jalankan migrasi dan seeder:** `php artisan migrate --seed`
-7.  **Jalankan server:** `php artisan serve`
+- **Service-Oriented**: Business logic di `app/Services/`
+- **Thin Controllers**: Request/response handling only di `app/Http/Controllers/Api/`
+- **Policies**: Authorization rules di `app/Policies/`
+- **API Resources**: Standardized responses di `app/Http/Resources/`
+- **Form Requests**: Validation & authorization di `app/Http/Requests/`
+
+**Tech Stack:**
+- Laravel 12 + Sanctum (stateless auth)
+- Spatie Laravel Permission (role/permission management)
+- MariaDB/MySQL (custom table names: tb_*)
+- UUID/ULID primary keys
+
+**Detailed architecture:** [docs/INDEX.md#architecture](docs/INDEX.md#architecture)
 
 ---
 
-## ℹ️ Catatan
+## 📖 Dokumentasi
 
-Dokumentasi API lengkap tersedia di file `dokumentasi-api.md`.
+| Dokumen | Deskripsi |
+|---|---|
+| **[docs/INDEX.md](docs/INDEX.md)** | 📚 Main documentation hub |
+| **[BUSINESS_RULES.md](BUSINESS_RULES.md)** | 📋 Authoritative business rules |
+| **[dokumentasi-api.md](dokumentasi-api.md)** | 🔌 Complete API reference |
+| **[TEST_REPORT.md](TEST_REPORT.md)** | ✅ Latest test results |
+| **[AGENT.md](AGENT.md)** | 🤖 Development agent guide |
+
+### Archived Documentation
+
+Dokumentasi historis dipindahkan ke `docs/archive/` untuk menjaga kebersihan root directory. Termasuk API verification reports, implementation summaries, dan change logs.
+
+---
+
+## 🧪 Testing
+
+```bash
+# Run all tests (16 tests, 71 assertions)
+php artisan test
+
+# Run specific test
+php artisan test tests/Feature/Auth/LoginTest.php
+
+# Format code
+vendor/bin/pint
+```
+
+**Latest Results:** ✅ 16/16 tests passed (100% business rules compliance)  
+**Details:** [TEST_REPORT.md](TEST_REPORT.md)
+
+---
+
+## 🚀 Deployment
+
+**Prerequisites:**
+- PHP 8.2+
+- Composer
+- MariaDB/MySQL
+- Nginx (recommended)
+
+**Production Checklist:**
+1. Set `APP_ENV=production`, `APP_DEBUG=false`
+2. Configure production database
+3. Run `composer install --no-dev --optimize-autoloader`
+4. Cache config/routes: `php artisan config:cache && php artisan route:cache`
+5. Configure CORS for frontend origin
+6. Setup queue worker (supervisor)
+
+**Full deployment guide:** [docs/INDEX.md#deployment](docs/INDEX.md#deployment)
+
+---
+
+## 🔗 Integration
+
+**Frontend:** Separate Vue.js 3 SPA di `frontend/`  
+**Base API URL:** `/api/v1`  
+**Auth:** Sanctum Bearer token required untuk protected endpoints
+
+**Example Request:**
+```http
+GET /api/v1/barang HTTP/1.1
+Host: localhost:8000
+Authorization: Bearer {token}
+Accept: application/json
+```
+
+**API Documentation:** [dokumentasi-api.md](dokumentasi-api.md)
+
+---
+
+## 📝 Development
+
+**Common Commands:**
+```bash
+php artisan serve              # Dev server
+php artisan test               # Run tests
+vendor/bin/pint                # Format code
+php artisan migrate:fresh --seed  # Reset DB
+php artisan queue:listen --tries=1  # Process queue
+```
+
+**Contributing:**
+- Follow PSR-12 standards
+- Run `vendor/bin/pint` before commit
+- Write tests for new features
+- Update documentation as needed
+
+**Development guide:** [docs/INDEX.md#development-guide](docs/INDEX.md#development-guide)
+
+---
+
+## 📄 License
+
+[Add your license here]
+
+---
+
+**Last Updated:** November 3, 2025 | Laravel 12.x | PHP 8.2+  
+**Documentation:** [docs/INDEX.md](docs/INDEX.md) | **API:** [dokumentasi-api.md](dokumentasi-api.md)
