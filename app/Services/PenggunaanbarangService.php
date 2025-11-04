@@ -16,19 +16,23 @@ class PenggunaanBarangService
     public function recordUsage(User $user, array $data): PenggunaanBarang
     {
         return DB::transaction(function () use ($user, $data) {
+            // ✅ FIX: Query stock record for this user and item
             $gudangRecord = Gudang::where('unique_id', $user->unique_id)
                 ->where('id_barang', $data['id_barang'])
                 ->lockForUpdate() // Essential for preventing race conditions
                 ->first();
 
-            $currentStock = $gudangRecord ? $gudangRecord->jumlah_barang : 0;
+            if (!$gudangRecord) {
+                throw new Exception("Stok tidak ditemukan untuk barang ini di gudang Anda.");
+            }
+
+            $currentStock = $gudangRecord->jumlah_barang;
 
             if ($currentStock < $data['jumlah_digunakan']) {
                 throw new Exception("Stok tidak mencukupi. Tersedia: {$currentStock}, Diminta: {$data['jumlah_digunakan']}");
             }
 
-            // Based on your original code, it seems to be auto-approved.
-            // A more complex system might set the status to 'pending' here.
+            // Auto-approved for now (no pending approval workflow)
             $data['status'] = 'approved';
             $data['approved_by'] = $user->unique_id;
             $data['approved_at'] = now();
