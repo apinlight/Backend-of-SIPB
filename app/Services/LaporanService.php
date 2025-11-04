@@ -223,6 +223,60 @@ class LaporanService
         });
     }
 
+    public function getCabangReport(User $user, array $filters = []): array
+    {
+        // Get pengajuan data grouped by branch
+        $pengajuanQuery = Pengajuan::with(['user', 'details.barang']);
+        $this->applyBranchAndRoleFilters($pengajuanQuery, $user, $filters);
+        $this->applyDateFilters($pengajuanQuery, $filters);
+        $pengajuanData = $pengajuanQuery->get();
+
+        // Get stok data grouped by branch
+        $stokQuery = Gudang::with(['barang', 'user']);
+        $this->applyBranchAndRoleFilters($stokQuery, $user, $filters);
+        $stokData = $stokQuery->get();
+
+        // Group by branch
+        $branchReport = [];
+        $branches = $pengajuanData->pluck('user.branch_name')->merge($stokData->pluck('user.branch_name'))
+            ->unique()
+            ->filter()
+            ->values();
+
+        foreach ($branches as $branchName) {
+            $branchPengajuan = $pengajuanData->where('user.branch_name', $branchName);
+            $branchStok = $stokData->where('user.branch_name', $branchName);
+
+            $totalNilaiPengajuan = $branchPengajuan->reduce(function ($carry, $pengajuan) {
+                return $carry + $pengajuan->details->sum(function ($detail) {
+                    return ($detail->barang->harga_barang ?? 0) * $detail->jumlah;
+                });
+            }, 0);
+
+            $totalStok = $branchStok->sum('jumlah_barang');
+            $totalNilaiStok = $branchStok->sum(function ($stok) {
+                return $stok->jumlah_barang * ($stok->barang->harga_barang ?? 0);
+            });
+
+            $branchReport[] = [
+                'branch_name' => $branchName,
+                'total_pengajuan' => $branchPengajuan->count(),
+                'pengajuan_disetujui' => $branchPengajuan->where('status_pengajuan', Pengajuan::STATUS_APPROVED)->count(),
+                'pengajuan_menunggu' => $branchPengajuan->where('status_pengajuan', Pengajuan::STATUS_PENDING)->count(),
+                'pengajuan_ditolak' => $branchPengajuan->where('status_pengajuan', Pengajuan::STATUS_REJECTED)->count(),
+                'pengajuan_selesai' => $branchPengajuan->where('status_pengajuan', Pengajuan::STATUS_COMPLETED)->count(),
+                'total_nilai_pengajuan' => $totalNilaiPengajuan,
+                'total_items_stok' => $branchStok->count(),
+                'total_stok' => $totalStok,
+                'total_nilai_stok' => $totalNilaiStok,
+                'stok_habis' => $branchStok->where('jumlah_barang', 0)->count(),
+                'stok_rendah' => $branchStok->where('jumlah_barang', '>', 0)->where('jumlah_barang', '<=', 5)->count(),
+            ];
+        }
+
+        return $branchReport;
+    }
+
     private function getStockStatus($currentStock, $minStock): string
     {
         if ($currentStock == 0) {

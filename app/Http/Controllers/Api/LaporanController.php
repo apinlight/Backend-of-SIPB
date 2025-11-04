@@ -69,6 +69,22 @@ class LaporanController extends Controller
         return response()->json(['status' => true, 'data' => $reportData['stocks']]);
     }
 
+    public function cabang(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', \App\Models\Pengajuan::class);
+        $data = $this->laporanService->getCabangReport($request->user(), $this->getFilters($request));
+
+        return response()->json(['status' => true, 'data' => $data]);
+    }
+
+    public function stockSummary(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', \App\Models\Gudang::class);
+        $data = $this->laporanService->getStockSummaryReport($request->user(), $this->getFilters($request));
+
+        return response()->json(['status' => true, 'data' => $data]);
+    }
+
     // --- METODE EKSPOR ---
 
     public function exportSummary(Request $request)
@@ -121,6 +137,19 @@ class LaporanController extends Controller
         $fileName = 'Stok_Report_'.now()->format('Y-m-d_H-i-s').'.xlsx';
 
         return Excel::download(new StokReportExport($reportData, $filters, $request->user()), $fileName);
+    }
+
+    public function exportAll(Request $request)
+    {
+        $this->authorize('viewAny', \App\Models\Pengajuan::class);
+        
+        // For now, export summary report as "all"
+        // TODO: Implement multi-sheet Excel or ZIP export with all reports
+        $filters = $this->getFilters($request);
+        $data = $this->laporanService->getSummaryReport($request->user(), $filters);
+        $fileName = 'All_Reports_'.now()->format('Y-m-d_H-i-s').'.xlsx';
+
+        return Excel::download(new SummaryReportExport($data, $filters, $request->user()), $fileName);
     }
 
     // --- DOCX (Word) EXPORTS ---
