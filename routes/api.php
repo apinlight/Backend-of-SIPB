@@ -53,6 +53,10 @@ Route::prefix('v1')->group(function () {
         //     Route::get('pending/approvals', ...);
         // });
 
+        // ✅ FIX: Add both endpoint patterns for backwards compatibility
+        Route::get('stok-tersedia', [PenggunaanBarangController::class, 'getAvailableStock']);
+        Route::get('stok-tersedia/{id_barang}', [PenggunaanBarangController::class, 'getStockForItem']);
+        
         Route::prefix('stok')->group(function () {
             Route::get('tersedia', [PenggunaanBarangController::class, 'getAvailableStock']);
             Route::get('tersedia/{id_barang}', [PenggunaanBarangController::class, 'getStockForItem']);

@@ -117,4 +117,18 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Project-Specific Auth Flags
+    |--------------------------------------------------------------------------
+    |
+    | Allow toggling user self-registration and enforcing single-session per
+    | user via environment variables. These are read by RegisterRequest and
+    | AuthService respectively.
+    |
+    */
+
+    'allow_registration' => env('ALLOW_REGISTRATION', false),
+    'single_session' => env('SINGLE_SESSION_PER_USER', false),
+
 ];
