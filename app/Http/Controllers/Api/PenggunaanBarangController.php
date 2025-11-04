@@ -40,7 +40,9 @@ class PenggunaanBarangController extends Controller
 
     public function store(StorePenggunaanBarangRequest $request): JsonResponse
     {
-        // Authorization is correctly handled by StorePenggunaanBarangRequest
+        // ✅ ADD manual authorization
+        $this->authorize('create', PenggunaanBarang::class);
+
         $penggunaan = $this->penggunaanBarangService->recordUsage(
             $request->user(),
             $request->validated()
@@ -95,16 +97,34 @@ class PenggunaanBarangController extends Controller
             $query->where('unique_id', $user->unique_id);
         }
 
-        $stok = $query->select('id_barang', 'unique_id', 'jumlah_barang')
-            ->get()
-            ->map(fn ($item) => [
-                'id_barang' => $item->id_barang,
-                'nama_barang' => $item->barang->nama ?? 'Unknown',
-                'jumlah_tersedia' => $item->jumlah_barang,
-                'unique_id' => $item->unique_id,
-            ]);
+        // ✅ FIX: Group by id_barang and sum stock across unique_id for admin/manager
+        // For regular users, they only see their own stock anyway
+        $stok = $query->get()
+            ->groupBy('id_barang')
+            ->map(function ($items) use ($user) {
+                // For users, return single stock entry (their own)
+                // For admin/manager, sum all stock entries for this item
+                $firstItem = $items->first();
+                $totalStock = $items->sum('jumlah_barang');
+                
+                // ✅ FIX: Access nested relation safely with null checks
+                $barang = $firstItem->barang;
+                $jenisBarang = $barang ? $barang->jenisBarang : null;
+                
+                return [
+                    'id_barang' => $firstItem->id_barang,
+                    'nama_barang' => $barang->nama_barang ?? 'Unknown',
+                    'jenis_barang' => $jenisBarang->nama_jenis_barang ?? 'N/A', // ✅ FIX: nama_jenis_barang not nama_jenis
+                    'jumlah_tersedia' => (int) $totalStock,
+                    'unique_id' => $user->hasRole('user') ? $firstItem->unique_id : null, // Only for users
+                ];
+            })
+            ->values();
 
-        return response()->json($stok);
+        return response()->json([
+            'status' => true,
+            'data' => $stok
+        ]);
     }
 
     /**
@@ -124,14 +144,21 @@ class PenggunaanBarangController extends Controller
         $stok = $query->first();
 
         if (! $stok) {
-            return response()->json(['message' => 'Stok tidak ditemukan'], 404);
+            return response()->json([
+                'status' => false,
+                'message' => 'Stok tidak ditemukan'
+            ], 404);
         }
 
         return response()->json([
-            'id_barang' => $stok->id_barang,
-            'nama_barang' => $stok->barang->nama ?? 'Unknown',
-            'jumlah_tersedia' => $stok->jumlah_barang,
-            'unique_id' => $stok->unique_id,
+            'status' => true,
+            'data' => [
+                'id_barang' => $stok->id_barang,
+                'nama_barang' => $stok->barang->nama_barang ?? 'Unknown',
+                'jenis_barang' => $stok->barang->jenisBarang->nama_jenis_barang ?? 'N/A', // ✅ FIX: nama_jenis_barang not nama_jenis
+                'jumlah_tersedia' => (int) $stok->jumlah_barang,
+                'unique_id' => $stok->unique_id,
+            ]
         ]);
     }
 }
