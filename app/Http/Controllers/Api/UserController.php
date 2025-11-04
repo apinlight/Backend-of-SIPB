@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateProfileRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
@@ -25,6 +26,17 @@ class UserController extends Controller
     public function profile(Request $request): JsonResponse
     {
         return (new UserResource($request->user()->load('roles')))->response();
+    }
+
+    public function updateProfile(UpdateProfileRequest $request): JsonResponse
+    {
+        $currentUser = $request->user();
+        
+        // ✅ Use existing UserService update method
+        // Only pass validated data (no roles or is_active changes allowed)
+        $updatedUser = $this->userService->update($currentUser, $request->validated());
+
+        return (new UserResource($updatedUser->load('roles')))->response();
     }
 
     public function index(Request $request): JsonResponse
