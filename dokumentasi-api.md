@@ -140,3 +140,19 @@ Semua endpoint, kecuali yang ditandai publik, memerlukan header `Authorization: 
 - `GET /global-settings`: (Admin) Melihat semua pengaturan global.
 - `GET /global-settings/monthly-limit`: (Admin) Melihat batas pengajuan bulanan.
 - `PUT /global-settings/monthly-limit`: (Admin) Mengubah batas pengajuan bulanan.
+
+---
+
+## 📚 Referensi & Standar
+
+API ini mengikuti best practices dari standar industri dan penelitian peer-reviewed:
+
+- **RESTful Architecture**: Mengikuti prinsip REST [15] dengan versioning `/api/v1`
+- **API Resources**: JSON responses wrapped menggunakan Laravel Resources [16]
+- **Validation**: Form Requests untuk input normalization [17]
+- **Route Model Binding**: Custom key `unique_id` untuk User endpoints [18]
+- **Security**: OWASP API Security Top 10 compliance [25]
+- **Authentication**: Laravel Sanctum stateless tokens [11], OAuth 2.0 principles [23]
+- **Authorization**: Spatie Permission RBAC [12] dengan role-based middleware
+
+**Daftar lengkap:** [BIBLIOGRAPHY.md](BIBLIOGRAPHY.md) | [DOCUMENTATION_REFERENCES.md](DOCUMENTATION_REFERENCES.md)

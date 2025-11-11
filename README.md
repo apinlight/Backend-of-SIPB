@@ -172,11 +172,30 @@ php artisan queue:listen --tries=1  # Process queue
 
 ---
 
-## 📄 License
+## � References & Citations
+
+SIPB's implementation is informed by peer-reviewed research, industry standards, and official framework documentation:
+
+- **[IEEE Bibliography](BIBLIOGRAPHY.md)** – Formal citations for documentation (25 numbered references)
+- **[Developer References](DOCUMENTATION_REFERENCES.md)** – Quick reference with codebase mapping
+- **[References Guide](REFERENCES_README.md)** – Citation format guide and usage examples
+
+**Key topics covered:**
+- Inventory & stock management systems with Laravel [1]–[3]
+- Sanctum authentication & Spatie RBAC [4]–[6], [11]–[12]
+- RESTful API architecture & validation patterns [15]–[18]
+- Service-layer architecture & testing [19]–[20]
+- Security standards (OWASP, OAuth 2.0, JWT) [23]–[25]
+
+All journal DOIs verified as of November 11, 2025.
+
+---
+
+## �📄 License
 
 [Add your license here]
 
 ---
 
-**Last Updated:** November 3, 2025 | Laravel 12.x | PHP 8.2+  
-**Documentation:** [docs/INDEX.md](docs/INDEX.md) | **API:** [dokumentasi-api.md](dokumentasi-api.md)
+**Last Updated:** November 11, 2025 | Laravel 12.x | PHP 8.2+  
+**Documentation:** [docs/INDEX.md](docs/INDEX.md) | **API:** [dokumentasi-api.md](dokumentasi-api.md) | **References:** [BIBLIOGRAPHY.md](BIBLIOGRAPHY.md)
