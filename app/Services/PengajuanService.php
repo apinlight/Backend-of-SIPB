@@ -25,12 +25,14 @@ class PengajuanService
         if ($file && ($data['tipe_pengajuan'] ?? 'biasa') === 'mandiri') {
             $data['bukti_file'] = $file->store('bukti-pengajuan', 'public');
         }
-        $data['status_pengajuan'] = $data['status_pengajuan'] ?? Pengajuan::STATUS_PENDING;
+        // Force initial status to pending regardless of payload
+        $data['status_pengajuan'] = Pengajuan::STATUS_PENDING;
         $pengajuan = Pengajuan::create($data);
-        if (isset($data['items'])) {
+        if (!empty($data['items'])) {
             $pengajuan->details()->createMany($data['items']);
+            // eager load details for immediate API resource serialization
+            $pengajuan->load(['details.barang']);
         }
-
         return $pengajuan;
     }
 
@@ -84,7 +86,7 @@ class PengajuanService
     {
         $errors = [];
         foreach ($pengajuan->details as $detail) {
-            $sourceStock = Gudang::where('unique_id', $approver->unique_id)
+            $sourceStock = Gudang::where('id_cabang', $approver->id_cabang)
                 ->where('id_barang', $detail->id_barang)->value('jumlah_barang') ?? 0;
             if ($sourceStock < $detail->jumlah) {
                 $errors[] = "Insufficient central stock for item {$detail->barang->nama_barang}. Available: {$sourceStock}, Requested: {$detail->jumlah}";
@@ -118,7 +120,7 @@ class PengajuanService
         ];
 
         foreach ($pengajuan->details as $detail) {
-            $sourceStock = Gudang::where('unique_id', $approver->unique_id)
+            $sourceStock = Gudang::where('id_cabang', $approver->id_cabang)
                 ->where('id_barang', $detail->id_barang)
                 ->value('jumlah_barang') ?? 0;
 
@@ -146,7 +148,7 @@ class PengajuanService
         DB::transaction(function () use ($pengajuan, $approver) {
             foreach ($pengajuan->details as $detail) {
                 // ✅ PERBAIKAN FINAL: Buat query dengan composite key untuk memperbarui sumber.
-                $updatedRows = Gudang::where('unique_id', $approver->unique_id)
+                $updatedRows = Gudang::where('id_cabang', $approver->id_cabang)
                     ->where('id_barang', $detail->id_barang)
                     ->decrement('jumlah_barang', $detail->jumlah);
 
@@ -160,7 +162,8 @@ class PengajuanService
                 $jumlahToAdd = (int) $detail->jumlah; // Cast to integer untuk keamanan
 
                 // Cek apakah record sudah ada
-                $existingRecord = Gudang::where('unique_id', $pengajuan->unique_id)
+                $requester = $pengajuan->user;
+                $existingRecord = Gudang::where('id_cabang', $requester->id_cabang)
                     ->where('id_barang', $detail->id_barang)
                     ->first();
 
@@ -170,12 +173,101 @@ class PengajuanService
                 } else {
                     // Jika belum ada, buat baru dengan jumlah yang divalidasi
                     Gudang::create([
-                        'unique_id' => $pengajuan->unique_id,
+                        'id_cabang' => $requester->id_cabang,
                         'id_barang' => $detail->id_barang,
                         'jumlah_barang' => $jumlahToAdd,
                     ]);
                 }
             }
         });
+    }
+
+    /**
+     * Get comprehensive info for the pengajuan form including stock, limits, and monthly usage
+     */
+    public function getInfoForForm(User $user, array $filters = []): object
+    {
+        $barang = \App\Models\Barang::with(['jenisBarang', 'batasBarang'])
+            ->whereHas('jenisBarang', function ($q) {
+                $q->where('is_active', true);
+            })
+            ->when(!empty($filters['search']), function ($q) use ($filters) {
+                $q->where('nama_barang', 'like', "%{$filters['search']}%");
+            })
+            ->get();
+
+        // Get user's current stock
+        $userStock = Gudang::where('id_cabang', $user->id_cabang)
+            ->pluck('jumlah_barang', 'id_barang')
+            ->toArray();
+
+        // Get admin stock (from central warehouse marked as is_pusat)
+        $adminStock = Gudang::whereHas('cabang', function ($q) {
+            $q->where('is_pusat', true);
+        })
+        ->selectRaw('id_barang, SUM(jumlah_barang) as total')
+        ->groupBy('id_barang')
+        ->pluck('total', 'id_barang')
+        ->toArray();
+
+        // Get monthly info
+        $monthlyLimit = $this->settingsService->getMonthlyLimit();
+        $pengajuanCount = Pengajuan::where('unique_id', $user->unique_id)
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->count();
+        $pendingCount = Pengajuan::where('unique_id', $user->unique_id)
+            ->where('status_pengajuan', Pengajuan::STATUS_PENDING)
+            ->count();
+
+        // Add stock info to each barang item
+        $barangWithInfo = $barang->map(function ($item) use ($userStock, $adminStock) {
+            $item->stock_info = [
+                'user_stock' => $userStock[$item->id_barang] ?? 0,
+                'admin_stock' => $adminStock[$item->id_barang] ?? 0,
+            ];
+            return $item;
+        });
+
+        return (object) [
+            'barang' => $barangWithInfo,
+            'user_info' => [
+                'unique_id' => $user->unique_id,
+                'username' => $user->username,
+                'id_cabang' => $user->id_cabang,
+            ],
+            'monthly_info' => [
+                'limit' => $monthlyLimit,
+                'used' => $pengajuanCount,
+                'pending' => $pendingCount,
+            ],
+        ];
+    }
+
+    /**
+     * Get historical pengajuan data for a specific item
+     */
+    public function getItemHistory(User $user, string $idBarang, int $months = 6): array
+    {
+        $history = Pengajuan::where('unique_id', $user->unique_id)
+            ->with(['details' => function ($q) use ($idBarang) {
+                $q->where('id_barang', $idBarang);
+            }])
+            ->where('created_at', '>=', now()->subMonths($months))
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->filter(fn ($p) => $p->details->isNotEmpty())
+            ->map(function ($pengajuan) {
+                return [
+                    'id_pengajuan' => $pengajuan->id_pengajuan,
+                    'tanggal' => $pengajuan->created_at->format('Y-m-d'),
+                    'status' => $pengajuan->status_pengajuan,
+                    'jumlah' => $pengajuan->details->first()->jumlah,
+                ];
+            })
+            ->values()
+            ->toArray();
+
+        return $history;
     }
 }

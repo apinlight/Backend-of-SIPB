@@ -15,12 +15,10 @@ class GudangService
     public function createOrUpdate(array $data): Gudang
     {
         return DB::transaction(function () use ($data) {
-            $gudang = Gudang::firstOrNew(
-                [
-                    'unique_id' => $data['unique_id'],
-                    'id_barang' => $data['id_barang'],
-                ]
-            );
+            $gudang = Gudang::firstOrNew([
+                'id_cabang' => $data['id_cabang'],
+                'id_barang' => $data['id_barang'],
+            ]);
 
             $gudang->jumlah_barang = ($gudang->jumlah_barang ?? 0) + $data['jumlah_barang'];
             $gudang->keterangan = $data['keterangan'] ?? $gudang->keterangan;
@@ -59,8 +57,7 @@ class GudangService
 
             Log::info('Stock adjustment made by admin', [
                 'admin_id' => $admin->unique_id,
-                'gudang_id' => $gudang->id, // Assuming 'id' is the primary key of the pivot table
-                'target_user_id' => $gudang->unique_id,
+                'id_cabang' => $gudang->id_cabang,
                 'barang_id' => $gudang->id_barang,
                 'old_stock' => $oldStock,
                 'new_stock' => $newStock,

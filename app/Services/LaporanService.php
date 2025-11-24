@@ -40,7 +40,16 @@ class LaporanService
     {
         $query = Barang::with(['jenisBarang'])
             ->withSum(['gudangEntries as stok_saat_ini' => function ($query) use ($user, $filters) {
-                $this->applyBranchAndRoleFiltersForRelated($query, $user, $filters, 'user');
+                // Filter by cabang for Gudang (no user relation anymore)
+                if ($user->hasRole(\App\Enums\Role::ADMIN) || $user->hasRole(\App\Enums\Role::MANAGER)) {
+                    if (!empty($filters['id_cabang'])) {
+                        $query->where('id_cabang', $filters['id_cabang']);
+                    }
+                    // Otherwise show all (admin/manager can see all)
+                } else {
+                    // Regular user: only their cabang
+                    $query->where('id_cabang', $user->id_cabang);
+                }
             }], 'jumlah_barang')
             ->withSum(['detailPengajuan as total_pengadaan' => function ($query) use ($user, $filters) {
                 $this->applyBranchAndRoleFiltersForRelated($query, $user, $filters, 'pengajuan.user');
@@ -128,7 +137,7 @@ class LaporanService
 
     public function getPenggunaanReport(User $user, array $filters = []): array
     {
-        $query = PenggunaanBarang::with(['user', 'barang.jenisBarang', 'approver']);
+        $query = PenggunaanBarang::with(['user', 'cabang', 'barang.jenisBarang', 'approver']);
         $this->applyBranchAndRoleFilters($query, $user, $filters);
         $this->applyDateFilters($query, $filters, 'tanggal_penggunaan');
         $query->when($filters['status'] ?? null, fn ($q, $status) => $q->where('status', $status));
@@ -155,8 +164,9 @@ class LaporanService
             'penggunaan_pending' => $items->where('status', 'pending')->sum('jumlah_digunakan'),
         ])->values();
 
-        $byCabang = $details->groupBy('user.branch_name')->map(fn ($items, $branch) => [
-            'branch_name' => $branch,
+        $byCabang = $details->groupBy('id_cabang')->map(fn ($items, $idCabang) => [
+            'id_cabang' => $idCabang,
+            'nama_cabang' => optional($items->first()->cabang)->nama_cabang,
             'total_penggunaan' => $items->count(),
             'total_approved' => $items->where('status', 'approved')->count(),
             'total_pending' => $items->where('status', 'pending')->count(),
@@ -170,7 +180,7 @@ class LaporanService
 
     public function getStokReport(User $user, array $filters = []): array
     {
-        $query = Gudang::with(['barang.jenisBarang', 'user']);
+        $query = Gudang::with(['barang.jenisBarang', 'cabang']);
         $this->applyBranchAndRoleFilters($query, $user, $filters);
         $query->when($filters['stock_level'] ?? null, function ($q, $level) {
             $batasRendah = 5; // Example threshold
@@ -192,9 +202,10 @@ class LaporanService
             'normal_stock' => $stocks->where('jumlah_barang', '>', 5)->count(),
         ];
 
-        $byBranch = $stocks->groupBy('user.branch_name')->map(function ($items, $branchName) {
+        $byBranch = $stocks->groupBy('cabang.id_cabang')->map(function ($items, $idCabang) {
             return [
-                'branch_name' => $branchName,
+                'id_cabang' => $idCabang,
+                'nama_cabang' => optional($items->first()->cabang)->nama_cabang,
                 'total_items' => $items->count(),
                 'total_stock' => $items->sum('jumlah_barang'),
                 'total_value' => $items->sum(fn ($s) => $s->jumlah_barang * ($s->barang->harga_barang ?? 0)),
@@ -232,20 +243,20 @@ class LaporanService
         $pengajuanData = $pengajuanQuery->get();
 
         // Get stok data grouped by branch
-        $stokQuery = Gudang::with(['barang', 'user']);
+        $stokQuery = Gudang::with(['barang', 'cabang']);
         $this->applyBranchAndRoleFilters($stokQuery, $user, $filters);
         $stokData = $stokQuery->get();
 
         // Group by branch
         $branchReport = [];
-        $branches = $pengajuanData->pluck('user.branch_name')->merge($stokData->pluck('user.branch_name'))
+        $branches = $pengajuanData->pluck('user.id_cabang')->merge($stokData->pluck('cabang.id_cabang'))
             ->unique()
             ->filter()
             ->values();
 
-        foreach ($branches as $branchName) {
-            $branchPengajuan = $pengajuanData->where('user.branch_name', $branchName);
-            $branchStok = $stokData->where('user.branch_name', $branchName);
+        foreach ($branches as $idCabang) {
+            $branchPengajuan = $pengajuanData->where('user.id_cabang', $idCabang);
+            $branchStok = $stokData->where('cabang.id_cabang', $idCabang);
 
             $totalNilaiPengajuan = $branchPengajuan->reduce(function ($carry, $pengajuan) {
                 return $carry + $pengajuan->details->sum(function ($detail) {
@@ -259,7 +270,8 @@ class LaporanService
             });
 
             $branchReport[] = [
-                'branch_name' => $branchName,
+                'id_cabang' => $idCabang,
+                'nama_cabang' => optional($branchStok->first()->cabang)->nama_cabang,
                 'total_pengajuan' => $branchPengajuan->count(),
                 'pengajuan_disetujui' => $branchPengajuan->where('status_pengajuan', Pengajuan::STATUS_APPROVED)->count(),
                 'pengajuan_menunggu' => $branchPengajuan->where('status_pengajuan', Pengajuan::STATUS_PENDING)->count(),
@@ -300,12 +312,12 @@ class LaporanService
     {
         $query->where(function ($q) use ($user, $filters) {
             if ($user->hasRole(\App\Enums\Role::ADMIN)) {
-                if (! empty($filters['branch'])) {
-                    $q->whereHas('user', fn ($userQuery) => $userQuery->where('branch_name', $filters['branch']));
+                if (! empty($filters['id_cabang'])) {
+                    $q->whereHas('user', fn ($userQuery) => $userQuery->where('id_cabang', $filters['id_cabang']));
                 }
             } elseif ($user->hasRole(\App\Enums\Role::MANAGER)) {
-                if (! empty($filters['branch'])) {
-                    $q->whereHas('user', fn ($userQuery) => $userQuery->where('branch_name', $filters['branch']));
+                if (! empty($filters['id_cabang'])) {
+                    $q->whereHas('user', fn ($userQuery) => $userQuery->where('id_cabang', $filters['id_cabang']));
                 }
             } else { // Pengguna biasa
                 $q->where('unique_id', $user->unique_id);
@@ -317,11 +329,11 @@ class LaporanService
     {
         $query->whereHas($relation, function ($q) use ($user, $filters) {
             if ($user->hasRole(\App\Enums\Role::MANAGER)) {
-                if (! empty($filters['branch'])) {
-                    $q->where('branch_name', $filters['branch']);
+                if (! empty($filters['id_cabang'])) {
+                    $q->where('id_cabang', $filters['id_cabang']);
                 }
-            } elseif ($user->hasRole(\App\Enums\Role::ADMIN) && ! empty($filters['branch'])) {
-                $q->where('branch_name', $filters['branch']);
+            } elseif ($user->hasRole(\App\Enums\Role::ADMIN) && ! empty($filters['id_cabang'])) {
+                $q->where('id_cabang', $filters['id_cabang']);
             }
         });
     }

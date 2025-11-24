@@ -16,8 +16,8 @@ class PenggunaanBarangService
     public function recordUsage(User $user, array $data): PenggunaanBarang
     {
         return DB::transaction(function () use ($user, $data) {
-            // ✅ FIX: Query stock record for this user and item
-            $gudangRecord = Gudang::where('unique_id', $user->unique_id)
+            // ✅ Query stock record for this user's branch (cabang) and item
+            $gudangRecord = Gudang::where('id_cabang', $user->id_cabang)
                 ->where('id_barang', $data['id_barang'])
                 ->lockForUpdate() // Essential for preventing race conditions
                 ->first();
@@ -36,6 +36,9 @@ class PenggunaanBarangService
             $data['status'] = 'approved';
             $data['approved_by'] = $user->unique_id;
             $data['approved_at'] = now();
+
+            // Ensure we record the cabang used
+            $data['id_cabang'] = $user->id_cabang;
 
             $penggunaan = $user->penggunaanBarang()->create($data);
 
@@ -56,8 +59,8 @@ class PenggunaanBarangService
         if ($newStock <= 0) {
             $gudangRecord->delete();
         } else {
-            // Use decrement for an atomic update.
-            $gudangRecord->decrement('jumlah_barang', $amount);
+            $gudangRecord->jumlah_barang = $newStock;
+            $gudangRecord->save();
         }
     }
 }
