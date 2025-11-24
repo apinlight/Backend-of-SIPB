@@ -28,7 +28,7 @@ class UpdateProfileRequest extends FormRequest
                 Rule::unique('tb_users', 'email')->ignore($user->unique_id, 'unique_id'),
             ],
             'password' => ['sometimes', 'nullable', 'confirmed', Password::min(6)],
-            'branch_name' => 'sometimes|required|string|max:255',
+            // Cabang cannot be changed via profile update; use admin UI to move users between branches.
             // ✅ SECURITY: Users cannot change their own roles or active status
         ];
     }
@@ -43,7 +43,6 @@ class UpdateProfileRequest extends FormRequest
             'email.unique' => 'Email sudah digunakan.',
             'password.min' => 'Password minimal 6 karakter.',
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
-            'branch_name.required' => 'Nama cabang wajib diisi.',
         ];
     }
 }

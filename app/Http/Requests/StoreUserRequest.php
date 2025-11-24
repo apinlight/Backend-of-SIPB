@@ -17,7 +17,7 @@ class StoreUserRequest extends FormRequest
         }
 
         // Additional security: A manager cannot create a user outside their branch
-        if ($currentUser->hasRole('manager') && $this->branch_name !== $currentUser->branch_name) {
+        if ($currentUser->hasRole('manager') && $this->id_cabang !== $currentUser->id_cabang) {
             return false;
         }
 
@@ -36,7 +36,7 @@ class StoreUserRequest extends FormRequest
             'username' => 'required|string|max:255|unique:tb_users,username',
             'email' => 'required|email|max:255|unique:tb_users,email',
             'password' => ['required', 'confirmed', Password::min(6)],
-            'branch_name' => 'required|string|max:255',
+            'id_cabang' => 'required|string|exists:tb_cabang,id_cabang',
             'is_active' => 'sometimes|boolean',
             'roles' => 'sometimes|array',
             'roles.*' => 'string|exists:roles,name',

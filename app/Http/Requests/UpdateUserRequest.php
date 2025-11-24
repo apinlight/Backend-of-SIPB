@@ -19,7 +19,7 @@ class UpdateUserRequest extends FormRequest
         }
 
         // A manager cannot move a user to another branch
-        if ($currentUser->hasRole('manager') && $this->branch_name !== $targetUser->branch_name) {
+        if ($currentUser->hasRole('manager') && $this->id_cabang && $this->id_cabang !== $targetUser->id_cabang) {
             return false;
         }
 
@@ -45,7 +45,7 @@ class UpdateUserRequest extends FormRequest
                 Rule::unique('tb_users', 'email')->ignore($targetUser->unique_id, 'unique_id'),
             ],
             'password' => ['sometimes', 'nullable', 'confirmed', Password::min(6)],
-            'branch_name' => 'sometimes|required|string|max:255',
+            'id_cabang' => 'sometimes|required|string|exists:tb_cabang,id_cabang',
             'is_active' => 'sometimes|boolean',
             'roles' => 'sometimes|array',
             'roles.*' => 'string|exists:roles,name',
