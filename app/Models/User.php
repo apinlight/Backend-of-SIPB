@@ -20,14 +20,14 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string $username
  * @property string $email
  * @property string $password
- * @property string $branch_name
+ * @property string $id_cabang
  * @property bool $is_active
  * @property \Illuminate\Support\Carbon|null $last_login_at
  * @property string|null $last_login_ip
  */
 class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasApiTokens, HasFactory, HasRoles, HasUlids, Notifiable;
+    use HasApiTokens, HasFactory, HasRoles, Notifiable;
 
     protected $table = 'tb_users';
 
@@ -47,7 +47,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'username',
         'email',
         'password',
-        'branch_name',
+        'id_cabang',
         'is_active',
         'last_login_at',
         'last_login_ip',
@@ -65,11 +65,17 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Pengajuan::class, 'unique_id', 'unique_id');
     }
 
-    public function gudangBarang()
+    public function cabang()
     {
-        return $this->belongsToMany(Barang::class, 'tb_gudang', 'unique_id', 'id_barang')
-            ->using(Gudang::class)
-            ->withPivot('jumlah_barang');
+        return $this->belongsTo(Cabang::class, 'id_cabang', 'id_cabang');
+    }
+
+    /**
+     * Access the branch's gudang via cabang relation.
+     */
+    public function gudang()
+    {
+        return $this->hasMany(Gudang::class, 'id_cabang', 'id_cabang');
     }
 
     public function setPasswordAttribute($value)
@@ -82,6 +88,15 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     public function getAuthIdentifierName()
+    {
+        return 'unique_id';
+    }
+
+    /**
+     * Get the route key for the model.
+     * This tells Laravel to use 'unique_id' for route model binding.
+     */
+    public function getRouteKeyName()
     {
         return 'unique_id';
     }

@@ -14,6 +14,7 @@ class PenggunaanBarang extends Model
 
     protected $fillable = [
         'unique_id',
+        'id_cabang',
         'id_barang',
         'jumlah_digunakan',
         'keperluan',
@@ -46,6 +47,11 @@ class PenggunaanBarang extends Model
         return $this->belongsTo(User::class, 'approved_by', 'unique_id');
     }
 
+    public function cabang(): BelongsTo
+    {
+        return $this->belongsTo(Cabang::class, 'id_cabang', 'id_cabang');
+    }
+
     // ✅ Scopes
     public function scopePending(Builder $query): Builder
     {
@@ -59,14 +65,8 @@ class PenggunaanBarang extends Model
 
     public function scopeForUser(Builder $query, User $user): Builder
     {
-        if ($user->hasRole('admin')) {
-            return $query; // Admin can see all
-        }
-
-        if ($user->hasRole('manager')) {
-            return $query->whereHas('user', function ($q) use ($user) {
-                $q->where('branch_name', $user->branch_name);
-            });
+        if ($user->hasRole('admin') || $user->hasRole('manager')) {
+            return $query; // Admin/Manager can see all
         }
 
         // Regular user can only see their own

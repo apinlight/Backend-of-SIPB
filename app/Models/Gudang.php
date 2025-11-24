@@ -3,10 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class Gudang extends Pivot
+class Gudang extends Model
 {
     protected $table = 'tb_gudang';
 
@@ -17,16 +17,13 @@ class Gudang extends Pivot
      * where() clauses explicitly or override getKeyName() to return an array.
      */
     public $incrementing = false;
-    
-    // Don't set primaryKey to null - it breaks firstOrNew and updates
-    // Leave it undefined or set to the first key column
-    protected $primaryKey = 'unique_id';
-    
-    // Since this is a composite key, we need to tell Laravel the key type
+
+    protected $primaryKey = 'id_cabang';
+
     protected $keyType = 'string';
 
     protected $fillable = [
-        'unique_id',
+        'id_cabang',
         'id_barang',
         'jumlah_barang',
         'keterangan',
@@ -39,16 +36,16 @@ class Gudang extends Pivot
      */
     protected function setKeysForSaveQuery($query)
     {
-        $query->where('unique_id', $this->getAttribute('unique_id'))
+        $query->where('id_cabang', $this->getAttribute('id_cabang'))
               ->where('id_barang', $this->getAttribute('id_barang'));
         
         return $query;
     }
 
     // --- RELATIONSHIPS ---
-    public function user(): BelongsTo
+    public function cabang(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'unique_id', 'unique_id');
+        return $this->belongsTo(Cabang::class, 'id_cabang', 'id_cabang');
     }
 
     public function barang(): BelongsTo
@@ -59,17 +56,11 @@ class Gudang extends Pivot
     // --- SCOPES ---
     public function scopeForUser(Builder $query, User $user): Builder
     {
-        if ($user->hasRole('admin')) {
-            return $query; // Admin sees all.
+        if ($user->hasRole('admin') || $user->hasRole('manager')) {
+            return $query; // Admin/Manager can see all for monitoring
         }
 
-        if ($user->hasRole('manager')) {
-            return $query->whereHas('user', function ($q) use ($user) {
-                $q->where('branch_name', $user->branch_name);
-            });
-        }
-
-        // Default to a regular user who can only see their own stock.
-        return $query->where('unique_id', $user->unique_id);
+        // Regular user can only see their branch stock
+        return $query->where('id_cabang', $user->id_cabang);
     }
 }
