@@ -28,16 +28,22 @@ class PengajuanTest extends TestCase
         Role::create(['name' => 'admin']);
         Role::create(['name' => 'user']);
 
-        $this->admin = User::factory()->create();
+        // Create Cabang first to satisfy FK constraint on tb_users.id_cabang
+        \App\Models\Cabang::create(['id_cabang' => 'CABANG-PUSAT', 'nama_cabang' => 'Pusat']);
+        \App\Models\Cabang::create(['id_cabang' => 'CABANG-USER1', 'nama_cabang' => 'Branch User 1']);
+
+        // Create users and assign branches via factory
+        $this->admin = User::factory()->create(['id_cabang' => 'CABANG-PUSAT']);
         $this->admin->assignRole('admin');
 
-        $this->user = User::factory()->create();
+        $this->user = User::factory()->create(['id_cabang' => 'CABANG-USER1']);
         $this->user->assignRole('user');
 
         $this->barang = Barang::factory()->create();
 
+        // Seed initial central stock (admin/pusat branch)
         Gudang::create([
-            'unique_id' => $this->admin->unique_id,
+            'id_cabang' => $this->admin->id_cabang,
             'id_barang' => $this->barang->id_barang,
             'jumlah_barang' => 100,
         ]);
@@ -65,13 +71,13 @@ class PengajuanTest extends TestCase
         $response->assertJsonPath('data.status_pengajuan', Pengajuan::STATUS_APPROVED);
 
         $this->assertDatabaseHas('tb_gudang', [
-            'unique_id' => $this->user->unique_id,
+            'id_cabang' => $this->user->id_cabang,
             'id_barang' => $this->barang->id_barang,
             'jumlah_barang' => 10,
         ]);
 
         $this->assertDatabaseHas('tb_gudang', [
-            'unique_id' => $this->admin->unique_id,
+            'id_cabang' => $this->admin->id_cabang,
             'id_barang' => $this->barang->id_barang,
             'jumlah_barang' => 90,
         ]);
