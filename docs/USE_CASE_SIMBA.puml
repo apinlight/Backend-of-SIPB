@@ -1,0 +1,78 @@
+@startuml
+' Diagram Use Case Sederhana SIMBA (Divalidasi terhadap kode backend)
+' Fokus: Fitur nyata; tidak ada otomasi terjadwal / notifikasi.
+title SIMBA – Use Case Inti (Divalidasi)
+left to right direction
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam usecase {
+  BackgroundColor #F8FAFC
+  BorderColor #5A7184
+  FontColor #1F2937
+}
+skinparam actor {
+  BorderColor #4B5563
+  FontColor #1F2937
+}
+
+
+actor "Admin Cabang" as CabangUser
+actor Admin
+actor Manager
+
+rectangle SIMBA {
+  (Ajukan Pengadaan) as UC_Ajukan
+  (Catat Penggunaan) as UC_Penggunaan
+  (Tinjau Pengajuan) as UC_Tinjau
+  (Approve Pengajuan) as UC_Approve
+  (Reject Pengajuan) as UC_Reject
+  
+  (Kelola Barang & Jenis) as UC_MasterData
+  (Set Batas Minimum Barang) as UC_Batas
+  (Kelola Cabang) as UC_Cabang
+  (Export Laporan) as UC_LapGlobal
+  (Export Laporan Cabang) as UC_LapCabang
+}
+
+CabangUser --> UC_Ajukan
+CabangUser --> UC_Penggunaan
+Admin --> UC_Tinjau
+Admin --> UC_Approve
+Admin --> UC_Reject
+Admin --> UC_MasterData
+Admin --> UC_Batas
+Admin --> UC_Cabang
+Admin --> UC_LapGlobal
+Manager --> UC_Tinjau
+Manager --> UC_LapCabang
+Manager --> UC_LapGlobal
+
+note right of UC_Ajukan
+  Admin Cabang mengajukan penambahan stok barang.
+end note
+note right of UC_Penggunaan
+  Catat pemakaian; auto-approved langsung kurangi stok cabang.
+end note
+note right of UC_Tinjau
+  Admin & Manager meninjau pengajuan status pending.
+end note
+note right of UC_Approve
+  Admin menyetujui & transfer stok pusat -> cabang.
+end note
+note right of UC_Reject
+  Admin menolak pengajuan (alasan disimpan).
+end note
+note right of UC_MasterData
+  CRUD Barang & Jenis Barang (hanya Admin).
+end note
+note right of UC_Batas
+  Atur batas minimum per barang + limit global bulanan.
+end note
+note right of UC_LapCabang
+  Manager ekspor laporan khusus cabang.
+end note
+note right of UC_LapGlobal
+  Admin & Manager ekspor laporan agregat.
+end note
+note "Tidak ada job terjadwal / notifikasi terintegrasi pada versi kode sekarang." as Legend
+@enduml
