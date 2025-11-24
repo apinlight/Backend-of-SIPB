@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\Cabang;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Group;
@@ -19,6 +20,8 @@ class RegistrationTest extends TestCase
         // Ensure roles exist for assignment.
         Role::create(['name' => 'admin']);
         Role::create(['name' => 'user']);
+        // Create test cabang
+        Cabang::factory()->create(['id_cabang' => 'TEST001']);
     }
 
     /**
@@ -35,7 +38,7 @@ class RegistrationTest extends TestCase
             'email' => 'test@example.com',
             'password' => 'password123',
             'password_confirmation' => 'password123',
-            'branch_name' => 'Main Branch',
+            'id_cabang' => 'TEST001',
         ];
 
         // Act: Send a POST request to the register endpoint.
@@ -80,7 +83,7 @@ class RegistrationTest extends TestCase
             'email' => 'test@example.com',
             'password' => 'password123',
             'password_confirmation' => 'password123',
-            'branch_name' => 'Main Branch',
+            'id_cabang' => 'TEST001',
         ];
 
         // Act
@@ -104,6 +107,6 @@ class RegistrationTest extends TestCase
 
         $response
             ->assertStatus(422)
-            ->assertJsonValidationErrors(['email', 'password', 'unique_id', 'branch_name']);
+            ->assertJsonValidationErrors(['email', 'password', 'unique_id', 'id_cabang']);
     }
 }
