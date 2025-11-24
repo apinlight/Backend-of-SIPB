@@ -9,11 +9,17 @@ use Illuminate\Auth\Access\Response;
 class PenggunaanBarangPolicy
 {
     /**
-     * Admins can do anything.
+     * ✅ FIX: Admins can VIEW/DELETE but NOT CREATE/UPDATE usage (they don't have Gudang records)
+     * Only users tied to specific branches can record usage.
      */
     public function before(User $user, string $ability): ?bool
     {
         if ($user->hasRole('admin')) {
+            // Admin can view and delete, but cannot create/update
+            if (in_array($ability, ['create', 'update'])) {
+                return false; // Deny create/update for admin
+            }
+            // Allow view/delete for admin
             return true;
         }
 
@@ -38,14 +44,15 @@ class PenggunaanBarangPolicy
 
     public function create(User $user): bool
     {
-        // ✅ FIX: Manager tidak boleh create penggunaan barang (hanya view/oversight)
-        return $user->hasAnyRole(['admin', 'user']);
+        // ✅ FIX: Only regular Users can create penggunaan barang
+        // Admin and Manager are read-only monitors/managers
+        return $user->hasRole('user');
     }
 
     public function update(User $user, PenggunaanBarang $penggunaanBarang): Response
     {
-        // ✅ FIX: Admin selalu bisa (handled by before()); user hanya miliknya
-        // Tidak ada status check karena auto-approve (tidak ada pending state)
+        // ✅ FIX: Only the user who owns the record can update (not admin/manager)
+        // Checked in before() - admin cannot reach here
         return $user->unique_id === $penggunaanBarang->unique_id
             ? Response::allow()
             : Response::deny('You do not own this record.');
