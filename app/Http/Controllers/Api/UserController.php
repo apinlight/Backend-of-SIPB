@@ -25,7 +25,7 @@ class UserController extends Controller
 
     public function profile(Request $request): JsonResponse
     {
-        return (new UserResource($request->user()->load('roles')))->response();
+        return (new UserResource($request->user()->load(['roles', 'cabang'])))->response();
     }
 
     public function updateProfile(UpdateProfileRequest $request): JsonResponse
@@ -36,14 +36,14 @@ class UserController extends Controller
         // Only pass validated data (no roles or is_active changes allowed)
         $updatedUser = $this->userService->update($currentUser, $request->validated());
 
-        return (new UserResource($updatedUser->load('roles')))->response();
+        return (new UserResource($updatedUser->load(['roles', 'cabang'])))->response();
     }
 
     public function index(Request $request): JsonResponse
     {
         $this->authorize('viewAny', User::class);
 
-        $query = User::with('roles');
+        $query = User::with(['roles', 'cabang']);
 
         // ✅ PERUBAHAN: Logika query yang kompleks telah dihapus.
         // Policy dan scope akan menangani siapa yang bisa melihat apa.
@@ -60,14 +60,14 @@ class UserController extends Controller
         $this->authorize('create', User::class); // Otorisasi eksplisit
         $user = $this->userService->create($request->validated());
 
-        return (new UserResource($user->load('roles')))->response()->setStatusCode(HttpResponse::HTTP_CREATED);
+        return (new UserResource($user->load(['roles', 'cabang'])))->response()->setStatusCode(HttpResponse::HTTP_CREATED);
     }
 
     public function show(User $user): JsonResponse
     {
         $this->authorize('view', $user); // Otorisasi eksplisit
 
-        return (new UserResource($user->load('roles')))->response();
+        return (new UserResource($user->load(['roles', 'cabang'])))->response();
     }
 
     public function update(UpdateUserRequest $request, User $user): JsonResponse
@@ -75,7 +75,7 @@ class UserController extends Controller
         $this->authorize('update', $user); // Otorisasi eksplisit
         $updatedUser = $this->userService->update($user, $request->validated());
 
-        return (new UserResource($updatedUser->load('roles')))->response();
+        return (new UserResource($updatedUser->load(['roles', 'cabang'])))->response();
     }
 
     public function destroy(User $user, Request $request): JsonResponse

@@ -26,15 +26,12 @@ class GudangController extends Controller
     {
         $this->authorize('viewAny', Gudang::class);
 
-        $query = Gudang::with(['user', 'barang'])->forUser($request->user());
+        $query = Gudang::with(['cabang', 'barang'])->forUser($request->user());
 
         // Admin filters
         if ($request->user()->hasRole('admin')) {
-            $query->when($request->filled('branch'), function ($q) use ($request) {
-                $q->whereHas('user', fn ($sq) => $sq->where('branch_name', $request->input('branch')));
-            });
-            $query->when($request->filled('user_id'), function ($q) use ($request) {
-                $q->where('unique_id', $request->input('user_id'));
+            $query->when($request->filled('id_cabang'), function ($q) use ($request) {
+                $q->where('id_cabang', $request->input('id_cabang'));
             });
         }
 
@@ -56,9 +53,9 @@ class GudangController extends Controller
             ->setStatusCode(HttpResponse::HTTP_CREATED);
     }
 
-    public function show($unique_id, $id_barang): JsonResponse
+    public function show($id_cabang, $id_barang): JsonResponse
     {
-        $gudang = Gudang::where('unique_id', $unique_id)
+        $gudang = Gudang::where('id_cabang', $id_cabang)
             ->where('id_barang', $id_barang)
             ->firstOrFail();
 
@@ -67,9 +64,9 @@ class GudangController extends Controller
         return GudangResource::make($gudang)->response();
     }
 
-    public function update(Request $request, $unique_id, $id_barang): JsonResponse
+    public function update(Request $request, $id_cabang, $id_barang): JsonResponse
     {
-        $gudang = Gudang::where('unique_id', $unique_id)
+        $gudang = Gudang::where('id_cabang', $id_cabang)
             ->where('id_barang', $id_barang)
             ->firstOrFail();
 
@@ -85,9 +82,9 @@ class GudangController extends Controller
         return GudangResource::make($gudang)->response();
     }
 
-    public function destroy($unique_id, $id_barang): JsonResponse
+    public function destroy($id_cabang, $id_barang): JsonResponse
     {
-        $gudang = Gudang::where('unique_id', $unique_id)
+        $gudang = Gudang::where('id_cabang', $id_cabang)
             ->where('id_barang', $id_barang)
             ->firstOrFail();
 
@@ -98,9 +95,9 @@ class GudangController extends Controller
         return response()->json(null, HttpResponse::HTTP_NO_CONTENT);
     }
 
-    public function adjustStock(AdjustStockRequest $request, $unique_id, $id_barang): JsonResponse
+    public function adjustStock(AdjustStockRequest $request, $id_cabang, $id_barang): JsonResponse
     {
-        $gudang = Gudang::where('unique_id', $unique_id)
+        $gudang = Gudang::where('id_cabang', $id_cabang)
             ->where('id_barang', $id_barang)
             ->firstOrFail();
 

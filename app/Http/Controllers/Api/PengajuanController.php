@@ -42,16 +42,30 @@ class PengajuanController extends Controller
 
     public function store(StorePengajuanRequest $request): JsonResponse
     {
-        // Authorization is correctly handled by StorePengajuanRequest
+        // Authorization ditangani oleh StorePengajuanRequest (policy create)
+        $validated = $request->validated();
+
+        // Auto-generate id_pengajuan jika tidak dikirim
+        if (!isset($validated['id_pengajuan']) || empty($validated['id_pengajuan'])) {
+            $validated['id_pengajuan'] = 'PGJ-' . now()->format('Ym') . '-' . substr(uniqid(), -5);
+        }
+
+        // Inject unique_id dari user yang login untuk mencegah spoofing
+        $validated['unique_id'] = $request->user()->unique_id;
+
         try {
             $pengajuan = $this->pengajuanService->create(
-                $request->validated(),
+                $validated,
                 $request->hasFile('bukti_file') ? $request->file('bukti_file') : null
             );
-
             return (new PengajuanResource($pengajuan))->response()->setStatusCode(HttpResponse::HTTP_CREATED);
         } catch (\Exception $e) {
-            return response()->json(['status' => false, 'message' => 'Validation failed', 'errors' => json_decode($e->getMessage())], 422);
+            $decoded = json_decode($e->getMessage(), true);
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation or business rule failed',
+                'errors' => $decoded ?: [$e->getMessage()],
+            ], 422);
         }
     }
 

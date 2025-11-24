@@ -26,7 +26,7 @@ class PenggunaanBarangController extends Controller
         // ✅ ADD manual authorization
         $this->authorize('viewAny', PenggunaanBarang::class);
 
-        $query = PenggunaanBarang::with(['user', 'barang.jenisBarang', 'approver'])
+        $query = PenggunaanBarang::with(['user', 'barang.jenisBarang', 'approver', 'cabang'])
             ->forUser($request->user());
 
         $query->when($request->filled('status'), fn ($q) => $q->where('status', 'like', "%{$request->status}%"));
@@ -88,13 +88,20 @@ class PenggunaanBarangController extends Controller
     public function getAvailableStock(Request $request): JsonResponse
     {
         $user = $request->user();
+        $mode = $request->get('mode', 'total'); // total | terpisah
+        $filterCabang = $request->get('id_cabang');
 
         // Query gudang with barang relation
         $query = \App\Models\Gudang::with('barang.jenisBarang');
 
-        // ✅ Scope by role: user sees only their area, admin/manager see all
+        // ✅ Scope by role: user sees only their cabang, admin/manager see all
         if ($user->hasRole('user')) {
-            $query->where('unique_id', $user->unique_id);
+            $query->where('id_cabang', $user->id_cabang);
+        } else {
+            // Admin/Manager: allow optional filter by cabang when mode=terpisah
+            if ($mode === 'terpisah' && !empty($filterCabang)) {
+                $query->where('id_cabang', $filterCabang);
+            }
         }
 
         // ✅ FIX: Group by id_barang and sum stock across unique_id for admin/manager
@@ -114,9 +121,10 @@ class PenggunaanBarangController extends Controller
                 return [
                     'id_barang' => $firstItem->id_barang,
                     'nama_barang' => $barang->nama_barang ?? 'Unknown',
-                    'jenis_barang' => $jenisBarang->nama_jenis_barang ?? 'N/A', // ✅ FIX: nama_jenis_barang not nama_jenis
+                    'jenis_barang' => $jenisBarang->nama_jenis_barang ?? 'N/A',
                     'jumlah_tersedia' => (int) $totalStock,
-                    'unique_id' => $user->hasRole('user') ? $firstItem->unique_id : null, // Only for users
+                    'batas_minimum' => $barang->batas_minimum ?? 5,
+                    'id_cabang' => $user->hasRole('user') ? $user->id_cabang : null,
                 ];
             })
             ->values();
@@ -138,7 +146,7 @@ class PenggunaanBarangController extends Controller
 
         // ✅ Scope by role
         if ($user->hasRole('user')) {
-            $query->where('unique_id', $user->unique_id);
+            $query->where('id_cabang', $user->id_cabang);
         }
 
         $stok = $query->first();
@@ -157,7 +165,7 @@ class PenggunaanBarangController extends Controller
                 'nama_barang' => $stok->barang->nama_barang ?? 'Unknown',
                 'jenis_barang' => $stok->barang->jenisBarang->nama_jenis_barang ?? 'N/A', // ✅ FIX: nama_jenis_barang not nama_jenis
                 'jumlah_tersedia' => (int) $stok->jumlah_barang,
-                'unique_id' => $stok->unique_id,
+                'id_cabang' => $stok->id_cabang,
             ]
         ]);
     }

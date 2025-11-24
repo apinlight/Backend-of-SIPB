@@ -3,11 +3,16 @@
 namespace App\Http\Controllers\Api;
 
 use App\Exports\BarangReportExport;
+use App\Exports\AllReportsExport;
 use App\Exports\PengajuanReportExport;
 use App\Exports\PenggunaanReportExport;
 use App\Exports\StokReportExport;
 use App\Exports\SummaryReportExport;
 use App\Exports\Word\BarangReportWord;
+use App\Exports\Word\AllReportsWord;
+use App\Exports\Word\PengajuanReportWord;
+use App\Exports\Word\PenggunaanReportWord;
+use App\Exports\Word\StokReportWord;
 use App\Exports\Word\SummaryReportWord;
 use App\Http\Controllers\Controller;
 use App\Services\LaporanService;
@@ -142,14 +147,20 @@ class LaporanController extends Controller
     public function exportAll(Request $request)
     {
         $this->authorize('viewAny', \App\Models\Pengajuan::class);
-        
-        // For now, export summary report as "all"
-        // TODO: Implement multi-sheet Excel or ZIP export with all reports
         $filters = $this->getFilters($request);
-        $data = $this->laporanService->getSummaryReport($request->user(), $filters);
+
+        // Collect all report data to compose a single workbook
+        $payload = [
+            'summary' => $this->laporanService->getSummaryReport($request->user(), $filters),
+            'barang' => $this->laporanService->getBarangReport($request->user(), $filters),
+            'pengajuan' => $this->laporanService->getPengajuanReport($request->user(), $filters),
+            'penggunaan' => $this->laporanService->getPenggunaanReport($request->user(), $filters),
+            'stok' => $this->laporanService->getStokReport($request->user(), $filters),
+        ];
+
         $fileName = 'All_Reports_'.now()->format('Y-m-d_H-i-s').'.xlsx';
 
-        return Excel::download(new SummaryReportExport($data, $filters, $request->user()), $fileName);
+        return Excel::download(new AllReportsExport($payload, $filters, $request->user()), $fileName);
     }
 
     // --- DOCX (Word) EXPORTS ---
@@ -176,6 +187,73 @@ class LaporanController extends Controller
         $reportData = $this->laporanService->getBarangReport($request->user(), $filters);
 
         $exporter = new BarangReportWord($reportData, $filters, $request->user());
+        $filePath = $exporter->generate();
+        $fileName = $exporter->getFileName();
+
+        return response()->download($filePath, $fileName, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ])->deleteFileAfterSend(true);
+    }
+
+    public function exportPengajuanDocx(Request $request)
+    {
+        $this->authorize('viewAny', \App\Models\Pengajuan::class);
+        $filters = $this->getFilters($request);
+        $reportData = $this->laporanService->getPengajuanReport($request->user(), $filters);
+
+        $exporter = new PengajuanReportWord($reportData, $filters, $request->user());
+        $filePath = $exporter->generate();
+        $fileName = $exporter->getFileName();
+
+        return response()->download($filePath, $fileName, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ])->deleteFileAfterSend(true);
+    }
+
+    public function exportPenggunaanDocx(Request $request)
+    {
+        $this->authorize('viewAny', \App\Models\PenggunaanBarang::class);
+        $filters = $this->getFilters($request);
+        $reportData = $this->laporanService->getPenggunaanReport($request->user(), $filters);
+
+        $exporter = new PenggunaanReportWord($reportData, $filters, $request->user());
+        $filePath = $exporter->generate();
+        $fileName = $exporter->getFileName();
+
+        return response()->download($filePath, $fileName, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ])->deleteFileAfterSend(true);
+    }
+
+    public function exportStokDocx(Request $request)
+    {
+        $this->authorize('viewAny', \App\Models\Gudang::class);
+        $filters = $this->getFilters($request);
+        $reportData = $this->laporanService->getStokReport($request->user(), $filters);
+
+        $exporter = new StokReportWord($reportData, $filters, $request->user());
+        $filePath = $exporter->generate();
+        $fileName = $exporter->getFileName();
+
+        return response()->download($filePath, $fileName, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ])->deleteFileAfterSend(true);
+    }
+
+    public function exportAllDocx(Request $request)
+    {
+        $this->authorize('viewAny', \App\Models\Pengajuan::class);
+        $filters = $this->getFilters($request);
+
+        $payload = [
+            'summary' => $this->laporanService->getSummaryReport($request->user(), $filters),
+            'barang' => $this->laporanService->getBarangReport($request->user(), $filters),
+            'pengajuan' => $this->laporanService->getPengajuanReport($request->user(), $filters),
+            'penggunaan' => $this->laporanService->getPenggunaanReport($request->user(), $filters),
+            'stok' => $this->laporanService->getStokReport($request->user(), $filters),
+        ];
+
+        $exporter = new AllReportsWord($payload, $filters, $request->user());
         $filePath = $exporter->generate();
         $fileName = $exporter->getFileName();
 

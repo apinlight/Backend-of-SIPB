@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Resources\UserResource;
 use App\Services\AuthService;
@@ -31,21 +30,7 @@ class TokenAuthController extends Controller
         ]);
     }
 
-    public function register(RegisterRequest $request): JsonResponse
-    {
-        // Rate limiting is handled by middleware, authorization by the Form Request.
-        $tokenData = $this->authService->register($request->validated());
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Registration successful',
-            'user' => UserResource::make($tokenData['user']),
-            'token' => $tokenData['token'],
-            'token_type' => $tokenData['token_type'],
-            'expires_in' => $tokenData['expires_in'],
-            'expires_at' => $tokenData['expires_at'],
-        ], 201);
-    }
 
     public function refresh(Request $request): JsonResponse
     {
