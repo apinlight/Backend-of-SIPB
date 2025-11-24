@@ -19,7 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
 
         // ✅ Global middleware stack - CORS first to ensure it always runs
-        $middleware->api(prepend: [
+        $middleware->append([
             \App\Http\Middleware\CorsMiddleware::class,
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             \App\Http\Middleware\TrustProxies::class,
@@ -162,6 +162,12 @@ return Application::configure(basePath: dirname(__DIR__))
                     'message' => $e->getMessage() ?: 'Server Error',
                 ], $e->getStatusCode());
             }
+            
+            // ✅ For non-API routes, also return JSON instead of Blade view
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage() ?: 'Server Error',
+            ], $e->getStatusCode());
         });
 
     })->create();
