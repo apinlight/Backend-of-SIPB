@@ -1,7 +1,7 @@
-# 🎨 UML Diagrams - SIPB Backend
+# 🎨 UML Diagrams - SIMBA Backend
 
-**Generated:** November 3, 2025  
-**Architecture:** Service-Oriented Laravel 12 API
+**Generated:** November 22, 2025  
+**Architecture:** Service-Oriented Laravel 12 API (Updated after Cabang & Gudang refactor, Pengajuan stock logic changes)
 
 ---
 
@@ -15,195 +15,202 @@
 
 ## 1. Class Diagram (Architecture)
 
-### Service-Controller-Model-Policy Relationships
+### Service-Controller-Model-Policy Relationships (Updated)
 
 ```mermaid
 classDiagram
-    %% Controllers Layer
+    %% Controllers Layer (thin HTTP handlers)
     class PenggunaanBarangController {
         -PenggunaanBarangService service
         +index() JsonResponse
         +store(Request) JsonResponse
         +show(id) JsonResponse
-        +update(Request, id) JsonResponse
+        +update(Request,id) JsonResponse
         +destroy(id) JsonResponse
         +getAvailableStock() JsonResponse
         +getStockForItem(id) JsonResponse
     }
-
     class BarangController {
         -BarangService service
         +index() JsonResponse
         +store(Request) JsonResponse
         +show(id) JsonResponse
-        +update(Request, id) JsonResponse
+        +update(Request,id) JsonResponse
         +destroy(id) JsonResponse
     }
-
     class PengajuanController {
         -PengajuanService service
         +index() JsonResponse
         +store(Request) JsonResponse
         +show(id) JsonResponse
-        +update(Request, id) JsonResponse
+        +update(Request,id) JsonResponse
         +approve(id) JsonResponse
         +reject(id) JsonResponse
+        +history(idBarang) JsonResponse
     }
 
     %% Services Layer
-    class PenggunaanBarangService {
-        +getAll(filters) Collection
-        +getById(id) PenggunaanBarang
-        +recordUsage(data) PenggunaanBarang
-        +update(id, data) PenggunaanBarang
-        +delete(id) bool
-        +getAvailableStock(filters) Collection
-        +getStockForItem(idBarang) StokGudang
-    }
-
-    class BarangService {
-        +getAll(filters) Collection
-        +getById(id) Barang
-        +create(data) Barang
-        +update(id, data) Barang
-        +delete(id) bool
-    }
-
     class PengajuanService {
         +getAll(filters) Collection
         +create(data) Pengajuan
-        +approve(id, adminId) Pengajuan
-        +reject(id, adminId, reason) Pengajuan
+        +approve(id, approver) Pengajuan
+        +reject(id, approver, reason) Pengajuan
+        +getInfoForForm(user, filters) object
+        +getItemHistory(user, idBarang, months) array
+        +transferStock(pengajuan, approver) void
+    }
+    class PenggunaanBarangService {
+        +recordUsage(data) PenggunaanBarang
+        +getAvailableStock(filters) Collection
+    }
+    class BarangService {
+        +getAll(filters) Collection
+        +create(data) Barang
+        +update(id,data) Barang
+        +delete(id) bool
     }
 
     %% Models Layer
+    class Cabang {
+        +string id_cabang
+        +string nama_cabang
+        +bool is_pusat
+        +users() HasMany
+        +gudang() HasMany
+    }
+    class Gudang {
+        +string id_cabang
+        +string id_barang
+        +int jumlah_barang
+        +string? keterangan
+        +string? tipe
+        +cabang() BelongsTo
+        +barang() BelongsTo
+    }
     class User {
-        +ULID unique_id
-        +string name
+        +string unique_id
+        +string username
         +string email
-        +string password
-        +hasRole(role) bool
-        +hasAnyRole(roles) bool
-        +penggunaanBarang() HasMany
+        +string password (hidden)
+        +string? id_cabang
+        +bool is_active
         +pengajuan() HasMany
-        +stokGudang() HasMany
+        +gudang() HasMany (via cabang)
+        +cabang() BelongsTo
+        +hasRole(role) bool
     }
-
-    class PenggunaanBarang {
-        +ULID id_penggunaan_barang
-        +ULID id_barang
-        +ULID id_user
-        +int jumlah
-        +enum status
-        +date tanggal_penggunaan
-        +user() BelongsTo
-        +barang() BelongsTo
-    }
-
-    class Barang {
-        +ULID id_barang
-        +string nama_barang
-        +string kode_barang
-        +ULID id_jenis_barang
-        +int stok_minimum
-        +jenisBarang() BelongsTo
-        +stokGudang() HasMany
-        +penggunaanBarang() HasMany
-    }
-
-    class StokGudang {
-        +ULID id_stok_gudang
-        +ULID id_barang
-        +ULID id_user
-        +int stok_tersedia
-        +date tanggal_update
-        +barang() BelongsTo
-        +user() BelongsTo
-    }
-
-    class Pengajuan {
-        +ULID id_pengajuan
-        +ULID id_barang
-        +ULID id_user_pengaju
-        +ULID id_admin_approval
-        +int jumlah
-        +enum status
-        +string alasan_penolakan
-        +userPengaju() BelongsTo
-        +adminApproval() BelongsTo
-        +barang() BelongsTo
-    }
-
     class JenisBarang {
-        +ULID id_jenis_barang
-        +string nama_jenis
-        +string kode_jenis
+        +string id_jenis_barang
+        +string nama_jenis_barang
+        +bool is_active
         +barang() HasMany
+    }
+    class Barang {
+        +string id_barang
+        +string nama_barang
+        +string id_jenis_barang
+        +int harga_barang
+        +string? deskripsi
+        +string? satuan
+        +int batas_minimum
+        +jenisBarang() BelongsTo
+        +gudangEntries() HasMany
+        +detailPengajuan() HasMany
+        +batasBarang() HasOne
+    }
+    class BatasBarang {
+        +string id_barang
+        +int batas_barang (minimum threshold)
+        +barang() BelongsTo
+    }
+    class Pengajuan {
+        +string id_pengajuan
+        +string unique_id (user)
+        +string status_pengajuan
+        +string? tipe_pengajuan
+        +string? bukti_file
+        +string? approved_by
+        +datetime? approved_at
+        +string? rejected_by
+        +datetime? rejected_at
+        +string? rejection_reason
+        +string? approval_notes
+        +string? keterangan
+        +user() BelongsTo
+        +approver() BelongsTo
+        +rejector() BelongsTo
+        +details() HasMany
+        +isMutable() bool
+    }
+    class DetailPengajuan {
+        +string id_pengajuan
+        +string id_barang
+        +int jumlah
+        +string? keterangan
+        +pengajuan() BelongsTo
+        +barang() BelongsTo
     }
 
     %% Policies Layer
-    class PenggunaanBarangPolicy {
-        +viewAny(User) bool
-        +view(User, PenggunaanBarang) bool
-        +create(User) bool
-        +update(User, PenggunaanBarang) bool
-        +delete(User, PenggunaanBarang) bool
-    }
-
-    class BarangPolicy {
-        +viewAny(User) bool
-        +view(User, Barang) bool
-        +create(User) bool
-        +update(User, Barang) bool
-        +delete(User, Barang) bool
-    }
-
     class PengajuanPolicy {
         +viewAny(User) bool
-        +view(User, Pengajuan) bool
+        +view(User,Pengajuan) bool
         +create(User) bool
-        +update(User, Pengajuan) bool
+        +update(User,Pengajuan) bool
         +approve(User) bool
         +reject(User) bool
     }
+    class BarangPolicy {
+        +viewAny(User) bool
+        +view(User,Barang) bool
+        +create(User) bool
+        +update(User,Barang) bool
+        +delete(User,Barang) bool
+    }
+    class PenggunaanBarangPolicy {
+        +viewAny(User) bool
+        +create(User) bool
+    }
 
     %% Relationships - Controller to Service
+    PengajuanController --> PengajuanService : uses
     PenggunaanBarangController --> PenggunaanBarangService : uses
     BarangController --> BarangService : uses
-    PengajuanController --> PengajuanService : uses
 
     %% Relationships - Service to Model
-    PenggunaanBarangService --> PenggunaanBarang : manages
-    PenggunaanBarangService --> StokGudang : updates stock
-    BarangService --> Barang : manages
     PengajuanService --> Pengajuan : manages
+    PengajuanService --> DetailPengajuan : aggregates
+    PenggunaanBarangService --> Gudang : updates stock
+    BarangService --> Barang : manages
 
-    %% Relationships - Model to Model
-    User "1" -- "*" PenggunaanBarang : creates
+    %% Model Relationships
+    Cabang "1" -- "*" User : assigns
+    Cabang "1" -- "*" Gudang : holds_stock
     User "1" -- "*" Pengajuan : submits
-    User "1" -- "*" StokGudang : owns
-    Barang "1" -- "*" PenggunaanBarang : used in
-    Barang "1" -- "*" StokGudang : tracked in
-    Barang "1" -- "*" Pengajuan : requested
-    Barang "*" -- "1" JenisBarang : belongs to
-
-    %% Relationships - Controller to Policy
-    PenggunaanBarangController ..> PenggunaanBarangPolicy : authorizes
-    BarangController ..> BarangPolicy : authorizes
-    PengajuanController ..> PengajuanPolicy : authorizes
+    Pengajuan "1" -- "*" DetailPengajuan : contains
+    Barang "1" -- "*" DetailPengajuan : requested
+    Barang "1" -- "*" Gudang : stocked_in
+    Barang "*" -- "1" JenisBarang : belongs_to
+    Barang "1" -- "1" BatasBarang : threshold
 
     %% Notes
-    note for PenggunaanBarangService "Auto-approve on create\nDecrements stock immediately"
-    note for User "Roles: admin, manager, user\nManager is read-only"
-    note for PenggunaanBarang "Status: auto-approved\nNo approval workflow"
+    note for Gudang "Logical composite key (id_cabang + id_barang)"
+    note for Cabang "Central warehouse flagged via is_pusat=true"
+    note for PengajuanService "Approval transfers stock Pusat -> Cabang"
+    note for Pengajuan "Statuses: Pending, Disetujui, Ditolak, Selesai, Draft"
+    note for Barang "batas_minimum drives dynamic stock status UI"
+    note for BatasBarang "Global minimum threshold (not per user)"
+    note for User "Spatie roles: admin, manager, user"
 ```
 
-### Key Design Patterns
+### Key Design Patterns (Unchanged Principles)
 
 - **Thin Controllers:** Only handle HTTP request/response
 - **Service Layer:** All business logic encapsulated here
 - **Policy Authorization:** Gate checks before actions
 - **Eloquent Relations:** Type-safe model relationships
+- **Transaction Safety:** Stock transfer & usage mutations wrapped atomically
+- **Stateless Auth:** Sanctum Bearer tokens + Spatie Roles
 
 ---
 
@@ -221,33 +228,28 @@ sequenceDiagram
     participant DB as Database
 
     User->>FE: Enter credentials
-    FE->>API: POST /api/v1/auth/login
+    FE->>API: POST /api/v1/login
     API->>Ctrl: login(Request)
-    
     Ctrl->>Ctrl: validate credentials
     alt Invalid Credentials
         Ctrl-->>API: 401 Unauthorized
-        API-->>FE: {"status": "error", "message": "Invalid credentials"}
+        API-->>FE: {"status":"error","message":"Invalid credentials"}
         FE-->>User: Show error
     else Valid Credentials
         Ctrl->>Guard: attempt(credentials)
-        Guard->>DB: Check user credentials
-        DB-->>Guard: User found
-        
+        Guard->>DB: Verify user
+        DB-->>Guard: OK
         Ctrl->>DB: createToken('api-token')
-        DB-->>Ctrl: Token created
-        
-        Ctrl->>Ctrl: Load user roles & permissions
+        DB-->>Ctrl: token
+        Ctrl->>Ctrl: Load roles & permissions
         Ctrl-->>API: 200 OK + token + user data
-        API-->>FE: {"status": "success", "data": {...}, "token": "..."}
-        FE->>FE: Store token in localStorage
-        FE-->>User: Redirect to dashboard
+        API-->>FE: {"status":"success","data":{...},"token":"..."}
+        FE->>FE: Persist token (localStorage)
+        FE-->>User: Redirect dashboard
     end
 ```
 
----
-
-### 2.2 Penggunaan Barang Creation (Auto-Approve)
+### 2.2 Penggunaan Barang Creation (Auto-Approve, Branch-Based Stock)
 
 ```mermaid
 sequenceDiagram
@@ -257,24 +259,265 @@ sequenceDiagram
     participant Ctrl as PenggunaanBarangController
     participant Policy as PenggunaanBarangPolicy
     participant Service as PenggunaanBarangService
-    participant Model as PenggunaanBarang
-    participant Stock as StokGudang
+    participant Gud as Gudang
     participant DB as Database
 
     User->>FE: Fill usage form
     FE->>API: POST /api/v1/penggunaan-barang
     Note over FE,API: Authorization: Bearer {token}
-    
-    API->>Ctrl: store(Request)
+    API->>Ctrl: store()
     Ctrl->>Ctrl: Validate input
-    
-    alt Validation Failed
-        Ctrl-->>API: 422 Unprocessable Entity
-        API-->>FE: {"status": "error", "errors": {...}}
-        FE-->>User: Show validation errors
-    else Validation Passed
-        Ctrl->>Policy: authorize('create')
-        Policy->>Policy: Check user role
+    Ctrl->>Policy: authorize('create')
+    alt Not Authorized
+        Policy-->>Ctrl: deny
+        Ctrl-->>API: 403
+        API-->>FE: {"status":"error","message":"Unauthorized"}
+    else Authorized
+        Policy-->>Ctrl: allow
+        Ctrl->>Service: recordUsage(data, user)
+        Service->>Gud: Check branch stock (id_cabang)
+        Gud->>DB: SELECT jumlah_barang
+        DB-->>Gud: current value
+        alt Insufficient
+            Service-->>Ctrl: error
+            Ctrl-->>API: 409 Stock Conflict
+            API-->>FE: {"status":"error","message":"Stock not enough"}
+        else Sufficient
+            Service->>DB: BEGIN
+            Service->>DB: INSERT penggunaan_barang (auto-approved)
+            Service->>Gud: decrement jumlah_barang
+            Gud->>DB: UPDATE tb_gudang
+            Service->>DB: COMMIT
+            Ctrl-->>API: 201 Created
+            API-->>FE: {"status":"success","data":{...}}
+            FE-->>User: Show success
+        end
+    end
+```
+
+**Key Points:**
+- Auto-approved usage
+- Branch-based stock (`id_cabang`) not per-user private stock
+- Manager role read-only (cannot create)
+
+### 2.3 Pengajuan Approval & Stock Transfer (New)
+
+```mermaid
+sequenceDiagram
+    actor User as Requester
+    actor Admin as Approver
+    participant FE as Frontend
+    participant API as API Routes
+    participant Ctrl as PengajuanController
+    participant Service as PengajuanService
+    participant Model as Pengajuan
+    participant Detail as DetailPengajuan
+    participant Pusat as Gudang (is_pusat)
+    participant Cab as Gudang (Cabang User)
+    participant DB as Database
+
+    User->>FE: Submit pengajuan form (details[])
+    FE->>API: POST /api/v1/pengajuan
+    API->>Ctrl: store()
+    Ctrl->>Service: create(data,user)
+    Service->>DB: BEGIN
+    Service->>Model: INSERT pengajuan (Pending)
+    loop each item
+        Service->>Detail: INSERT detail (id_pengajuan,id_barang,jumlah)
+    end
+    Service->>DB: COMMIT
+    Ctrl-->>FE: 201 Pending
+
+    Admin->>FE: Approve action
+    FE->>API: POST /api/v1/pengajuan/{id}/approve
+    API->>Ctrl: approve(id)
+    Ctrl->>Service: approve(pengajuan, admin)
+    Service->>Pusat: VERIFY central stock (aggregate SUM)
+    alt Any item insufficient
+        Service-->>Ctrl: Throw stock error
+        Ctrl-->>API: 409 Conflict
+        API-->>FE: {"status":"error","message":"Central stock insufficient"}
+    else All sufficient
+        Service->>DB: BEGIN
+        loop each detail
+            Service->>Pusat: decrement jumlah_barang
+            Service->>Cab: increment/create branch row
+        end
+        Service->>Model: UPDATE status -> Disetujui
+        Service->>DB: COMMIT
+        Ctrl-->>API: 200 Approved
+        API-->>FE: {"status":"success","data":{...}}
+        FE-->>User: Show approval success
+    end
+```
+
+**Key Changes:**
+- Stock movement is branch-based using `id_cabang` (not user-based records)
+- Central warehouse identified by `cabang.is_pusat = true`
+- No per-item per-user limit; monthly usage tracked separately (form info API)
+
+### 2.4 Export Excel Flow (Reconfirmed)
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant FE as Frontend
+    participant API as API Routes
+    participant Ctrl as LaporanController
+    participant Policy as LaporanPolicy
+    participant Service as LaporanService
+    participant Export as PenggunaanBarangExport
+    participant Excel as Excel Engine
+    participant Storage as Storage Disk
+
+    User->>FE: Click "Export Excel"
+    FE->>API: GET /api/v1/laporan/export/penggunaan
+    API->>Ctrl: exportPenggunaan()
+    Ctrl->>Policy: authorize('export')
+    alt Denied
+        Policy-->>Ctrl: false
+        Ctrl-->>API: 403
+        API-->>FE: {"status":"error"}
+    else Allowed
+        Policy-->>Ctrl: true
+        Ctrl->>Service: getExportData(filters,user)
+        Service-->>Ctrl: Collection
+        Ctrl->>Export: new Export(data)
+        Export->>Excel: generate workbook
+        Excel-->>Ctrl: binary stream
+        Ctrl-->>API: 200 attachment
+        API-->>FE: XLSX download
+        FE-->>User: Save file
+    end
+```
+
+**Export Rules (Reconfirmed):**
+- ✅ Admin: Export all data (all cabang)
+- ✅ Manager: Export all data (oversight)
+- ✅ User: Export own cabang-scoped / personal usage records
+
+---
+
+## 3. Component Diagram (Layered Architecture)
+
+### System-Level Architecture (Updated Stock & Cabang Context)
+
+```mermaid
+graph TB
+    subgraph "Client Layer"
+        FE[Vue.js 3 SPA<br/>Vite + Pinia + Router]
+    end
+
+    subgraph "API Gateway"
+        CORS[CORS Middleware]
+        Auth[Sanctum Auth]
+        Rate[Rate Limiter]
+    end
+
+    subgraph "Application Layer"
+        Routes[API Routes /api/v1/*]
+        Controllers[Controllers]
+        FormReq[Form Requests]
+        Resources[API Resources]
+        Services[Service Layer]
+        Policies[Policies]
+        Models[Eloquent Models]
+        Exports[Excel Exports]
+        Events[Events]
+        Jobs[Queue Jobs]
+    end
+
+    subgraph "External Services"
+        Sanctum[Sanctum Tokens]
+        Spatie[Spatie Permission]
+        Telescope[Telescope Debug]
+    end
+
+    subgraph "Data Storage"
+        DB[(MariaDB<br/>tb_users, tb_cabang, tb_pengajuan, tb_detail_pengajuan, tb_barang, tb_gudang, tb_batas_barang)]
+        Cache[(Redis/File Cache)]
+        Storage[File Storage]
+    end
+
+    FE -->|Bearer JSON| CORS --> Auth --> Rate --> Routes
+    Routes --> Controllers --> Services --> Models --> DB
+    Controllers --> FormReq
+    Controllers --> Policies
+    Controllers --> Resources
+    Controllers --> Exports
+    Services --> Events
+    Services --> Jobs
+    Services --> Cache
+    Models --> Storage
+    Auth --> Sanctum
+    Policies --> Spatie
+    Controllers -.debug.-> Telescope
+
+    Resources --> FE
+
+    classDef gateway fill:#ffa500,stroke:#333,color:#fff
+    classDef service fill:#ff6b6b,stroke:#333,color:#fff
+    classDef model fill:#4ecdc4,stroke:#333,color:#fff
+    classDef data fill:#aa96da,stroke:#333,color:#fff
+    classDef external fill:#f38181,stroke:#333,color:#fff
+    classDef client fill:#42b983,stroke:#333,color:#fff
+
+    class CORS,Auth,Rate gateway
+    class Services service
+    class Models model
+    class DB,Cache,Storage data
+    class Sanctum,Spatie,Telescope external
+    class FE client
+
+    %% Updated Notes
+    note right of Services "PengajuanService: central (is_pusat) stock aggregation + transfer"
+    note right of Models "Gudang now branch-based, not per-user private stock"
+    note right of DB "Cabang.is_pusat differentiates central vs branch warehouses"
+    note right of Resources "Adds stock_info to barang items"
+```
+
+### Request Flow (Updated Pengajuan Approval)
+
+1. User submits draft pengajuan → Pending with detail rows
+2. Approver triggers approval → validates central (is_pusat) stock
+3. Transaction: decrement pusat Gudang; increment/create cabang Gudang rows
+4. Status updated → Disetujui; monthly usage reflected in form info
+5. Resource returns enriched pengajuan with detail & derived stock movements
+6. Frontend updates UI accordingly
+
+---
+
+## 📊 Diagram Legend
+
+| Symbol | Meaning |
+|--------|---------|
+| `-->` | Dependency / Uses |
+| `--` | Association |
+| `..>` | Authorizes / Policy relation |
+| `*` | Many (Cardinality) |
+| `1` | One (Cardinality) |
+
+---
+
+## 🎯 Key Architectural Principles (Reaffirmed)
+
+1. Separation of Concerns (Controllers vs Services vs Policies)
+2. Explicit Central Warehouse (`is_pusat`) replacing name-based heuristics
+3. Branch-Level Inventory (Gudang keyed by `id_cabang`,`id_barang`)
+4. Immutable Approved Pengajuan (mutable only if Pending/Draft)
+5. Stock Safety via Transactional Transfer
+6. Stateless Auth + RBAC enforced server-side
+
+---
+
+## 🛠️ Tools Used
+
+- Mermaid for diagrams
+- Laravel Sanctum + Spatie Permission for auth/RBAC
+- Maatwebsite Excel for exports
+
+---
+
         
         alt Not Authorized (Manager)
             Policy-->>Ctrl: 403 Forbidden
@@ -636,6 +879,85 @@ Find Model → Update Fields → Save → Resource → JSON Output
 
 ---
 
+## 4. Use Case Diagram (PlantUML)
+
+Diagram ini menggambarkan interaksi aktor (Admin, Manager, User Cabang, System Jobs) dengan fungsionalitas utama SIMBA. Gunakan file `docs/USE_CASE_SIMBA.puml` untuk render formal UML. Jika PlantUML tidak tersedia, gunakan fallback Mermaid sederhana di bawah.
+
+### PlantUML Source
+```plantuml
+@startuml
+actor Admin
+actor Manager
+actor User as CabangUser
+actor System as Jobs
+rectangle SIMBA {
+  (Login) (Logout) (Lihat Dashboard)
+  (Ajukan Pengadaan Barang) (Catat Penggunaan Barang)
+  (Lihat Stok Cabang) (Lihat Laporan Cabang) (Export Laporan Cabang)
+  (Approve / Reject Pengajuan) (Kelola Pengguna) (Kelola Master Data Barang)
+  (Lihat Stok Global) (Lihat Semua Pengajuan) (Export Laporan Global)
+  (Prune Token Expired) (Proses Queue Export)
+}
+Admin --> (Approve / Reject Pengajuan)
+Admin --> (Kelola Pengguna)
+Admin --> (Kelola Master Data Barang)
+Admin --> (Export Laporan Global)
+Manager --> (Lihat Stok Global)
+Manager --> (Lihat Semua Pengajuan)
+Manager --> (Export Laporan Global)
+CabangUser --> (Ajukan Pengadaan Barang)
+CabangUser --> (Catat Penggunaan Barang)
+CabangUser --> (Export Laporan Cabang)
+Jobs --> (Prune Token Expired)
+Jobs --> (Proses Queue Export)
+@enduml
+```
+
+### Mermaid Fallback (Approximation)
+```mermaid
+graph LR
+  Admin((Admin))
+  Manager((Manager))
+  User((User Cabang))
+  Jobs((System Jobs))
+  subgraph UseCases
+    UCLogin[Login]
+    UCLogout[Logout]
+    UCDash[Dashboard]
+    UCPengajuan[Ajukan Pengadaan]
+    UCPakai[Catat Penggunaan]
+    UCStokCabang[Stok Cabang]
+    UCLapCabang[Laporan Cabang]
+    UCExportCabang[Export Laporan Cabang]
+    UCApprove[Approve/Reject Pengajuan]
+    UCKelolaUser[Kelola Pengguna]
+    UCMaster[Master Data Barang]
+    UCStokGlobal[Stok Global]
+    UCPengajuanGlobal[Semua Pengajuan]
+    UCExportGlobal[Export Laporan Global]
+    UCPrune[Prune Token]
+    UCQueue[Proses Queue Export]
+  end
+  Admin --- UCApprove
+  Admin --- UCKelolaUser
+  Admin --- UCMaster
+  Admin --- UCExportGlobal
+  Manager --- UCStokGlobal
+  Manager --- UCPengajuanGlobal
+  Manager --- UCExportGlobal
+  User --- UCPengajuan
+  User --- UCPakai
+  User --- UCExportCabang
+  Jobs --- UCPrune
+  Jobs --- UCQueue
+```
+
+### Penjelasan Aktor & Hak Akses Singkat
+- **Admin:** Full akses (persetujuan, master data, global laporan & stok).
+- **Manager:** Read-only global (monitor stok & pengajuan, export global).
+- **User Cabang:** Operasional cabang (pengajuan, penggunaan, laporan cabang).
+- **System Jobs:** Proses otomatis (prune token kadaluarsa, proses antrian export). 
+
 **Generated by:** GitHub Copilot  
-**Last Updated:** November 3, 2025  
-**Version:** 1.0
+**Last Updated:** November 22, 2025  
+**Version:** 1.2 (Tambah Use Case Diagram)

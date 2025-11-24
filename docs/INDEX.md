@@ -1,7 +1,9 @@
-# 📚 SIPB Backend Documentation
+# 📚 SIMBA Backend Documentation
 
-**Sistem Informasi dan Pencatatan Barang (SIPB)**  
+**Sistem Informasi Manajemen Barang (SIMBA)**  
 Laravel 12 API Backend
+
+> 📂 **Documentation Reorganized** — All docs consolidated into `/docs/` folder for better structure and discoverability. See [Archive](#archive) for historical design documents.
 
 ---
 
@@ -9,12 +11,13 @@ Laravel 12 API Backend
 
 1. [Quick Start](#quick-start)
 2. [Project Overview](#project-overview)
-3. [Business Rules](#business-rules)
-4. [API Documentation](#api-documentation)
-5. [Development Guide](#development-guide)
-6. [Testing](#testing)
-7. [Deployment](#deployment)
-8. [UML Diagrams](#uml-diagrams)
+3. [Business Rules](#business-rules) — **[→ BUSINESS_RULES.md](BUSINESS_RULES.md)**
+4. [API Documentation](#api-documentation) — **[→ API.md](API.md)**
+5. [Development Guide](#development-guide) — **[→ GETTING_STARTED.md](GETTING_STARTED.md)**
+6. [References & Citations](#references--citations) — **[→ REFERENCES.md](REFERENCES.md)**
+7. [Testing](#testing) — **[→ ../TEST_REPORT.md](../TEST_REPORT.md)**
+8. [UML Diagrams](#uml-diagrams) — **[→ UML_DIAGRAMS.md](UML_DIAGRAMS.md)**
+9. [Archive](#archive) — Historical design docs — **[→ archive/](archive/)**
 
 
 ## 🚀 Quick Start
@@ -509,12 +512,12 @@ All diagrams use **Mermaid** format for native rendering in:
 
 ---
 
-### Archived Documentation
+## 📦 Archive
 
-Older/redundant documentation moved to `docs/archive/`:
-- API verification reports
-- Implementation summaries
-- Historical change logs
+Historical design documents and implementation notes:
+
+- **[archive/BRANCH_ROLLOUT_DESIGN.md](archive/BRANCH_ROLLOUT_DESIGN.md)** — Branch entity rollout ID design decision
+- **[archive/MIGRATION_NOTES.md](archive/MIGRATION_NOTES.md)** — Seeder & Factory update summary
 
 ---
 

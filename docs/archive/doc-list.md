@@ -1,7 +1,7 @@
-# 📦 SIPB Project Features Documentation
+# 📦 SIMBA Project Features Documentation
 
 ## 🎯 **Project Overview**
-SIPB (Sistem Informasi dan Pencatatan Barang) is a comprehensive inventory management system built with Laravel 12 API backend and Vue.js 3 frontend, featuring stateless authentication and role-based access control.
+SIMBA (Sistem Informasi Manajemen Barang) is a comprehensive inventory management system built with Laravel 12 API backend and Vue.js 3 frontend, featuring stateless authentication and role-based access control.
 
 ---
 
