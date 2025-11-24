@@ -1,9 +1,9 @@
-# 📦 SIPB – Sistem Informasi dan Pencatatan Barang
+# 📦 SIMBA – Sistem Informasi Manajemen Barang
 
 > **Backend API untuk Manajemen Inventaris & Pencatatan Barang**  
 > Laravel 12 | Service-Oriented Architecture | RESTful API
 
-SIPB adalah API backend yang tangguh untuk aplikasi pencatatan, pengelolaan, dan pengawasan pergerakan barang dalam suatu organisasi. Dibangun dengan **Laravel 12** dan dirancang dengan **Service-Oriented Architecture**, sistem ini menyediakan endpoint yang aman, efisien, dan mudah dipelihara untuk diintegrasikan dengan frontend Vue.js.
+SIMBA adalah API backend yang tangguh untuk aplikasi pencatatan, pengelolaan, dan pengawasan pergerakan barang dalam suatu organisasi. Dibangun dengan **Laravel 12** dan dirancang dengan **Service-Oriented Architecture**, sistem ini menyediakan endpoint yang aman, efisien, dan mudah dipelihara untuk diintegrasikan dengan frontend Vue.js.
 
 ---
 
