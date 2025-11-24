@@ -21,3 +21,14 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# IDE Helper & Generated Files
+_ide_helper.php
+_ide_helper_models.php
+.phpstorm.meta.php
+
+# Generated Output
+/out/
+
+# Documentation Artifacts
+.coverage/

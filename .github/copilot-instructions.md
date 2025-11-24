@@ -1,4 +1,4 @@
-# Copilot Instructions for SIPB Backend (Laravel)
+# Copilot Instructions for SIMBA Backend (Laravel)
 
 ## Project Overview
 - **Framework:** Laravel 12 (API only, no Blade views)
