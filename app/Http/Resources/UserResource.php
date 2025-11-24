@@ -13,7 +13,8 @@ class UserResource extends JsonResource
             'unique_id' => $this->unique_id,
             'username' => $this->username,
             'email' => $this->email,
-            'branch_name' => $this->branch_name,
+            'id_cabang' => $this->id_cabang,
+            'cabang' => $this->whenLoaded('cabang', fn () => new CabangResource($this->cabang)),
             'is_active' => $this->is_active,
             // Conditionally include roles, mapped to a simple array of names
             'roles' => $this->whenLoaded('roles', fn () => $this->roles->pluck('name')),

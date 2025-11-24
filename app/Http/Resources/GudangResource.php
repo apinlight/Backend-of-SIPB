@@ -10,14 +10,14 @@ class GudangResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'unique_id' => $this->unique_id,
+            'id_cabang' => $this->id_cabang,
             'id_barang' => $this->id_barang,
             'jumlah_barang' => (int) $this->jumlah_barang,
             'keterangan' => $this->keterangan,
             'tipe' => $this->tipe,
 
             // Relationships
-            'user' => UserResource::make($this->whenLoaded('user')),
+            'cabang' => CabangResource::make($this->whenLoaded('cabang')),
             'barang' => BarangResource::make($this->whenLoaded('barang')),
 
             'total_nilai' => $this->whenLoaded('barang', fn () => ($this->barang->harga_barang ?? 0) * $this->jumlah_barang),

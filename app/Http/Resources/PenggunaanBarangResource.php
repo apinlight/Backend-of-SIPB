@@ -27,9 +27,11 @@ class PenggunaanBarangResource extends JsonResource
             'approved_at' => $this->approved_at?->toISOString(),
 
             // Relationships
-            'user' => UserResource::make($this->whenLoaded('user')),
+                'id_cabang' => $this->id_cabang,
             'barang' => BarangResource::make($this->whenLoaded('barang')),
             'approver' => UserResource::make($this->whenLoaded('approver')),
+                'user' => UserResource::make($this->whenLoaded('user')),
+                'cabang' => CabangResource::make($this->whenLoaded('cabang')),
 
             // Explicit permissions object for the UI
             'permissions' => [
