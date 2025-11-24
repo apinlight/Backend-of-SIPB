@@ -24,20 +24,19 @@ class SampleDataSeeder extends Seeder
     {
         $users = User::whereHas('roles', function ($q) {
             $q->whereIn('name', ['user', 'manager']);
-        })->get();
+        })->whereNotNull('id_cabang')->get();
 
         $barangList = Barang::take(10)->get(); // Get first 10 barang
 
         foreach ($users as $user) {
-            foreach ($barangList->random(5) as $barang) { // Random 5 items per user
-                // ✅ FIX: Use a more explicit approach that works perfectly with composite keys.
-                // This finds the record or creates a new instance in memory.
+            foreach ($barangList->random(5) as $barang) { // Random 5 items per user's cabang
+                // Use id_cabang composite key (user's branch)
                 $gudang = Gudang::firstOrNew([
-                    'unique_id' => $user->unique_id,
+                    'id_cabang' => $user->id_cabang,
                     'id_barang' => $barang->id_barang,
                 ]);
 
-                // We then set the value and save. This works for both new and existing records.
+                // Set stock quantity and save
                 $gudang->jumlah_barang = rand(1, 50);
                 $gudang->save();
             }

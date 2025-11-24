@@ -17,8 +17,18 @@ class UserFactory extends Factory
             'username' => $this->faker->userName,
             'email' => $this->faker->unique()->safeEmail(),
             'password' => 'password', // Will be hashed by the model's mutator
-            'branch_name' => $this->faker->company,
+            'id_cabang' => null, // Should be set explicitly or via cabang() state
         ];
+    }
+
+    /**
+     * Set a specific cabang for the user.
+     */
+    public function cabang(string $idCabang)
+    {
+        return $this->state(fn (array $attributes) => [
+            'id_cabang' => $idCabang,
+        ]);
     }
 
     public function admin()

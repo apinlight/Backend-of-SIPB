@@ -26,14 +26,19 @@ class DatabaseSeeder extends Seeder
             GlobalSettingSeeder::class,
         ]);
 
-        // 3. Base Accounts (do not change)
+        // 3. Cabang (branches)
+        $this->call([
+            CabangSeeder::class,
+        ]);
+
+        // 4. Base Accounts (do not change)
         if (!User::where('unique_id', 'ADMIN001')->exists()) {
             User::query()->create([
                 'unique_id' => 'ADMIN001',
                 'username' => 'superadmin',
                 'email' => 'admin@example.com',
                 'password' => 'password',
-                'branch_name' => 'Head Office',
+                'id_cabang' => 'CABANG001', // Pusat
                 'is_active' => true,
             ])->assignRole('admin');
         }
@@ -43,7 +48,7 @@ class DatabaseSeeder extends Seeder
                 'username' => 'supermanager',
                 'email' => 'manager@example.com',
                 'password' => 'password',
-                'branch_name' => 'South Branch',
+                'id_cabang' => 'CABANG001', // Pusat
                 'is_active' => true,
             ])->assignRole('manager');
         }
@@ -53,49 +58,42 @@ class DatabaseSeeder extends Seeder
                 'username' => 'superuser',
                 'email' => 'user@example.com',
                 'password' => 'password',
-                'branch_name' => 'South Branch',
+                'id_cabang' => 'CABANG002', // South Branch
                 'is_active' => true,
             ])->assignRole('user');
         }
 
-        // 4. Realistic Branch Users
-        $branches = [
-            'South Branch',
-            'North Branch',
-            'East Branch',
-            'West Branch',
-            'Central Branch',
-        ];
+        // 5. Realistic Branch Users
         $branchUsers = [
             [
                 'unique_id' => 'USR1001',
                 'username' => 'budi',
                 'email' => 'budi.south@company.com',
-                'branch_name' => 'South Branch',
+                'id_cabang' => 'CABANG002', // South Branch
             ],
             [
                 'unique_id' => 'USR1002',
                 'username' => 'siti',
                 'email' => 'siti.north@company.com',
-                'branch_name' => 'North Branch',
+                'id_cabang' => 'CABANG003', // North Branch
             ],
             [
                 'unique_id' => 'USR1003',
                 'username' => 'agus',
                 'email' => 'agus.east@company.com',
-                'branch_name' => 'East Branch',
+                'id_cabang' => 'CABANG004', // East Branch
             ],
             [
                 'unique_id' => 'USR1004',
                 'username' => 'lina',
                 'email' => 'lina.west@company.com',
-                'branch_name' => 'West Branch',
+                'id_cabang' => 'CABANG005', // West Branch
             ],
             [
                 'unique_id' => 'USR1005',
                 'username' => 'yusuf',
                 'email' => 'yusuf.central@company.com',
-                'branch_name' => 'Central Branch',
+                'id_cabang' => 'CABANG006', // Central Branch
             ],
         ];
         foreach ($branchUsers as $u) {
@@ -105,13 +103,13 @@ class DatabaseSeeder extends Seeder
                 'username' => $u['username'],
                 'email' => $u['email'],
                 'password' => 'password',
-                'branch_name' => $u['branch_name'],
+                'id_cabang' => $u['id_cabang'],
                 'is_active' => true,
             ]);
             $user->assignRole('user');
         }
 
-        // 5. Jenis Barang & Barang (realistic)
+        // 6. Jenis Barang & Barang (realistic)
         $jenisBarangList = [
             ['nama_jenis_barang' => 'Elektronik', 'is_active' => true],
             ['nama_jenis_barang' => 'ATK', 'is_active' => true],
@@ -202,10 +200,10 @@ class DatabaseSeeder extends Seeder
                     ]);
                 }
             }
-            // Seed Gudang stock for each barang for this user
+            // Seed Gudang stock for each barang for this user's cabang
             foreach ($allBarang as $barang) {
                 \App\Models\Gudang::updateOrCreate([
-                    'unique_id' => $user->unique_id,
+                    'id_cabang' => $user->id_cabang,
                     'id_barang' => $barang->id_barang,
                 ], [
                     'jumlah_barang' => rand(5, 30),
@@ -214,12 +212,26 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        // 6. Batas Barang
+        // Also seed Gudang for USER001 (the default user)
+        $user001 = \App\Models\User::where('unique_id', 'USER001')->first();
+        if ($user001 && $user001->id_cabang) {
+            foreach ($allBarang as $barang) {
+                \App\Models\Gudang::updateOrCreate([
+                    'id_cabang' => $user001->id_cabang,
+                    'id_barang' => $barang->id_barang,
+                ], [
+                    'jumlah_barang' => rand(10, 40),
+                    'keterangan' => 'Stok awal untuk ' . $barang->nama_barang,
+                ]);
+            }
+        }
+
+        // 9. Batas Barang
         $this->call([
             BatasBarangSeeder::class,
         ]);
 
-        // 7. Realistic Pengajuan & Gudang (see SampleDataSeeder for more advanced logic)
+        // 10. Realistic Pengajuan & Gudang (see SampleDataSeeder for more advanced logic)
         // You may optionally add more realistic transactional data here or in a new seeder.
 
         $this->command->info('🎯 Database seeding completed with real-world data!');

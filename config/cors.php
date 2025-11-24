@@ -32,17 +32,20 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => [
+'allowed_origins' => [
         'https://fe-sipb.crulxproject.com',
         'https://sipb.crulxproject.com',
         'https://www.sipb.crulxproject.com',
-        // ✅ CONDITIONAL: Only allow local development in non-production
+        // ✅ CONDITIONAL: Allow local development ports
         ...env('APP_ENV', 'production') !== 'production' ? [
             'http://127.0.0.2:5173',
             'http://127.0.0.1:5173',
             'http://localhost:5173',
             'http://127.0.0.1:80',
             'http://localhost:80',
+            // 🔥 ADD THESE NEW LINES:
+            'http://127.0.0.1:8080',
+            'http://localhost:8080', 
         ] : [],
     ],
 
