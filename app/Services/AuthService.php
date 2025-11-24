@@ -16,7 +16,7 @@ class AuthService
     public function login(array $credentials, string $ip): array
     {
         $loginType = filter_var($credentials['login'], FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
-        $user = User::with('roles')->where($loginType, $credentials['login'])->first();
+        $user = User::with(['roles', 'cabang'])->where($loginType, $credentials['login'])->first();
 
         if (! $user || ! Hash::check($credentials['password'], $user->password)) {
             throw ValidationException::withMessages(['login' => ['The provided credentials are incorrect.']]);
@@ -32,23 +32,7 @@ class AuthService
         return $this->createTokenResponse($user);
     }
 
-    public function register(array $data): array
-    {
-        $user = User::create([
-            'unique_id' => $data['unique_id'],
-            'username' => $data['username'],
-            'email' => $data['email'],
-            // ✅ FIX: No need to manually Hash::make(). The model's mutator handles it.
-            'password' => $data['password'],
-            'branch_name' => $data['branch_name'],
-            'is_active' => true,
-        ]);
 
-        $user->assignRole(\App\Enums\Role::USER);
-        $user->load('roles');
-
-        return $this->createTokenResponse($user);
-    }
 
     public function refreshToken(User $user): array
     {
@@ -63,7 +47,7 @@ class AuthService
             $token->delete();
         }
 
-        return $this->createTokenResponse($user->fresh('roles'));
+        return $this->createTokenResponse($user->fresh(['roles', 'cabang']));
     }
 
     public function changePassword(User $user, array $passwords): void

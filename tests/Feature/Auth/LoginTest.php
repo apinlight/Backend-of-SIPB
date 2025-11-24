@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\Cabang;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
@@ -21,17 +22,22 @@ class LoginTest extends TestCase
         Role::create(['name' => 'admin']);
         Role::create(['name' => 'manager']);
         Role::create(['name' => 'user']);
+        
+        // Create test cabang
+        Cabang::create([
+            'id_cabang' => 'TEST001',
+            'nama_cabang' => 'Test Branch',
+            'is_pusat' => false,
+        ]);
     }
 
     /**
      * Test a successful login with correct credentials.
-     *
-     * @return void
      */
     public function test_user_can_login_with_correct_credentials()
     {
-        // 1. Arrange: Create a user in our test database.
-        $user = User::factory()->create([
+        // 1. Arrange: Create a user in our test database with cabang.
+        $user = User::factory()->cabang('TEST001')->create([
             'password' => 'password123', // We set a known password.
         ]);
         $user->assignRole('user');
@@ -52,6 +58,12 @@ class LoginTest extends TestCase
                     'unique_id',
                     'username',
                     'email',
+                    'id_cabang',
+                    'cabang' => [
+                        'id_cabang',
+                        'nama_cabang',
+                    ],
+                    'roles',
                 ],
                 'token',
                 'token_type',
@@ -70,9 +82,7 @@ class LoginTest extends TestCase
     }
 
     /**
-     * Test that login fails with an incorrect password.
-     *
-     * @return void
+     * Test login fails with incorrect password.
      */
     public function test_user_cannot_login_with_incorrect_password()
     {
@@ -94,9 +104,7 @@ class LoginTest extends TestCase
     }
 
     /**
-     * Test that login fails if the password is not provided.
-     *
-     * @return void
+     * Test login fails when password is not provided.
      */
     public function test_password_is_required_for_login()
     {
