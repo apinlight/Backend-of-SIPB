@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 // Root endpoint - JSON response for API-only backend
 Route::get('/', function () {
     return response()->json([
-        'service' => 'SIPB API',
+        'service' => 'SIMBA API',
         'version' => '1.0',
         'status' => 'online',
         'message' => 'API is running. See documentation on GitHub.',

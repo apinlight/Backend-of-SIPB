@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\BarangController;
 use App\Http\Controllers\Api\BatasBarangController;
+use App\Http\Controllers\Api\CabangController;
 use App\Http\Controllers\Api\DetailPengajuanController;
 use App\Http\Controllers\Api\GlobalSettingsController;
 use App\Http\Controllers\Api\GudangController;
@@ -25,6 +26,7 @@ Route::prefix('v1')->group(function () {
 
         Route::apiResource('barang', BarangController::class);
         Route::apiResource('jenis-barang', JenisBarangController::class);
+        Route::apiResource('cabang', CabangController::class);
         Route::apiResource('pengajuan', PengajuanController::class);
         Route::apiResource('detail-pengajuan', DetailPengajuanController::class);
         Route::apiResource('gudang', GudangController::class);
@@ -43,7 +45,7 @@ Route::prefix('v1')->group(function () {
         });
 
         Route::prefix('gudang')->group(function () {
-            Route::post('{unique_id}/{id_barang}/adjust-stock', [GudangController::class, 'adjustStock'])->middleware('role:admin');
+            Route::post('{id_cabang}/{id_barang}/adjust-stock', [GudangController::class, 'adjustStock'])->middleware('role:admin');
         });
 
         // ❌ REMOVED: Penggunaan barang tidak perlu approval workflow
@@ -100,7 +102,10 @@ Route::prefix('v1')->group(function () {
             Route::prefix('export-word')->name('export-word.')->middleware('role:admin|manager')->group(function () {
                 Route::get('summary', [LaporanController::class, 'exportSummaryDocx']);
                 Route::get('barang', [LaporanController::class, 'exportBarangDocx']);
-                // Additional types can be added similarly: pengajuan, penggunaan, stok, all
+                Route::get('pengajuan', [LaporanController::class, 'exportPengajuanDocx']);
+                Route::get('penggunaan', [LaporanController::class, 'exportPenggunaanDocx']);
+                Route::get('stok', [LaporanController::class, 'exportStokDocx']);
+                Route::get('all', [LaporanController::class, 'exportAllDocx']);
             });
         });
     });

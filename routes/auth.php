@@ -9,9 +9,6 @@ Route::prefix('api/v1')
     ->group(function () {
 
         // ✅ Guest routes (no auth required)
-        Route::post('/register', [TokenAuthController::class, 'register'])
-            ->name('register');
-
         Route::post('/login', [TokenAuthController::class, 'login'])
             ->name('login');
     });
