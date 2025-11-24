@@ -14,8 +14,6 @@ class PasswordTest extends TestCase
 
     /**
      * Test a user can successfully change their password with valid credentials.
-     *
-     * @return void
      */
     public function test_user_can_change_password_successfully()
     {
@@ -49,9 +47,7 @@ class PasswordTest extends TestCase
     }
 
     /**
-     * Test that password change fails with an incorrect current password.
-     *
-     * @return void
+     * Test password change fails with incorrect current password.
      */
     public function test_password_change_fails_with_incorrect_current_password()
     {
@@ -73,9 +69,7 @@ class PasswordTest extends TestCase
     }
 
     /**
-     * Test that password change fails if the new password confirmation does not match.
-     *
-     * @return void
+     * Test password change fails if confirmation does not match.
      */
     public function test_password_change_fails_if_confirmation_does_not_match()
     {

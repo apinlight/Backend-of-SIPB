@@ -4,9 +4,11 @@ namespace Tests\Feature\Auth;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Group;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
+#[Group('legacy')]
 class RegistrationTest extends TestCase
 {
     use RefreshDatabase;
@@ -21,10 +23,8 @@ class RegistrationTest extends TestCase
 
     /**
      * Test that a user can be successfully registered.
-     *
-     * @return void
      */
-    public function test_a_user_can_be_registered()
+    public function test_user_can_be_registered()
     {
         // Enable registration for this test
         config(['auth.allow_registration' => true]);
@@ -68,8 +68,6 @@ class RegistrationTest extends TestCase
 
     /**
      * Test that registration fails when the feature is disabled.
-     *
-     * @return void
      */
     public function test_registration_is_disabled_by_config()
     {
@@ -94,8 +92,6 @@ class RegistrationTest extends TestCase
 
     /**
      * Test that validation fails for required fields.
-     *
-     * @return void
      */
     public function test_validation_fails_if_data_is_missing()
     {
