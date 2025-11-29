@@ -21,8 +21,8 @@ class GudangPolicy
             return true; // Admin can view all gudang
         }
         if ($user->hasRole(\App\Enums\Role::MANAGER)) {
-            // Manager can view gudang from same branch
-            return $user->branch_name === $gudang->user->branch_name;
+            // Manager can view gudang from same cabang
+            return $user->id_cabang === $gudang->user->id_cabang;
         }
 
         // User can only view their own gudang
