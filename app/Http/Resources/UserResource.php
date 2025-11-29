@@ -14,6 +14,7 @@ class UserResource extends JsonResource
             'username' => $this->username,
             'email' => $this->email,
             'id_cabang' => $this->id_cabang,
+            'branch_name' => $this->branch_name, // ✅ Accessor for frontend compatibility
             'cabang' => $this->whenLoaded('cabang', fn () => new CabangResource($this->cabang)),
             'is_active' => $this->is_active,
             // Conditionally include roles, mapped to a simple array of names

@@ -101,6 +101,15 @@ class User extends Authenticatable implements MustVerifyEmail
         return 'unique_id';
     }
 
+    /**
+     * ✅ Accessor: Get branch_name from cabang relationship for frontend compatibility
+     * Provides legacy branch_name field by accessing cabang.nama_cabang
+     */
+    public function getBranchNameAttribute()
+    {
+        return $this->cabang?->nama_cabang ?? 'Pusat';
+    }
+
     public function penggunaanBarang()
     {
         return $this->hasMany(PenggunaanBarang::class, 'unique_id', 'unique_id');
