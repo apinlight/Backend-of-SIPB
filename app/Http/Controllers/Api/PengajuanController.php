@@ -31,8 +31,9 @@ class PengajuanController extends Controller
             ->forUser($request->user()); // Assumes forUser scope exists
 
         $query->when($request->filled('status'), fn ($q) => $q->where('status_pengajuan', $request->status));
-        $query->when($request->user()->hasRole('admin') && $request->filled('branch'), function ($q) use ($request) {
-            $q->whereHas('user', fn ($sq) => $sq->where('branch_name', $request->branch));
+        $query->when($request->filled('user_id'), fn ($q) => $q->where('unique_id', $request->user_id));
+        $query->when($request->filled('id_cabang'), function ($q) use ($request) {
+            $q->whereHas('user', fn ($sq) => $sq->where('id_cabang', $request->id_cabang));
         });
 
         $pengajuan = $query->paginate(20);
