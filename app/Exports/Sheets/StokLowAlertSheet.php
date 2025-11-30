@@ -26,7 +26,7 @@ class StokLowAlertSheet implements FromCollection, WithHeadings, WithStyles, Wit
             ->map(fn ($item) => [
                 'Priority' => $item->jumlah_barang == 0 ? 'URGENT' : 'Warning',
                 'Username' => $item->user->username,
-                'Branch' => $item->user->branch_name,
+                'Branch' => $item->user->cabang?->nama_cabang ?? '-',
                 'Nama Barang' => $item->barang->nama_barang,
                 'Stok Saat Ini' => $item->jumlah_barang,
                 'Batas Minimum' => $item->barang->batas_minimum ?? 5,

@@ -34,10 +34,10 @@ class StokReportWord
         if ($u !== null) $u = $this->normalize($u);
         if (is_array($u)) {
             $username = $u['username'] ?? $u['name'] ?? $u['unique_id'] ?? null;
-            $branch = $u['branch_name'] ?? null;
+            $branch = $u['cabang']['nama_cabang'] ?? $u['branch_name'] ?? null;
             return trim(($username ?? '-') . ($branch ? " ({$branch})" : ''));
         }
-        return (string)($row['user_name'] ?? $row['username'] ?? $row['unique_id'] ?? $row['branch_name'] ?? '-');
+        return (string)($row['user_name'] ?? $row['username'] ?? $row['unique_id'] ?? '-');
     }
 
     private function formatBarang($row): string

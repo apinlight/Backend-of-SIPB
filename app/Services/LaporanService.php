@@ -222,7 +222,7 @@ class LaporanService
         $query = Barang::with(['jenisBarang'])
             ->withSum(['gudangEntries as total_stock' => function ($q) use ($user) {
                 if ($user->hasRole(\App\Enums\Role::MANAGER)) {
-                    $q->whereHas('user', fn ($userQuery) => $userQuery->where('branch_name', $user->branch_name));
+                    $q->whereHas('user', fn ($userQuery) => $userQuery->where('id_cabang', $user->id_cabang));
                 }
             }], 'jumlah_barang');
 

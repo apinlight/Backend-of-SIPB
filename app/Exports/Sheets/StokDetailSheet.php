@@ -26,7 +26,7 @@ class StokDetailSheet implements FromCollection, WithHeadings, WithStyles, WithT
             return [
                 'User ID' => $item->user->unique_id,
                 'Username' => $item->user->username,
-                'Branch' => $item->user->branch_name,
+                'Branch' => $item->user->cabang?->nama_cabang ?? '-',
                 'ID Barang' => $item->barang->id_barang,
                 'Nama Barang' => $item->barang->nama_barang,
                 'Jenis Barang' => $item->barang->jenisBarang->nama_jenis_barang ?? '-',

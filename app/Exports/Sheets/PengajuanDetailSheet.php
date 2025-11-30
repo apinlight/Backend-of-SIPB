@@ -40,7 +40,7 @@ class PengajuanDetailSheet implements FromCollection, WithHeadings, WithStyles, 
             return [
                 'ID Pengajuan' => $item['id_pengajuan'],
                 'Username' => $item['user']['username'] ?? '-',
-                'Branch' => $item['user']['branch_name'] ?? '-',
+                'Branch' => $item['user']['cabang']['nama_cabang'] ?? $item['user']['branch_name'] ?? '-',
                 'Status' => $item['status_pengajuan'],
                 'Total Items' => $item['total_items'],
                 'Total Nilai' => $item['total_nilai'],

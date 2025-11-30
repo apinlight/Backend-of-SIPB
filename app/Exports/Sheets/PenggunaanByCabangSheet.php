@@ -24,7 +24,7 @@ class PenggunaanByCabangSheet implements FromCollection, WithHeadings, WithStyle
     {
         return collect($this->data)->map(function ($item) {
             return [
-                'Branch Name' => $item['branch_name'],
+                'Branch Name' => $item['nama_cabang'] ?? $item['branch_name'] ?? '-',
                 'Total Penggunaan' => $item['total_penggunaan'],
                 'Total Approved' => $item['total_approved'],
                 'Total Pending' => $item['total_pending'],

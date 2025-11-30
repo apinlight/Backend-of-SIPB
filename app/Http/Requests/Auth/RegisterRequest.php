@@ -20,7 +20,7 @@ class RegisterRequest extends FormRequest
             'username' => 'required|string|max:255|unique:tb_users,username|regex:/^[a-zA-Z0-9_]+$/',
             'email' => 'required|string|email|max:255|unique:tb_users,email',
             'password' => ['required', 'confirmed', Password::min(8)],
-            'branch_name' => 'required|string|max:255',
+            'id_cabang' => 'required|string|exists:tb_cabang,id_cabang',
         ];
     }
 }

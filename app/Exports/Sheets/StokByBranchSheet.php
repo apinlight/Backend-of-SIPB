@@ -24,7 +24,7 @@ class StokByBranchSheet implements FromCollection, WithHeadings, WithStyles, Wit
     {
         return collect($this->data)->map(function ($item) {
             return [
-                'Branch Name' => $item['branch_name'],
+                'Branch Name' => $item['nama_cabang'] ?? $item['branch_name'] ?? '-',
                 'Total Items' => $item['total_items'],
                 'Total Stock' => $item['total_stock'],
                 'Total Value' => $item['total_value'],

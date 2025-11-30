@@ -50,7 +50,7 @@ class AuthServiceProvider extends ServiceProvider
             }
 
             if ($user->hasRole(\App\Enums\Role::MANAGER)) {
-                return $branchName ? $user->branch_name === $branchName : true;
+                return $branchName ? $user->cabang?->nama_cabang === $branchName : true;
             }
 
             return false;
