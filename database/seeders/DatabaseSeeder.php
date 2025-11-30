@@ -63,37 +63,37 @@ class DatabaseSeeder extends Seeder
             ])->assignRole('user');
         }
 
-        // 5. Realistic Branch Users
+        // 5. Realistic Branch Users - KSPPS Al Huda
         $branchUsers = [
             [
                 'unique_id' => 'USR1001',
-                'username' => 'budi',
-                'email' => 'budi.south@company.com',
-                'id_cabang' => 'CABANG002', // South Branch
+                'username' => 'ahmad_garung',
+                'email' => 'ahmad.garung@ksppsalhuda.com',
+                'id_cabang' => 'CABANG002', // Garung
             ],
             [
                 'unique_id' => 'USR1002',
-                'username' => 'siti',
-                'email' => 'siti.north@company.com',
-                'id_cabang' => 'CABANG003', // North Branch
+                'username' => 'fatimah_kertek',
+                'email' => 'fatimah.kertek@ksppsalhuda.com',
+                'id_cabang' => 'CABANG003', // Kertek
             ],
             [
                 'unique_id' => 'USR1003',
-                'username' => 'agus',
-                'email' => 'agus.east@company.com',
-                'id_cabang' => 'CABANG004', // East Branch
+                'username' => 'usman_kaliwiro',
+                'email' => 'usman.kaliwiro@ksppsalhuda.com',
+                'id_cabang' => 'CABANG004', // Kaliwiro
             ],
             [
                 'unique_id' => 'USR1004',
-                'username' => 'lina',
-                'email' => 'lina.west@company.com',
-                'id_cabang' => 'CABANG005', // West Branch
+                'username' => 'siti_mojotengah',
+                'email' => 'siti.mojotengah@ksppsalhuda.com',
+                'id_cabang' => 'CABANG005', // Mojotengah
             ],
             [
                 'unique_id' => 'USR1005',
-                'username' => 'yusuf',
-                'email' => 'yusuf.central@company.com',
-                'id_cabang' => 'CABANG006', // Central Branch
+                'username' => 'yusuf_selomerto',
+                'email' => 'yusuf.selomerto@ksppsalhuda.com',
+                'id_cabang' => 'CABANG006', // Selomerto
             ],
         ];
         foreach ($branchUsers as $u) {
@@ -109,33 +109,48 @@ class DatabaseSeeder extends Seeder
             $user->assignRole('user');
         }
 
-        // 6. Jenis Barang & Barang (realistic)
+        // 6. Jenis Barang & Barang - KSPPS Al Huda
         $jenisBarangList = [
-            ['nama_jenis_barang' => 'Elektronik', 'is_active' => true],
-            ['nama_jenis_barang' => 'ATK', 'is_active' => true],
-            ['nama_jenis_barang' => 'Kebersihan', 'is_active' => true],
-            ['nama_jenis_barang' => 'Makanan', 'is_active' => true],
-            ['nama_jenis_barang' => 'Minuman', 'is_active' => true],
+            ['nama_jenis_barang' => 'Elektronik & Komputer', 'is_active' => true],
+            ['nama_jenis_barang' => 'ATK (Alat Tulis Kantor)', 'is_active' => true],
+            ['nama_jenis_barang' => 'Kebersihan & Sanitasi', 'is_active' => true],
+            ['nama_jenis_barang' => 'Konsumsi Kantor', 'is_active' => true],
+            ['nama_jenis_barang' => 'Furniture & Perlengkapan', 'is_active' => true],
         ];
         $barangList = [
-            // Elektronik
-            ['nama_barang' => 'Laptop Lenovo ThinkPad', 'id_jenis_barang' => null, 'harga_barang' => 12000000, 'satuan' => 'unit', 'batas_minimum' => 2],
-            ['nama_barang' => 'Printer Epson L3110', 'id_jenis_barang' => null, 'harga_barang' => 2500000, 'satuan' => 'unit', 'batas_minimum' => 1],
-            ['nama_barang' => 'Proyektor BenQ', 'id_jenis_barang' => null, 'harga_barang' => 5000000, 'satuan' => 'unit', 'batas_minimum' => 1],
+            // Elektronik & Komputer
+            ['nama_barang' => 'Laptop Asus Vivobook', 'id_jenis_barang' => null, 'harga_barang' => 8500000, 'satuan' => 'unit', 'batas_minimum' => 1],
+            ['nama_barang' => 'Printer Canon Pixma G3010', 'id_jenis_barang' => null, 'harga_barang' => 2300000, 'satuan' => 'unit', 'batas_minimum' => 1],
+            ['nama_barang' => 'Mouse Wireless Logitech', 'id_jenis_barang' => null, 'harga_barang' => 150000, 'satuan' => 'pcs', 'batas_minimum' => 3],
+            ['nama_barang' => 'Keyboard USB Standard', 'id_jenis_barang' => null, 'harga_barang' => 85000, 'satuan' => 'pcs', 'batas_minimum' => 2],
+            ['nama_barang' => 'Flash Disk 32GB', 'id_jenis_barang' => null, 'harga_barang' => 75000, 'satuan' => 'pcs', 'batas_minimum' => 5],
             // ATK
-            ['nama_barang' => 'Pulpen Standard', 'id_jenis_barang' => null, 'harga_barang' => 3500, 'satuan' => 'pcs', 'batas_minimum' => 20],
-            ['nama_barang' => 'Buku Tulis Sidu', 'id_jenis_barang' => null, 'harga_barang' => 6000, 'satuan' => 'pcs', 'batas_minimum' => 15],
-            ['nama_barang' => 'Map Folder', 'id_jenis_barang' => null, 'harga_barang' => 2500, 'satuan' => 'pcs', 'batas_minimum' => 10],
-            // Kebersihan
-            ['nama_barang' => 'Sapu Lantai', 'id_jenis_barang' => null, 'harga_barang' => 18000, 'satuan' => 'pcs', 'batas_minimum' => 3],
-            ['nama_barang' => 'Pel Lantai', 'id_jenis_barang' => null, 'harga_barang' => 22000, 'satuan' => 'pcs', 'batas_minimum' => 2],
-            ['nama_barang' => 'Cairan Pembersih Lantai', 'id_jenis_barang' => null, 'harga_barang' => 15000, 'satuan' => 'liter', 'batas_minimum' => 5],
-            // Makanan
-            ['nama_barang' => 'Biskuit Roma Kelapa', 'id_jenis_barang' => null, 'harga_barang' => 12000, 'satuan' => 'pak', 'batas_minimum' => 10],
-            ['nama_barang' => 'Roti Tawar Sari Roti', 'id_jenis_barang' => null, 'harga_barang' => 18000, 'satuan' => 'bungkus', 'batas_minimum' => 5],
-            // Minuman
-            ['nama_barang' => 'Air Mineral Aqua 600ml', 'id_jenis_barang' => null, 'harga_barang' => 4000, 'satuan' => 'botol', 'batas_minimum' => 24],
-            ['nama_barang' => 'Teh Botol Sosro', 'id_jenis_barang' => null, 'harga_barang' => 5000, 'satuan' => 'botol', 'batas_minimum' => 12],
+            ['nama_barang' => 'Pulpen Snowman', 'id_jenis_barang' => null, 'harga_barang' => 3000, 'satuan' => 'pcs', 'batas_minimum' => 30],
+            ['nama_barang' => 'Pensil 2B Faber Castell', 'id_jenis_barang' => null, 'harga_barang' => 2500, 'satuan' => 'pcs', 'batas_minimum' => 20],
+            ['nama_barang' => 'Buku Folio Bergaris', 'id_jenis_barang' => null, 'harga_barang' => 8000, 'satuan' => 'pcs', 'batas_minimum' => 15],
+            ['nama_barang' => 'Kertas HVS A4 70gr', 'id_jenis_barang' => null, 'harga_barang' => 45000, 'satuan' => 'rim', 'batas_minimum' => 10],
+            ['nama_barang' => 'Map Plastik Folio', 'id_jenis_barang' => null, 'harga_barang' => 2000, 'satuan' => 'pcs', 'batas_minimum' => 20],
+            ['nama_barang' => 'Tinta Stempel Artline', 'id_jenis_barang' => null, 'harga_barang' => 12000, 'satuan' => 'botol', 'batas_minimum' => 5],
+            ['nama_barang' => 'Amplop Coklat F4', 'id_jenis_barang' => null, 'harga_barang' => 500, 'satuan' => 'pcs', 'batas_minimum' => 50],
+            ['nama_barang' => 'Stapler HD-10', 'id_jenis_barang' => null, 'harga_barang' => 18000, 'satuan' => 'pcs', 'batas_minimum' => 5],
+            ['nama_barang' => 'Isi Stapler No.10', 'id_jenis_barang' => null, 'harga_barang' => 3500, 'satuan' => 'box', 'batas_minimum' => 10],
+            // Kebersihan & Sanitasi
+            ['nama_barang' => 'Sapu Ijuk', 'id_jenis_barang' => null, 'harga_barang' => 20000, 'satuan' => 'pcs', 'batas_minimum' => 3],
+            ['nama_barang' => 'Pel Kain', 'id_jenis_barang' => null, 'harga_barang' => 25000, 'satuan' => 'pcs', 'batas_minimum' => 2],
+            ['nama_barang' => 'Pembersih Lantai So Klin', 'id_jenis_barang' => null, 'harga_barang' => 18000, 'satuan' => 'liter', 'batas_minimum' => 5],
+            ['nama_barang' => 'Sabun Cuci Tangan Lifebuoy', 'id_jenis_barang' => null, 'harga_barang' => 15000, 'satuan' => 'botol', 'batas_minimum' => 8],
+            ['nama_barang' => 'Tisu Paseo 250 Sheet', 'id_jenis_barang' => null, 'harga_barang' => 12000, 'satuan' => 'box', 'batas_minimum' => 10],
+            ['nama_barang' => 'Lap Microfiber', 'id_jenis_barang' => null, 'harga_barang' => 8000, 'satuan' => 'pcs', 'batas_minimum' => 10],
+            // Konsumsi Kantor
+            ['nama_barang' => 'Kopi Kapal Api Special Mix', 'id_jenis_barang' => null, 'harga_barang' => 25000, 'satuan' => 'box', 'batas_minimum' => 5],
+            ['nama_barang' => 'Teh Celup Sariwangi', 'id_jenis_barang' => null, 'harga_barang' => 18000, 'satuan' => 'box', 'batas_minimum' => 5],
+            ['nama_barang' => 'Gula Pasir Gulaku', 'id_jenis_barang' => null, 'harga_barang' => 15000, 'satuan' => 'kg', 'batas_minimum' => 3],
+            ['nama_barang' => 'Air Mineral Galon Aqua', 'id_jenis_barang' => null, 'harga_barang' => 20000, 'satuan' => 'galon', 'batas_minimum' => 5],
+            ['nama_barang' => 'Biskuit Khong Guan', 'id_jenis_barang' => null, 'harga_barang' => 28000, 'satuan' => 'kaleng', 'batas_minimum' => 3],
+            // Furniture & Perlengkapan
+            ['nama_barang' => 'Kursi Kantor Putar', 'id_jenis_barang' => null, 'harga_barang' => 650000, 'satuan' => 'unit', 'batas_minimum' => 1],
+            ['nama_barang' => 'Meja Kerja Kayu', 'id_jenis_barang' => null, 'harga_barang' => 1200000, 'satuan' => 'unit', 'batas_minimum' => 1],
+            ['nama_barang' => 'Rak Arsip Besi', 'id_jenis_barang' => null, 'harga_barang' => 1500000, 'satuan' => 'unit', 'batas_minimum' => 1],
         ];
         $jenisMap = [];
         foreach ($jenisBarangList as $j) {
@@ -144,21 +159,36 @@ class DatabaseSeeder extends Seeder
             ], $j);
             $jenisMap[$j['nama_jenis_barang']] = $jb->id_jenis_barang;
         }
-        // Assign jenis to barang
+        // Assign jenis to barang - KSPPS
         $barangJenis = [
-            'Laptop Lenovo ThinkPad' => 'Elektronik',
-            'Printer Epson L3110' => 'Elektronik',
-            'Proyektor BenQ' => 'Elektronik',
-            'Pulpen Standard' => 'ATK',
-            'Buku Tulis Sidu' => 'ATK',
-            'Map Folder' => 'ATK',
-            'Sapu Lantai' => 'Kebersihan',
-            'Pel Lantai' => 'Kebersihan',
-            'Cairan Pembersih Lantai' => 'Kebersihan',
-            'Biskuit Roma Kelapa' => 'Makanan',
-            'Roti Tawar Sari Roti' => 'Makanan',
-            'Air Mineral Aqua 600ml' => 'Minuman',
-            'Teh Botol Sosro' => 'Minuman',
+            'Laptop Asus Vivobook' => 'Elektronik & Komputer',
+            'Printer Canon Pixma G3010' => 'Elektronik & Komputer',
+            'Mouse Wireless Logitech' => 'Elektronik & Komputer',
+            'Keyboard USB Standard' => 'Elektronik & Komputer',
+            'Flash Disk 32GB' => 'Elektronik & Komputer',
+            'Pulpen Snowman' => 'ATK (Alat Tulis Kantor)',
+            'Pensil 2B Faber Castell' => 'ATK (Alat Tulis Kantor)',
+            'Buku Folio Bergaris' => 'ATK (Alat Tulis Kantor)',
+            'Kertas HVS A4 70gr' => 'ATK (Alat Tulis Kantor)',
+            'Map Plastik Folio' => 'ATK (Alat Tulis Kantor)',
+            'Tinta Stempel Artline' => 'ATK (Alat Tulis Kantor)',
+            'Amplop Coklat F4' => 'ATK (Alat Tulis Kantor)',
+            'Stapler HD-10' => 'ATK (Alat Tulis Kantor)',
+            'Isi Stapler No.10' => 'ATK (Alat Tulis Kantor)',
+            'Sapu Ijuk' => 'Kebersihan & Sanitasi',
+            'Pel Kain' => 'Kebersihan & Sanitasi',
+            'Pembersih Lantai So Klin' => 'Kebersihan & Sanitasi',
+            'Sabun Cuci Tangan Lifebuoy' => 'Kebersihan & Sanitasi',
+            'Tisu Paseo 250 Sheet' => 'Kebersihan & Sanitasi',
+            'Lap Microfiber' => 'Kebersihan & Sanitasi',
+            'Kopi Kapal Api Special Mix' => 'Konsumsi Kantor',
+            'Teh Celup Sariwangi' => 'Konsumsi Kantor',
+            'Gula Pasir Gulaku' => 'Konsumsi Kantor',
+            'Air Mineral Galon Aqua' => 'Konsumsi Kantor',
+            'Biskuit Khong Guan' => 'Konsumsi Kantor',
+            'Kursi Kantor Putar' => 'Furniture & Perlengkapan',
+            'Meja Kerja Kayu' => 'Furniture & Perlengkapan',
+            'Rak Arsip Besi' => 'Furniture & Perlengkapan',
         ];
         foreach ($barangList as &$b) {
             $b['id_jenis_barang'] = $jenisMap[$barangJenis[$b['nama_barang']]];
@@ -234,10 +264,11 @@ class DatabaseSeeder extends Seeder
         // 10. Realistic Pengajuan & Gudang (see SampleDataSeeder for more advanced logic)
         // You may optionally add more realistic transactional data here or in a new seeder.
 
-        $this->command->info('🎯 Database seeding completed with real-world data!');
-        $this->command->info('📋 Default credentials:');
-        $this->command->info('   Admin: admin@example.com / password');
-        $this->command->info('   Manager: manager@example.com / password');
-        $this->command->info('   User: user@example.com / password');
+        $this->command->info('🎯 Database seeding completed for KSPPS Al Huda Wonosobo!');
+        $this->command->info('📋 Default credentials (3 super user - jangan diubah):');
+        $this->command->info('   Super Admin: admin@example.com / password');
+        $this->command->info('   Super Manager: manager@example.com / password');
+        $this->command->info('   Super User: user@example.com / password');
+        $this->command->info('🏢 Cabang: Pusat, Garung, Kertek, Kaliwiro, Mojotengah, Selomerto');
     }
 }
