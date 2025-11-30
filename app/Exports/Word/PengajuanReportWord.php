@@ -66,20 +66,22 @@ class PengajuanReportWord
         // Details
         $section->addText('Detail Pengajuan', 'heading');
         $table = $section->addTable('reportTable');
-        $headers = ['ID', 'Pemohon', 'Status', 'Jumlah Item', 'Tanggal'];
+        $headers = ['ID', 'Pemohon', 'Cabang', 'Status', 'Total Item', 'Total Nilai (Rp)', 'Tanggal'];
         $table->addRow();
         foreach ($headers as $h) {
-            $table->addCell(2000, ['bgColor' => '4472C4'])->addText($h, ['bold' => true, 'color' => 'FFFFFF', 'size' => 9]);
+            $table->addCell(1800, ['bgColor' => '4472C4'])->addText($h, ['bold' => true, 'color' => 'FFFFFF', 'size' => 9]);
         }
 
         foreach (($this->reportData['details'] ?? []) as $i => $row) {
             $bg = $i % 2 === 0 ? 'F9F9F9' : 'FFFFFF';
             $table->addRow();
-            $table->addCell(2000, ['bgColor' => $bg])->addText($row['id_pengajuan'] ?? '-', ['size' => 9]);
-            $table->addCell(2000, ['bgColor' => $bg])->addText($row['pemohon'] ?? ($row['user']['username'] ?? '-'), ['size' => 9]);
-            $table->addCell(2000, ['bgColor' => $bg])->addText($row['status_pengajuan'] ?? '-', ['size' => 9]);
-            $table->addCell(2000, ['bgColor' => $bg])->addText((string)($row['jumlah_items'] ?? 0), ['size' => 9]);
-            $table->addCell(2000, ['bgColor' => $bg])->addText(($row['created_at'] ?? '-'), ['size' => 9]);
+            $table->addCell(1800, ['bgColor' => $bg])->addText($row['id_pengajuan'] ?? '-', ['size' => 9]);
+            $table->addCell(1800, ['bgColor' => $bg])->addText($row['user']['username'] ?? '-', ['size' => 9]);
+            $table->addCell(1800, ['bgColor' => $bg])->addText($row['user']['cabang']['nama_cabang'] ?? $row['user']['branch_name'] ?? '-', ['size' => 9]);
+            $table->addCell(1800, ['bgColor' => $bg])->addText($row['status_pengajuan'] ?? '-', ['size' => 9]);
+            $table->addCell(1800, ['bgColor' => $bg])->addText((string)($row['total_items'] ?? 0), ['size' => 9]);
+            $table->addCell(1800, ['bgColor' => $bg])->addText('Rp '.number_format($row['total_nilai'] ?? 0, 0, ',', '.'), ['size' => 9]);
+            $table->addCell(1800, ['bgColor' => $bg])->addText(is_object($row['created_at'] ?? null) ? $row['created_at']->format('Y-m-d H:i') : (string)($row['created_at'] ?? '-'), ['size' => 9]);
         }
 
         $section->addTextBreak(1);

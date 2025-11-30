@@ -174,19 +174,26 @@ class AllReportsWord
         $section->addText('Analisis Pengajuan', 'heading');
         $pengajuan = $this->payload['pengajuan'] ?? [];
         $table = $section->addTable('reportTable');
-        $headers = ['Tanggal', 'User', 'Status', 'Total Nilai'];
+        $headers = ['ID Pengajuan', 'Pemohon', 'Cabang', 'Status', 'Total Item', 'Total Nilai (Rp)', 'Tanggal'];
         $table->addRow();
         foreach ($headers as $h) {
-            $table->addCell(2000, ['bgColor' => '4472C4'])->addText($h, ['bold' => true, 'color' => 'FFFFFF', 'size' => 9]);
+            $table->addCell(1500, ['bgColor' => '4472C4'])->addText($h, ['bold' => true, 'color' => 'FFFFFF', 'size' => 9]);
         }
         foreach (($pengajuan['details'] ?? []) as $i => $row) {
             $row = $this->normalize($row);
             $bg = $i % 2 === 0 ? 'F9F9F9' : 'FFFFFF';
             $table->addRow();
-            $table->addCell(2000, ['bgColor' => $bg])->addText(($row['tanggal'] ?? $row['created_at'] ?? '-'), ['size' => 9]);
-            $table->addCell(2000, ['bgColor' => $bg])->addText($this->formatUser(is_array($row) ? $row : []), ['size' => 9]);
-            $table->addCell(2000, ['bgColor' => $bg])->addText(($row['status'] ?? '-'), ['size' => 9]);
-            $table->addCell(2000, ['bgColor' => $bg])->addText('Rp '.number_format($row['total_nilai'] ?? 0, 0, ',', '.'), ['size' => 9]);
+            $table->addCell(1500, ['bgColor' => $bg])->addText(($row['id_pengajuan'] ?? '-'), ['size' => 9]);
+            $u = $row['user'] ?? [];
+            $u = $this->normalize($u);
+            $table->addCell(1500, ['bgColor' => $bg])->addText(($u['username'] ?? '-'), ['size' => 9]);
+            $table->addCell(1500, ['bgColor' => $bg])->addText(($u['cabang']['nama_cabang'] ?? $u['branch_name'] ?? '-'), ['size' => 9]);
+            $table->addCell(1500, ['bgColor' => $bg])->addText(($row['status_pengajuan'] ?? '-'), ['size' => 9]);
+            $table->addCell(1500, ['bgColor' => $bg])->addText((string)($row['total_items'] ?? 0), ['size' => 9]);
+            $table->addCell(1500, ['bgColor' => $bg])->addText('Rp '.number_format($row['total_nilai'] ?? 0, 0, ',', '.'), ['size' => 9]);
+            $createdAt = $row['created_at'] ?? null;
+            $dateStr = is_object($createdAt) && method_exists($createdAt, 'format') ? $createdAt->format('Y-m-d H:i') : (string)($createdAt ?? '-');
+            $table->addCell(1500, ['bgColor' => $bg])->addText($dateStr, ['size' => 9]);
         }
 
         // Penggunaan Section

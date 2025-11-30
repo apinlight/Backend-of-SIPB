@@ -91,11 +91,21 @@ class LaporanService
 
     public function getPengajuanReport(User $user, array $filters = []): array
     {
-        $query = Pengajuan::with(['user', 'details.barang']);
+        $query = Pengajuan::with(['user.cabang', 'details.barang']);
         $this->applyBranchAndRoleFilters($query, $user, $filters);
         $this->applyDateFilters($query, $filters);
 
         $details = $query->get()->map(function ($pengajuan) {
+            // Calculate total_nilai by summing (harga_barang * jumlah) for each detail
+            $totalNilai = $pengajuan->details->reduce(function ($carry, $detail) {
+                // Ensure barang relationship is loaded and harga_barang exists
+                if ($detail->barang && $detail->jumlah > 0) {
+                    $harga = $detail->barang->harga_barang ?? 0;
+                    return $carry + ($harga * $detail->jumlah);
+                }
+                return $carry;
+            }, 0);
+
             return [
                 'id_pengajuan' => $pengajuan->id_pengajuan,
                 'user' => $pengajuan->user->toArray(),
@@ -103,7 +113,7 @@ class LaporanService
                 'created_at' => $pengajuan->created_at,
                 'updated_at' => $pengajuan->updated_at,
                 'total_items' => $pengajuan->details->sum('jumlah'),
-                'total_nilai' => $pengajuan->details->sum(fn ($d) => ($d->barang->harga_barang ?? 0) * $d->jumlah),
+                'total_nilai' => $totalNilai,
             ];
         });
 
