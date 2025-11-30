@@ -100,13 +100,12 @@ class Pengajuan extends Model
 
     public function scopeForUser(Builder $query, User $user): Builder
     {
-        if ($user->hasRole('admin')) {
+        // ✅ Admin and Manager see all pengajuan (global oversight)
+        if ($user->hasRole('admin') || $user->hasRole('manager')) {
             return $query;
         }
-        if ($user->hasRole('manager')) {
-            return $query->whereHas('user', fn ($q) => $q->where('branch_name', $user->branch_name));
-        }
 
+        // ✅ Regular users see only their own submissions
         return $query->where('unique_id', $user->unique_id);
     }
 }
