@@ -119,22 +119,22 @@ class AllReportsWord
         $phpWord->addFontStyle('title', ['bold' => true, 'size' => 18, 'color' => '2E74B5']);
         $phpWord->addFontStyle('heading', ['bold' => true, 'size' => 14]);
         $phpWord->addFontStyle('subheading', ['bold' => true, 'size' => 12]);
-    $phpWord->addFontStyle('normal', ['size' => 10]);
+        $phpWord->addFontStyle('normal', ['size' => 10]);
         $phpWord->addTableStyle('reportTable', [
             'borderSize' => 6,
             'borderColor' => 'CCCCCC',
-            'cellMargin' => 80,
+            'cellMargin' => 120,
         ]);
 
         // Cover/Title
         $cover = $phpWord->addSection(['marginTop' => 1200]);
         $cover->addText('LAPORAN KOMPREHENSIF', 'title');
         $cover->addText('Sistem Informasi & Pencatatan Barang (SIPB)', 'subheading');
-        $cover->addText('Generated: '.now()->format('d F Y, H:i'), 'normal');
-        $periodStr = trim(($this->filters['start_date'] ?? '').' - '.($this->filters['end_date'] ?? ''));
-        $branchStr = $this->filters['branch'] ?? '';
+        $cover->addText('Dihasilkan: '.now()->format('d F Y, H:i'), 'normal');
+        $periodStr = trim(($this->filters['start_date'] ?? '').' s/d '.($this->filters['end_date'] ?? ''));
+        $branchStr = $this->filters['id_cabang'] ?? '';
         if ($periodStr || $branchStr) {
-            $cover->addText('Periode: '.($periodStr ?: '-').'; Cabang: '.($branchStr ?: '-'), ['size' => 9, 'color' => '777777']);
+            $cover->addText('Periode: '.($periodStr ?: '-').'; Cabang: '.($branchStr ?: 'Semua'), ['size' => 9, 'color' => '777777']);
         }
         $cover->addTextBreak(2);
 
@@ -146,7 +146,7 @@ class AllReportsWord
             ['Total Pengajuan', $summary['total_pengajuan'] ?? 0],
             ['Total Disetujui', $summary['total_disetujui'] ?? 0],
             ['Total Menunggu', $summary['total_menunggu'] ?? 0],
-            ['Total Nilai (Rp)', 'Rp '.number_format($summary['total_nilai'] ?? 0, 0, ',', '.')],
+            ['Total Nilai (Rp)', 'Rp '.number_format((float)($summary['total_nilai'] ?? 0), 0, ',', '.')],
         ]);
 
         // Barang Section
@@ -154,7 +154,7 @@ class AllReportsWord
         $section->addText('Analisis Barang', 'heading');
         $barang = $this->payload['barang'] ?? [];
         $table = $section->addTable('reportTable');
-        $headers = ['Barang', 'Kategori', 'Total Pengajuan', 'Total Disetujui', 'Total Nilai'];
+        $headers = ['Barang', 'Kategori', 'Total Pengajuan', 'Total Disetujui', 'Total Nilai (Rp)'];
         $table->addRow();
         foreach ($headers as $h) {
             $table->addCell(1600, ['bgColor' => '4472C4'])->addText($h, ['bold' => true, 'color' => 'FFFFFF', 'size' => 9]);
@@ -164,9 +164,9 @@ class AllReportsWord
             $table->addRow();
             $table->addCell(1600, ['bgColor' => $bg])->addText($row['nama_barang'] ?? '-', ['size' => 9]);
             $table->addCell(1600, ['bgColor' => $bg])->addText($row['kategori'] ?? '-', ['size' => 9]);
-            $table->addCell(1600, ['bgColor' => $bg])->addText((string)($row['total_pengajuan'] ?? 0), ['size' => 9]);
+            $table->addCell(1600, ['bgColor' => $bg])->addText((string)($row['total_pengadaan'] ?? $row['total_pengajuan'] ?? 0), ['size' => 9]);
             $table->addCell(1600, ['bgColor' => $bg])->addText((string)($row['total_disetujui'] ?? 0), ['size' => 9]);
-            $table->addCell(1600, ['bgColor' => $bg])->addText('Rp '.number_format($row['total_nilai'] ?? 0, 0, ',', '.'), ['size' => 9]);
+            $table->addCell(1600, ['bgColor' => $bg])->addText('Rp '.number_format((float)($row['nilai_pengadaan'] ?? $row['total_nilai'] ?? 0), 0, ',', '.'), ['size' => 9]);
         }
 
         // Pengajuan Section
@@ -174,7 +174,7 @@ class AllReportsWord
         $section->addText('Analisis Pengajuan', 'heading');
         $pengajuan = $this->payload['pengajuan'] ?? [];
         $table = $section->addTable('reportTable');
-        $headers = ['ID Pengajuan', 'Pemohon', 'Cabang', 'Status', 'Total Item', 'Total Nilai (Rp)', 'Tanggal'];
+        $headers = ['ID Pengajuan', 'Pemohon', 'Cabang', 'Status', 'Total Item', 'Total Nilai (Rp)', 'Tanggal Pengajuan'];
         $table->addRow();
         foreach ($headers as $h) {
             $table->addCell(1500, ['bgColor' => '4472C4'])->addText($h, ['bold' => true, 'color' => 'FFFFFF', 'size' => 9]);
@@ -190,9 +190,9 @@ class AllReportsWord
             $table->addCell(1500, ['bgColor' => $bg])->addText(($u['cabang']['nama_cabang'] ?? $u['branch_name'] ?? '-'), ['size' => 9]);
             $table->addCell(1500, ['bgColor' => $bg])->addText(($row['status_pengajuan'] ?? '-'), ['size' => 9]);
             $table->addCell(1500, ['bgColor' => $bg])->addText((string)($row['total_items'] ?? 0), ['size' => 9]);
-            $table->addCell(1500, ['bgColor' => $bg])->addText('Rp '.number_format($row['total_nilai'] ?? 0, 0, ',', '.'), ['size' => 9]);
+            $table->addCell(1500, ['bgColor' => $bg])->addText('Rp '.number_format((float)($row['total_nilai'] ?? 0), 0, ',', '.'), ['size' => 9]);
             $createdAt = $row['created_at'] ?? null;
-            $dateStr = is_object($createdAt) && method_exists($createdAt, 'format') ? $createdAt->format('Y-m-d H:i') : (string)($createdAt ?? '-');
+            $dateStr = is_object($createdAt) && method_exists($createdAt, 'format') ? $createdAt->format('d/m/Y H:i') : (string)($createdAt ?? '-');
             $table->addCell(1500, ['bgColor' => $bg])->addText($dateStr, ['size' => 9]);
         }
 
@@ -201,7 +201,7 @@ class AllReportsWord
         $section->addText('Analisis Penggunaan Barang', 'heading');
         $penggunaan = $this->payload['penggunaan'] ?? [];
         $table = $section->addTable('reportTable');
-        $headers = ['Tanggal', 'User/Cabang', 'Barang', 'Jumlah', 'Keperluan', 'Status'];
+        $headers = ['Tanggal Penggunaan', 'User/Cabang', 'Barang', 'Jumlah', 'Keperluan', 'Status'];
         $table->addRow();
         foreach ($headers as $h) {
             $table->addCell(1600, ['bgColor' => '4472C4'])->addText($h, ['bold' => true, 'color' => 'FFFFFF', 'size' => 9]);
@@ -210,7 +210,7 @@ class AllReportsWord
             $row = $this->normalize($row);
             $bg = $i % 2 === 0 ? 'F9F9F9' : 'FFFFFF';
             $table->addRow();
-            $table->addCell(1600, ['bgColor' => $bg])->addText(($row['tanggal'] ?? $row['created_at'] ?? '-'), ['size' => 9]);
+            $table->addCell(1600, ['bgColor' => $bg])->addText(($row['tanggal'] ?? (is_object($row['created_at'] ?? null) && method_exists($row['created_at'], 'format') ? $row['created_at']->format('d/m/Y H:i') : ($row['created_at'] ?? '-'))), ['size' => 9]);
             $table->addCell(1600, ['bgColor' => $bg])->addText($this->formatUser(is_array($row) ? $row : []), ['size' => 9]);
             $table->addCell(1600, ['bgColor' => $bg])->addText($this->formatBarang(is_array($row) ? $row : []), ['size' => 9]);
             $table->addCell(1600, ['bgColor' => $bg])->addText((string)($row['jumlah'] ?? $row['qty'] ?? 0), ['size' => 9]);
@@ -232,7 +232,7 @@ class AllReportsWord
         ]);
         $section->addTextBreak(1);
         $table = $section->addTable('reportTable');
-        $headers = ['Cabang/User', 'Barang', 'Stok', 'Nilai Stok', 'Status'];
+        $headers = ['Cabang/User', 'Barang', 'Stok', 'Nilai Stok (Rp)', 'Status'];
         $table->addRow();
         foreach ($headers as $h) {
             $table->addCell(2000, ['bgColor' => '4472C4'])->addText($h, ['bold' => true, 'color' => 'FFFFFF', 'size' => 9]);
